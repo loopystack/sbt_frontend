@@ -24,7 +24,7 @@ export async function api<T = any>(
   options: ApiRequestOptions = {}
 ): Promise<T> {
   // Get base URL from environment or default to localhost
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://62.169.28.113:8000';
   
   // Ensure URL is absolute
   const absoluteUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;

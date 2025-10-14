@@ -133,7 +133,7 @@ export const authService = {
     formData.append('username', credentials.email); // FastAPI OAuth2PasswordRequestForm expects 'username' field
     formData.append('password', credentials.password);
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'}${BASE_URL}/login`, {
+    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://62.169.28.113:8000'}${BASE_URL}/login`, {
       method: 'POST',
       body: formData,
     });

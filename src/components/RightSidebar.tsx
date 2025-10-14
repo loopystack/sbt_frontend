@@ -95,8 +95,8 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       const endpoints = [
         'http://62.169.28.113:8000/api/odds/value-bets?limit=3&min_ev=0.03',
         'http://62.169.28.113:8000/api/odds/value-bets?limit=5&min_ev=0.02',
-        'http://127.0.0.1:8000/api/odds/value-bets?limit=3&min_ev=0.03',
-        'http://127.0.0.1:8000/api/odds/value-bets?limit=5&min_ev=0.02'
+        'http://62.169.28.113:8000/api/odds/value-bets?limit=3&min_ev=0.03',
+        'http://62.169.28.113:8000/api/odds/value-bets?limit=5&min_ev=0.02'
       ];
       
       let success = false;
