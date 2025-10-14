@@ -533,7 +533,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           tokenExists: !!token,
           tokenLength: token?.length,
           tokenStart: token?.substring(0, 20),
-          baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
+          baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://62.169.28.113:8000',
           currentUser: user?.email,
           selectedOddsCount: selectedOdds.length
         });
