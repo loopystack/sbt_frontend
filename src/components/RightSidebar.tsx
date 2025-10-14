@@ -93,10 +93,10 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       
       // Try the new value-bets endpoint
       const endpoints = [
-        'http://localhost:5001/api/odds/value-bets?limit=3&min_ev=0.03',
-        'http://localhost:5001/api/odds/value-bets?limit=5&min_ev=0.02',
-        'http://127.0.0.1:5001/api/odds/value-bets?limit=3&min_ev=0.03',
-        'http://127.0.0.1:5001/api/odds/value-bets?limit=5&min_ev=0.02'
+        'http://localhost:8000/api/odds/value-bets?limit=3&min_ev=0.03',
+        'http://localhost:8000/api/odds/value-bets?limit=5&min_ev=0.02',
+        'http://127.0.0.1:8000/api/odds/value-bets?limit=3&min_ev=0.03',
+        'http://127.0.0.1:8000/api/odds/value-bets?limit=5&min_ev=0.02'
       ];
       
       let success = false;

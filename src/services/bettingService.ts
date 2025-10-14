@@ -67,7 +67,7 @@ export const bettingService = {
 
     console.log('🚀 Sending betting record to API:', {
       url: `${BASE_URL}/records`,
-      fullUrl: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001'}${BASE_URL}/records`,
+      fullUrl: `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${BASE_URL}/records`,
       token: token ? `${token.substring(0, 20)}...` : 'NONE',
       record,
       matchDateDetails: record.match_date ? {

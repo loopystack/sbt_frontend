@@ -212,7 +212,7 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch('http://localhost:5001/api/auth/profile', {
+      const response = await fetch('http://localhost:8000/api/auth/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -470,7 +470,7 @@ export default function Profile() {
 
   const fetchSupportedAssets = async () => {
     try {
-      const response = await fetch('http://localhost:5001/api/deposits/supported-assets');
+      const response = await fetch('http://localhost:8000/api/deposits/supported-assets');
       if (response.ok) {
         const assets = await response.json();
         setSupportedAssets(assets);

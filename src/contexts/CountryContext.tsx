@@ -81,7 +81,7 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
 
         // Fetch countries and leagues from the API
         try {
-          const response = await fetch('http://localhost:5001/api/odds/leagues/list');
+          const response = await fetch('http://localhost:8000/api/odds/leagues/list');
           if (!response.ok) {
             throw new Error('Failed to fetch leagues');
           }

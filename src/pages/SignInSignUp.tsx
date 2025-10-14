@@ -146,7 +146,7 @@ export default function SignInSignUp() {
     // Determine backend URL based on current domain
     let backendUrl;
     if (currentOrigin.includes('localhost')) {
-      backendUrl = 'http://localhost:5001';
+      backendUrl = 'http://localhost:8000';
     } else {
       // For production and any other domain, use production backend
       backendUrl = 'https://sportsbetting-seiw.onrender.com';

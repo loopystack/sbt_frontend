@@ -21,7 +21,7 @@ export default function ActivateAccount() {
       }
 
       try {
-        const response = await fetch('http://localhost:5001/api/auth/activate', {
+        const response = await fetch('http://localhost:8000/api/auth/activate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

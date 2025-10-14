@@ -1,2 +1,0 @@
-# sbt_frontend
-SportsBettingFrontend
