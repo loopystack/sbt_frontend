@@ -140,7 +140,8 @@ export default function Bookmakers() {
     }
   ];
   return (
-    <section className="space-y-4 sm:space-y-8 max-w-full overflow-hidden">
+    <section className="space-y-4 sm:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+      {/* Claim Cards - Keeping as is */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-gradient-to-br from-violet-600 via-purple-600 to-indigo-600 rounded-lg p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent"></div>
@@ -203,21 +204,71 @@ export default function Bookmakers() {
           </div>
         </div>
       </div>
+      {/* Breadcrumb */}
       <div className="text-sm text-muted">
         Home &gt; Bookmakers
       </div>
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-text">
-          Best Online Betting Sites for Aug 2025 - Where to Bet?
-        </h1>
-        <div className="text-lg text-muted font-medium">
-          Best betting sites Aug 2025
+      
+      {/* Page Header - Clean Modern Design */}
+      <div className="relative bg-gradient-to-br from-surface via-surface to-violet-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
+        {/* Subtle pattern background */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(139, 92, 246) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
+        
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-violet-500/10 via-transparent to-purple-500/10"></div>
+        
+        {/* Accent border animation */}
+        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-violet-500 via-purple-500 to-fuchsia-500"></div>
+        
+        {/* Floating decorative elements */}
+        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-violet-500/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            {/* Left: Icon and Title */}
+            <div className="flex items-start gap-4">
+              {/* Gradient Icon */}
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-violet-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L5.25 8.051a.999.999 0 01.356-.257l4-1.714a1 1 0 11.788 1.838L7.667 9.088l1.94.831a1 1 0 00.787 0l7-3a1 1 0 000-1.838l-7-3zM3.31 9.397L5 10.12v4.102a8.969 8.969 0 00-1.05-.174 1 1 0 01-.89-.89 11.115 11.115 0 01.25-3.762zM9.3 16.573A9.026 9.026 0 007 14.935v-3.957l1.818.78a3 3 0 002.364 0l5.508-2.361a11.026 11.026 0 01.25 3.762 1 1 0 01-.89.89 8.968 8.968 0 00-5.35 2.524 1 1 0 01-1.4 0zM6 18a1 1 0 001-1v-2.065a8.935 8.935 0 00-2-.712V17a1 1 0 001 1z"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Title and Description */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text">
+                    Best Online Bookmakers
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="px-3 py-1 bg-violet-500/10 border border-violet-500/20 rounded-lg text-sm font-semibold text-violet-600 dark:text-violet-400">
+                    Aug 2025
+                  </span>
+                </div>
+                <p className="text-sm text-muted max-w-3xl leading-relaxed">
+                  Detailed bookmaker reviews with bonuses, navigation, payment methods, and mobile apps.
+                </p>
+              </div>
+            </div>
+            
+            {/* Right: Quick Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-2 lg:text-right flex-shrink-0">
+              <div className="bg-bg rounded-xl p-3 border border-border">
+                <div className="text-2xl font-bold text-accent">8</div>
+                <div className="text-xs text-muted">Bookmakers</div>
+              </div>
+              <div className="bg-bg rounded-xl p-3 border border-border">
+                <div className="text-2xl font-bold text-accent">5★</div>
+                <div className="text-xs text-muted">Top Rated</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <p className="text-muted text-sm max-w-4xl leading-relaxed">
-          OddsPortal covers various bookmakers, providing details and incredible betting bonuses. 
-          Our reviews consider welcome bonuses, website navigation, registration, payment methods, 
-          and mobile apps. Check our reviews and visit bookmakers via the VISIT BOOKMAKER button.
-        </p>
       </div>
       <div className="flex gap-1 border-b border-border">
         {subNavigationTabs.map((tab) => (

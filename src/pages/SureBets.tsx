@@ -57,7 +57,8 @@ export default function SureBets() {
   }
 
   return (
-    <section className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+    <section className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
+      {/* Claim Cards - Keeping as is */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-600 rounded-lg p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -120,63 +121,130 @@ export default function SureBets() {
           </div>
         </div>
       </div>
-      <div className="text-sm text-muted px-2">
+      {/* Breadcrumb */}
+      <div className="text-sm text-muted">
         Home &gt; Sure Bets
       </div>
-      <div className="space-y-3 sm:space-y-4 px-2">
-        <h1 className="text-xl sm:text-2xl font-bold text-text">
-          OddsPortal Sure Bets - Find Sure Odds Today
-        </h1>
-        <p className="text-muted text-sm max-w-4xl leading-relaxed">
-          Sure bets are a way for you to win guaranteed profit by betting on two different outcomes 
-          thanks to arbitrage odds from different online bookmakers. Due to online betting sites 
-          offering different odds for the same markets, you can take advantage and earn profit 
-          regardless of the result of the market for the match.
-        </p>
-        <div className="pt-2">
-          <a 
-            href="#" 
-            className="text-accent hover:text-accent/80 font-semibold text-sm transition-colors"
-          >
-            Want more than 10 sure bets? GET MORE &gt;&gt;
-          </a>
+      
+      {/* Page Header - Clean Modern Design */}
+      <div className="relative bg-gradient-to-br from-surface via-surface to-green-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
+        {/* Subtle pattern background */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(34, 197, 94) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
+        
+        {/* Mesh gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-green-500/10 via-transparent to-emerald-500/10"></div>
+        
+        {/* Accent border animation */}
+        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-green-500 via-emerald-500 to-teal-500"></div>
+        
+        {/* Floating decorative elements */}
+        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-green-500/10 to-transparent rounded-full blur-3xl"></div>
+        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-emerald-500/10 to-transparent rounded-full blur-3xl"></div>
+        
+        <div className="relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            {/* Left: Icon and Title */}
+            <div className="flex items-start gap-4">
+              {/* Gradient Icon */}
+              <div className="relative flex-shrink-0">
+                <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl blur-lg opacity-50"></div>
+                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
+                  </svg>
+                </div>
+              </div>
+              
+              {/* Title and Description */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text">
+                    Sure Bets - Arbitrage
+                  </h1>
+                </div>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="px-3 py-1 bg-green-500/10 border border-green-500/20 rounded-lg text-sm font-semibold text-green-600 dark:text-green-400">
+                    Guaranteed Profit
+                  </span>
+                  <a 
+                    href="#" 
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-accent/10 hover:bg-accent/20 border border-accent/20 rounded-lg text-sm font-semibold text-accent transition-all duration-300"
+                  >
+                    Get More
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </a>
+                </div>
+                <p className="text-sm text-muted max-w-3xl leading-relaxed">
+                  Win guaranteed profit by betting on different outcomes with arbitrage odds from different bookmakers.
+                </p>
+              </div>
+            </div>
+            
+            {/* Right: Quick Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-2 lg:text-right flex-shrink-0">
+              <div className="bg-bg rounded-xl p-3 border border-border">
+                <div className="text-2xl font-bold text-accent">0</div>
+                <div className="text-xs text-muted">Available</div>
+              </div>
+              <div className="bg-bg rounded-xl p-3 border border-border">
+                <div className="text-2xl font-bold text-accent">2-5%</div>
+                <div className="text-xs text-muted">Avg Profit</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-      <div className="bg-surface border border-border rounded-lg p-3 sm:p-4 shadow-sm mx-2">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
-          <span className="text-sm font-medium text-muted">Filter:</span>
-          <select
-            value={selectedTimeFilter}
-            onChange={(e) => setSelectedTimeFilter(e.target.value)}
-            className="w-full sm:w-auto px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-200"
-          >
-            {timeFilters.map((filter) => (
-              <option key={filter.id} value={filter.id}>
-                {filter.label}
-              </option>
-            ))}
-          </select>
+      {/* Filter Section */}
+      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <h3 className="font-semibold text-text text-sm">Time Period Filter</h3>
         </div>
+        <select
+          value={selectedTimeFilter}
+          onChange={(e) => setSelectedTimeFilter(e.target.value)}
+          className="w-full sm:w-auto px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:bg-surface"
+        >
+          {timeFilters.map((filter) => (
+            <option key={filter.id} value={filter.id}>
+              {filter.label}
+            </option>
+          ))}
+        </select>
       </div>
-      <div className="flex gap-1 overflow-x-auto scrollbar-hide px-2 pb-2">
-        {sports.map((sport) => (
-          <button
-            key={sport.name}
-            onClick={() => setSelectedSport(sport.name)}
-            className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 flex-shrink-0 ${
-              selectedSport === sport.name
-                ? "text-accent border-b-2 border-accent"
-                : "text-muted hover:text-accent hover:bg-bg"
-            }`}
-          >
-            <span className="text-base sm:text-lg">{sport.icon}</span>
-            <span className="font-medium text-sm sm:text-base">{sport.name}</span>
+      
+      {/* Sport Tabs */}
+      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
+        <div className="flex items-center gap-2 mb-3">
+          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <h3 className="font-semibold text-text text-sm">Filter by Sport</h3>
+        </div>
+        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
+          {sports.map((sport) => (
+            <button
+              key={sport.name}
+              onClick={() => setSelectedSport(sport.name)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
+                selectedSport === sport.name
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transform scale-105"
+                  : "bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md"
+              }`}
+            >
+              <span className="text-lg">{sport.icon}</span>
+              <span className="font-medium text-sm">{sport.name}</span>
+            </button>
+          ))}
+          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md flex-shrink-0">
+            <span className="font-medium text-sm">More</span>
+            <span className="text-lg">⌄</span>
           </button>
-        ))}
-        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 text-muted hover:text-text hover:bg-bg flex-shrink-0">
-          <span className="font-medium text-sm sm:text-base">More</span>
-          <span className="text-base sm:text-lg">⌄</span>
-        </button>
+        </div>
       </div>
       {hasSureBets ? (
         <div className="space-y-4 sm:space-y-6">
