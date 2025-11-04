@@ -9,6 +9,7 @@ import MobileBottomNav from "../../components/MobileBottomNav";
 import MobileSportsCategories from "../../components/MobileSportsCategories";
 import MobilePromoBanner from "../../components/MobilePromoBanner";
 import { useTheme } from "../../contexts/ThemeContext";
+import { trackPageView } from "../../utils/clickTracker";
 
 
 import { useCountry } from "../../contexts/CountryContext";
@@ -21,6 +22,21 @@ export default function AppShell() {
   const location = useLocation();
   const { theme } = useTheme();
   const { setSelectedLeague } = useCountry();
+  
+  // Track page views
+  useEffect(() => {
+    const pagePath = location.pathname + location.search;
+    const pageTitle = document.title || pagePath;
+    
+    trackPageView(pagePath, pageTitle, {
+      referrer: document.referrer,
+      user_agent: navigator.userAgent,
+      viewport: {
+        width: window.innerWidth,
+        height: window.innerHeight
+      }
+    });
+  }, [location.pathname, location.search]);
   
   // Refs for touch/swipe detection
   const touchStartX = useRef<number>(0);

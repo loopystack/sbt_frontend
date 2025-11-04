@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 
 interface BetNotification {
@@ -244,13 +244,13 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     }
   };
 
-  // Clear all notifications
-  const clearNotifications = () => {
+  // Clear all notifications - memoized to prevent infinite loops
+  const clearNotifications = useCallback(() => {
     console.log('🧹 Clearing all notifications');
     setBetNotifications([]);
     setIsRead(true);
     // Don't clear userBets - we need to keep tracking them to detect new settlements
-  };
+  }, []);
 
   // Mark notifications as read (but keep them visible until dashboard visit)
   const markAsRead = () => {
@@ -271,7 +271,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     const initializeTracking = async () => {
       try {
         const { bettingService } = await import('../services/bettingService');
-        const response = await bettingService.getBettingRecords(1, 100);
+        const response = await bettingService.getBettingRecords(1, 50); // Max 50 per page
         
         // Initialize user bets tracking
         const initialBets = new Set(response.records.map((record: any) => record.id));

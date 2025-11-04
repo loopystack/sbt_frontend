@@ -5,15 +5,64 @@ import "./styles/theme.css";
 import { routes } from "./app/routes";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { CountryProvider } from "./contexts/CountryContext";
+import { CountryRestrictionProvider, useCountryRestriction } from "./contexts/CountryRestrictionContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import { PreferencesProvider } from "./contexts/PreferencesContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import ReduxProvider from "./contexts/ReduxContext";
 import CookieConsent from "./components/CookieConsent";
+import CountryBlocked from "./components/CountryBlocked";
 import { CookieManager, CookiePreferences } from "./utils/cookieManager";
 import "./utils/testNotificationSystem"; // Load test utilities
 
 const router = createBrowserRouter(routes);
+
+// Wrapper component to handle country blocking
+const AppContent: React.FC = () => {
+  const { isChecking, isBlocked, countryInfo } = useCountryRestriction();
+
+  // Show loading state while checking
+  if (isChecking) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center z-50">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-white">Checking regional access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show blocking screen if access is denied
+  if (isBlocked && countryInfo) {
+    return (
+      <CountryBlocked
+        countryName={countryInfo.country_name || 'Unknown'}
+        restrictionType={countryInfo.restriction_type || 'full_block'}
+        message={countryInfo.reason || 'Access is restricted in your region'}
+      />
+    );
+  }
+
+  // Render normal app if access is allowed
+  return (
+    <React.StrictMode>
+      <ReduxProvider>
+        <ThemeProvider>
+          <CountryProvider>
+            <AuthProvider>
+              <NotificationProvider>
+                <PreferencesProvider>
+                  <RouterProvider router={router} />
+                </PreferencesProvider>
+              </NotificationProvider>
+            </AuthProvider>
+          </CountryProvider>
+        </ThemeProvider>
+      </ReduxProvider>
+    </React.StrictMode>
+  );
+};
 
 const App: React.FC = () => {
   const handleCookieAccept = (preferences: CookiePreferences) => {
@@ -54,25 +103,13 @@ const App: React.FC = () => {
   };
 
   return (
-    <React.StrictMode>
-      <ReduxProvider>
-        <ThemeProvider>
-          <CountryProvider>
-            <AuthProvider>
-              <NotificationProvider>
-                <PreferencesProvider>
-                  <RouterProvider router={router} />
-                  <CookieConsent 
-                    onAccept={handleCookieAccept}
-                    onDecline={handleCookieDecline}
-                  />
-                </PreferencesProvider>
-              </NotificationProvider>
-            </AuthProvider>
-          </CountryProvider>
-        </ThemeProvider>
-      </ReduxProvider>
-    </React.StrictMode>
+    <CountryRestrictionProvider>
+      <AppContent />
+      <CookieConsent 
+        onAccept={handleCookieAccept}
+        onDecline={handleCookieDecline}
+      />
+    </CountryRestrictionProvider>
   );
 };
 

@@ -7,6 +7,7 @@ import { useNotifications } from "../../contexts/NotificationContext";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useOddsFormat } from "../../hooks/useOddsFormat";
 import { OddsConverter } from "../../utils/oddsConverter";
+import { trackClick, trackConversion } from "../../utils/clickTracker";
 import { calculateBettingReturnFromAmerican, calculateBettingReturnFromDecimal } from "../../utils/bettingCalculator";
 import { useAppDispatch } from "../../store/hooks";
 import { getMatchingInfoAction } from "../../store/matchinginfo/actions";
@@ -515,6 +516,15 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     try {
       const totalBetAmount = selectedOdds.reduce((total, odds) => total + parseFloat(odds.stake || '0'), 0);
       
+      // Track conversion event (bet placed)
+      for (const odds of selectedOdds) {
+        trackConversion('bet_placed', odds.matchId, parseFloat(odds.stake || '0'), {
+          match_teams: odds.teams,
+          selected_outcome: odds.type,
+          odds_value: odds.odds
+        });
+      }
+      
       // Deduct funds from database using real API
       await authService.deductFunds(totalBetAmount);
       
@@ -533,7 +543,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           tokenExists: !!token,
           tokenLength: token?.length,
           tokenStart: token?.substring(0, 20),
-          baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://62.169.28.113:8000',
+          baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001',
           currentUser: user?.email,
           selectedOddsCount: selectedOdds.length
         });
@@ -930,6 +940,15 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Don't render matches when switching markets to prevent flash
   const groupedMatches = isSwitchingMarket ? [] : allGroupedMatches;
   const handleOddsClick = (match: Match, type: 'home' | 'draw' | 'away', odds: string, event: React.MouseEvent) => {
+    // Track click for CTR analytics
+    trackClick('match_odds', match.id, {
+      match_teams: match.teams,
+      match_league: match.league,
+      selected_outcome: type,
+      odds_value: odds,
+      match_id: match.id
+    });
+    
     // Clear any previous error messages
     setDuplicateBetError("");
     setBettingError("");

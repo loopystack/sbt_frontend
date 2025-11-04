@@ -26,9 +26,28 @@ export default function SignInSignUp() {
   const [recaptchaError, setRecaptchaError] = useState("");
   const recaptchaRef = React.useRef<ReCaptchaRef>(null);
   
+  // Compliance modal state
+  const [showComplianceModal, setShowComplianceModal] = useState(false);
+  const [hasAgreed, setHasAgreed] = useState(false);
+  
   const { theme } = useTheme();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  
+  // Check if user has already agreed to compliance terms
+  useEffect(() => {
+    const complianceAgreed = localStorage.getItem('compliance_agreed');
+    if (!complianceAgreed) {
+      setShowComplianceModal(true);
+    }
+  }, []);
+  
+  const handleComplianceAgree = () => {
+    if (hasAgreed) {
+      localStorage.setItem('compliance_agreed', 'true');
+      setShowComplianceModal(false);
+    }
+  };
 
   useEffect(() => {
     // Redirect authenticated users away from login page
@@ -145,8 +164,8 @@ export default function SignInSignUp() {
     
     // Determine backend URL based on current domain
     let backendUrl;
-    if (currentOrigin.includes('localhost')) {
-      backendUrl = 'http://62.169.28.113:8000';
+    if (currentOrigin.includes('18.199.221.93')) {
+      backendUrl = 'http://18.199.221.93:5001';
     } else {
       // For production and any other domain, use production backend
       backendUrl = 'https://sportsbetting-seiw.onrender.com';
@@ -634,6 +653,88 @@ export default function SignInSignUp() {
       
       {/* Debug component - remove after fixing */}
       <RecaptchaDebug />
+      
+      {/* Compliance Modal */}
+      {showComplianceModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700 rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative animate-in fade-in-0 zoom-in-95 duration-300">
+            {/* Close button (disabled until agreed) */}
+            {!hasAgreed && (
+              <div className="absolute top-4 right-4 cursor-not-allowed opacity-50">
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </div>
+            )}
+            
+            {/* Icon */}
+            <div className="flex justify-center mb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+            </div>
+            
+            {/* Title */}
+            <h2 className="text-3xl font-bold text-center text-white mb-2">
+              Responsible Gaming Notice
+            </h2>
+            <p className="text-gray-400 text-center mb-8">
+              Please read and acknowledge our responsible gaming policies
+            </p>
+            
+            {/* Compliance Text */}
+            <div className="bg-black/30 rounded-xl p-6 space-y-4 max-h-96 overflow-y-auto mb-6">
+              <div className="space-y-3 text-gray-300">
+                <p className="font-semibold text-white">🎯 Before you proceed, please understand:</p>
+                
+                <div className="space-y-2 text-sm">
+                  <p>• <strong>Age Requirement:</strong> You must be 18+ years old to use this platform</p>
+                  <p>• <strong>Self-Exclusion:</strong> You can set deposit and betting limits, or self-exclude at any time</p>
+                  <p>• <strong>Cooling-Off Period:</strong> Take breaks when needed - you can temporarily disable your account</p>
+                  <p>• <strong>Session Limits:</strong> Automatic session timeouts help prevent excessive use</p>
+                  <p>• <strong>Regional Restrictions:</strong> Some countries have restricted access due to local laws</p>
+                </div>
+                
+                <div className="pt-3 border-t border-gray-700">
+                  <p className="text-xs text-gray-400">
+                    <strong>Remember:</strong> Gambling should be entertaining, not a way to solve financial problems. 
+                    If you feel you're losing control, please seek help at begambleaware.org or gamcare.org.uk
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            {/* Checkbox and Button */}
+            <div className="space-y-4">
+              <label className="flex items-start space-x-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={hasAgreed}
+                  onChange={(e) => setHasAgreed(e.target.checked)}
+                  className="mt-1 w-5 h-5 rounded border-gray-600 bg-gray-700 text-purple-600 focus:ring-purple-500 focus:ring-2 cursor-pointer"
+                />
+                <span className="text-gray-300 text-sm group-hover:text-white transition-colors">
+                  I have read and agree to the responsible gaming terms and confirm that I am 18+ years old
+                </span>
+              </label>
+              
+              <button
+                onClick={handleComplianceAgree}
+                disabled={!hasAgreed}
+                className={`w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-300 ${
+                  hasAgreed
+                    ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]'
+                    : 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {hasAgreed ? 'Continue to Login' : 'Please agree to continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

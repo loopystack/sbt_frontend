@@ -305,7 +305,32 @@ export default function TransactionManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {filteredTransactions.map((transaction) => (
+              {filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-6xl mb-4">💳</div>
+                      <h3 className="text-xl font-bold text-gray-300 mb-2">No Transactions Found</h3>
+                      <p className="text-gray-400 max-w-md">
+                        {error 
+                          ? "Failed to load transactions. Please check the backend connection."
+                          : filters.transaction_type || filters.user_id || filters.search
+                          ? "No transactions match your filters. Try adjusting your search criteria."
+                          : "Transaction history will appear here once users start making deposits or bets."}
+                      </p>
+                      {error && (
+                        <button
+                          onClick={() => fetchTransactions()}
+                          className="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredTransactions.map((transaction) => (
                 <tr key={transaction.id} className="hover:bg-gray-800/30 transition-colors">
                   <td className="px-6 py-4">
                     <div>
@@ -353,7 +378,8 @@ export default function TransactionManagement() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>

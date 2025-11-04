@@ -2,6 +2,7 @@
  * Generic API utility function for making HTTP requests
  * Handles authentication, error handling, and response parsing
  */
+import { reportError } from './rollbar';
 
 interface ApiRequestOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -23,8 +24,8 @@ export async function api<T = any>(
   url: string, 
   options: ApiRequestOptions = {}
 ): Promise<T> {
-  // Get base URL from environment or default to localhost
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://62.169.28.113:8000';
+  // Get base URL from environment or default to 18.199.221.93
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001';
   
   // Ensure URL is absolute
   const absoluteUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
@@ -104,6 +105,17 @@ export async function api<T = any>(
     
   } catch (error) {
     console.error('API Request failed:', error);
+    
+    // Report error to Rollbar
+    reportError(
+      error instanceof Error ? error : new Error(String(error)),
+      {
+        url: absoluteUrl,
+        method: requestOptions.method || 'GET',
+        status: error instanceof ApiError ? error.status : undefined,
+        details: error instanceof ApiError ? error.details : undefined,
+      }
+    );
     
     if (error instanceof ApiError) {
       throw error;

@@ -158,8 +158,7 @@ export default function InPlayOdds() {
   }
 
   return (
-    <section className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
-      {/* Claim Cards - Keeping as is */}
+    <section className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-slate-900 border border-cyan-400/50 rounded-lg p-4 text-white shadow-lg hover:shadow-cyan-500/25 transition-all duration-300 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent"></div>
@@ -225,74 +224,19 @@ export default function InPlayOdds() {
         </div>
       </div>
 
-      {/* Breadcrumb */}
       <div className="text-sm text-muted">
         Home &gt; In-Play Odds
       </div>
 
-      {/* Page Header - Clean Modern Design */}
-      <div className="relative bg-gradient-to-br from-surface via-surface to-cyan-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-        {/* Subtle pattern background */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(6, 182, 212) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
-        
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-transparent to-blue-500/10"></div>
-        
-        {/* Accent border animation */}
-        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-cyan-500 via-blue-500 to-indigo-500"></div>
-        
-        {/* Floating decorative elements */}
-        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-cyan-500/10 to-transparent rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-blue-500/10 to-transparent rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-        
-        <div className="relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Left: Icon and Title */}
-            <div className="flex items-start gap-4">
-              {/* Gradient Icon */}
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl blur-lg opacity-50 animate-pulse"></div>
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-              
-              {/* Title and Description */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text">
-                    Live In-Play Odds
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded animate-pulse">
-                    LIVE
-                  </span>
-                  <span className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/20 rounded-lg text-sm font-semibold text-cyan-600 dark:text-cyan-400">
-                    Real-time Updates
-                  </span>
-                </div>
-                <p className="text-sm text-muted max-w-3xl leading-relaxed">
-                  Live matches from top bookmakers with real-time odds updates. Bet on matches as they unfold.
-                </p>
-              </div>
-            </div>
-            
-            {/* Right: Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-2 lg:text-right flex-shrink-0">
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">5</div>
-                <div className="text-xs text-muted">Live Now</div>
-              </div>
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">Auto</div>
-                <div className="text-xs text-muted">Refresh</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-text">
+          Live Betting Odds and Scores
+        </h1>
+        <p className="text-muted text-sm max-w-4xl leading-relaxed">
+          This page lists in-play (LIVE now) matches from top bookmakers. The odds displayed are 
+          current average/highest across all bookmakers, providing you with real-time betting 
+          opportunities as matches unfold.
+        </p>
       </div>
 
       <div className="flex gap-1 overflow-x-auto scrollbar-hide">

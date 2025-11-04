@@ -122,8 +122,8 @@ export default function DroppingOdds() {
   }
 
   return (
-    <section className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
-      {/* Claim Cards - Keeping as is */}
+    <section className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
+      {/* Promotional Banners */}
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-gradient-to-tr from-slate-800 via-slate-700 to-slate-600 rounded-lg p-4 text-white shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden">
           <div className="absolute inset-0 bg-black/10"></div>
@@ -190,88 +190,32 @@ export default function DroppingOdds() {
       </div>
 
       {/* Breadcrumbs */}
-      <div className="text-sm text-muted">
+      <div className="text-sm text-muted px-2">
         Home &gt; Dropping Odds
       </div>
 
-      {/* Page Header - Clean Modern Design */}
-      <div className="relative bg-gradient-to-br from-surface via-surface to-red-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-        {/* Subtle pattern background */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(239, 68, 68) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
-        
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-red-500/10 via-transparent to-orange-500/10"></div>
-        
-        {/* Accent border animation */}
-        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-red-500 via-orange-500 to-amber-500"></div>
-        
-        {/* Floating decorative elements */}
-        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-red-500/10 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-orange-500/10 to-transparent rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Left: Icon and Title */}
-            <div className="flex items-start gap-4">
-              {/* Gradient Icon */}
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-red-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M12 13a1 1 0 100 2h5a1 1 0 001-1V9a1 1 0 10-2 0v2.586l-4.293-4.293a1 1 0 00-1.414 0L8 9.586 3.707 5.293a1 1 0 00-1.414 1.414l5 5a1 1 0 001.414 0L11 9.414 14.586 13H12z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-              </div>
-              
-              {/* Title and Description */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text">
-                    Dropping Odds Tracker
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 bg-red-500/10 border border-red-500/20 rounded-lg text-sm font-semibold text-red-600 dark:text-red-400">
-                    Real-time Analysis
-                  </span>
-                </div>
-                <p className="text-sm text-muted max-w-3xl leading-relaxed">
-                  Dropping odds occur when bookmakers reduce odds for a specific outcome. Identify these movements early for betting advantage.
-                </p>
-              </div>
-            </div>
-            
-            {/* Right: Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-2 lg:text-right flex-shrink-0">
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">24h</div>
-                <div className="text-xs text-muted">Tracking</div>
-              </div>
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">-20%</div>
-                <div className="text-xs text-muted">Min Drop</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Main Heading */}
+      <div className="space-y-3 sm:space-y-4 px-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-text">
+          Dropping Odds
+        </h1>
+        <p className="text-muted text-sm max-w-4xl">
+          Dropping odds occur when bookmakers reduce the odds for a specific outcome, often due to 
+          increased betting activity, player injuries, team strategy changes, or other factors. 
+          Identifying these movements early can give you an advantage in your betting strategy.
+        </p>
       </div>
 
-      {/* Filter Section - Enhanced Design */}
-      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-4">
-          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <h3 className="font-semibold text-text text-sm">Filters</h3>
-        </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="text-xs text-muted mb-1.5 block">Time Period</label>
+      {/* Filter Section */}
+      <div className="bg-surface border border-border rounded-lg p-3 sm:p-4 shadow-sm mx-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+          <span className="text-sm font-medium text-muted">Filter:</span>
+          
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
             <select
               value={selectedTimeFilter}
               onChange={(e) => setSelectedTimeFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 hover:bg-surface"
+              className="w-full sm:w-auto px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-200"
             >
               {timeFilters.map((filter) => (
                 <option key={filter.id} value={filter.id}>
@@ -279,14 +223,11 @@ export default function DroppingOdds() {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className="text-xs text-muted mb-1.5 block">Drop Percentage</label>
             <select
               value={selectedDroppingFilter}
               onChange={(e) => setSelectedDroppingFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-all duration-200 hover:bg-surface"
+              className="w-full sm:w-auto px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-200"
             >
               {droppingFilters.map((filter) => (
                 <option key={filter.id} value={filter.id}>
@@ -294,14 +235,11 @@ export default function DroppingOdds() {
                 </option>
               ))}
             </select>
-          </div>
 
-          <div>
-            <label className="text-xs text-muted mb-1.5 block">Bet Type</label>
             <select
               value={selectedTypeFilter}
               onChange={(e) => setSelectedTypeFilter(e.target.value)}
-              className="w-full px-4 py-2.5 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 hover:bg-surface"
+              className="w-full sm:w-auto px-3 py-2 bg-bg border border-border rounded-lg text-sm text-text focus:outline-none focus:ring-2 focus:ring-accent transition-all duration-200"
             >
               {typeFilters.map((filter) => (
                 <option key={filter.id} value={filter.id}>
@@ -313,39 +251,31 @@ export default function DroppingOdds() {
         </div>
       </div>
 
-      {/* Sport Tabs - Enhanced Design */}
-      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <h3 className="font-semibold text-text text-sm">Filter by Sport</h3>
-        </div>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-          {sports.map((sport) => (
-            <button
-              key={sport.name}
-              onClick={() => setSelectedSport(sport.name)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
-                selectedSport === sport.name
-                  ? "bg-gradient-to-r from-red-500 to-orange-600 text-white shadow-lg transform scale-105"
-                  : "bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md"
-              }`}
-            >
-              <span className="text-lg">{sport.icon}</span>
-              <span className="font-medium text-sm">{sport.name}</span>
-            </button>
-          ))}
-          
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md flex-shrink-0">
-            <span className="font-medium text-sm">More</span>
-            <span className="text-lg">⌄</span>
+      {/* Sport Tabs */}
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide px-2 pb-2">
+        {sports.map((sport) => (
+          <button
+            key={sport.name}
+            onClick={() => setSelectedSport(sport.name)}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 flex-shrink-0 ${
+              selectedSport === sport.name
+                ? "text-accent border-b-2 border-accent"
+                : "text-muted hover:text-accent hover:bg-bg"
+            }`}
+          >
+            <span className="text-base sm:text-lg">{sport.icon}</span>
+            <span className="font-medium text-sm sm:text-base">{sport.name}</span>
           </button>
-        </div>
+        ))}
+        
+        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 text-muted hover:text-text hover:bg-bg flex-shrink-0">
+          <span className="font-medium text-sm sm:text-base">More</span>
+          <span className="text-base sm:text-lg">⌄</span>
+        </button>
       </div>
 
       {/* Mobile Matches View */}
-      <div className="block lg:hidden space-y-4">
+      <div className="block lg:hidden space-y-3 px-2">
         {Object.entries(matches.reduce((groups, match) => {
           const key = `${match.sport} / ${match.country} / ${match.league}`;
           if (!groups[key]) {

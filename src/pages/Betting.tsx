@@ -87,35 +87,14 @@ export default function Betting() {
     }));
   };
   return (
-    <section className="space-y-4 sm:space-y-8 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
-      {/* Page Header - Clean Modern Design */}
-      <div className="relative bg-gradient-to-br from-surface via-surface to-yellow-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-        {/* Subtle pattern background */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(234, 179, 8) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
-        
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-yellow-500/10 via-transparent to-orange-500/10"></div>
-        
-        {/* Accent border animation */}
-        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-yellow-500 via-orange-500 to-red-500"></div>
-        
-        {/* Floating decorative elements */}
-        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-orange-500/10 to-transparent rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10 text-center space-y-4">
-          <div className="inline-block px-4 py-2 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-            <div className="text-xs sm:text-sm uppercase tracking-wider text-muted font-bold">
-              DISCOVER ONLINE BETTING IN 2025: ALL YOU NEED TO KNOW
-            </div>
-          </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text max-w-4xl mx-auto">
-            Learn Everything About Online Betting with Our Expert Guides
-          </h1>
-          <p className="text-sm text-muted max-w-3xl mx-auto">
-            Comprehensive guides, tips, and strategies from betting experts
-          </p>
+    <section className="space-y-4 sm:space-y-8 max-w-full overflow-hidden">
+      <div className="text-center space-y-4">
+        <div className="text-sm uppercase tracking-wider text-muted">
+          DISCOVER ONLINE BETTING IN 2025: ALL YOU NEED TO KNOW
         </div>
+        <h1 className="text-3xl font-bold text-text">
+          Learn Everything About Online Betting with Our Expert Guides
+        </h1>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {guideCategories.map((category) => (

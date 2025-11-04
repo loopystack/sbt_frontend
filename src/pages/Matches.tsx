@@ -130,8 +130,7 @@ export default function Matches() {
   }
 
   return (
-    <section className="space-y-4 sm:space-y-6 p-3 sm:p-4 lg:p-6 max-w-7xl mx-auto">
-      {/* Claim Cards - Keeping as is */}
+    <section className="space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div className="bg-gradient-to-br from-slate-800 via-slate-700 to-slate-600 rounded-2xl p-4 sm:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-400 relative overflow-hidden group">
           <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent"></div>
@@ -200,229 +199,128 @@ export default function Matches() {
         </div>
       </div>
 
-      {/* Breadcrumb */}
-      <div className="text-sm text-muted">
+      <div className="text-sm text-muted px-2">
         Home &gt; Next Matches &gt; Next Football Matches
       </div>
 
-      {/* Page Header - Clean Modern Design */}
-      <div className="relative bg-gradient-to-br from-surface via-surface to-blue-500/5 border-2 border-border rounded-2xl p-6 sm:p-8 shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden group">
-        {/* Subtle pattern background */}
-        <div className="absolute inset-0 opacity-[0.05]" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(99, 102, 241) 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
-        
-        {/* Mesh gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-blue-500/10 via-transparent to-purple-500/10"></div>
-        
-        {/* Accent border animation */}
-        <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-blue-500 via-indigo-500 to-purple-500"></div>
-        
-        {/* Floating decorative elements */}
-        <div className="absolute top-4 right-4 w-64 h-64 bg-gradient-to-br from-blue-500/10 to-transparent rounded-full blur-3xl"></div>
-        <div className="absolute bottom-4 left-1/2 w-48 h-48 bg-gradient-to-tl from-purple-500/10 to-transparent rounded-full blur-3xl"></div>
-        
-        <div className="relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            {/* Left: Icon and Title */}
-            <div className="flex items-start gap-4">
-              {/* Gradient Icon */}
-              <div className="relative flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
-                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M2 6a2 2 0 012-2h12a2 2 0 012 2v2a2 2 0 100 4v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 100-4V6z"/>
-                  </svg>
-                </div>
-              </div>
-              
-              {/* Title and Description */}
-              <div className="flex-1">
-                <div className="flex items-center gap-3 mb-2">
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-text">
-                    Next Football Matches
-                  </h1>
-                </div>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm font-semibold text-blue-600 dark:text-blue-400">
-                    Today, 14 Aug 2025
-                  </span>
-                </div>
-                <p className="text-sm text-muted max-w-3xl leading-relaxed">
-                  Betting odds displayed are average/highest across all bookmakers. Click on matches to see all available odds.
-                </p>
-              </div>
-            </div>
-            
-            {/* Right: Quick Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-1 gap-3 lg:gap-2 lg:text-right flex-shrink-0">
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">5</div>
-                <div className="text-xs text-muted">Live Matches</div>
-              </div>
-              <div className="bg-bg rounded-xl p-3 border border-border">
-                <div className="text-2xl font-bold text-accent">12</div>
-                <div className="text-xs text-muted">Bookmakers</div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="space-y-3 sm:space-y-4 px-2">
+        <h1 className="text-xl sm:text-2xl font-bold text-text">
+          Next Football Matches: Today, 14 Aug 2025
+        </h1>
+        <p className="text-muted text-sm max-w-4xl">
+          Betting odds displayed are average/highest across all bookmakers (premium + preferred). 
+          Click on matches to see all betting odds available. Add your chosen pick to My Coupon by clicking the odds.
+        </p>
       </div>
 
-      {/* Date Filters - Enhanced Design */}
-      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          <h3 className="font-semibold text-text text-sm">Select Date</h3>
-        </div>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-          {dates.map((date) => (
-            <button
-              key={date.id}
-              onClick={() => setSelectedDate(date.id)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
-                selectedDate === date.id
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg transform scale-105"
-                  : "bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md"
-              }`}
-            >
-              {date.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Sport Filters - Enhanced Design */}
-      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm">
-        <div className="flex items-center gap-2 mb-3">
-          <svg className="w-5 h-5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-          </svg>
-          <h3 className="font-semibold text-text text-sm">Filter by Sport</h3>
-        </div>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2">
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md flex-shrink-0">
-            <span className="text-lg">⭐</span>
-            <span className="font-medium text-sm">My Matches</span>
+      <div className="flex gap-2 overflow-x-auto scrollbar-hide px-2 pb-2">
+        {dates.map((date) => (
+          <button
+            key={date.id}
+            onClick={() => setSelectedDate(date.id)}
+            className={`px-3 sm:px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all duration-200 flex-shrink-0 ${
+              selectedDate === date.id
+                ? "bg-accent text-white shadow-lg"
+                : "bg-surface text-muted hover:text-text hover:bg-surface/80 border border-border"
+            }`}
+          >
+            {date.label}
           </button>
-          
-          {sports.map((sport) => (
-            <button
-              key={sport.name}
-              onClick={() => setSelectedSport(sport.name)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
-                selectedSport === sport.name
-                  ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg transform scale-105"
-                  : "bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md"
-              }`}
-            >
-              <span className="text-lg">{sport.icon}</span>
-              <span className="font-medium text-sm">{sport.name}</span>
-            </button>
-          ))}
-          
-          <button className="flex items-center gap-2 px-4 py-2.5 rounded-lg whitespace-nowrap transition-all duration-300 bg-bg text-muted hover:text-text hover:bg-surface border border-border hover:shadow-md flex-shrink-0">
-            <span className="font-medium text-sm">More</span>
-            <span className="text-lg">⌄</span>
+        ))}
+      </div>
+      <div className="flex gap-1 overflow-x-auto scrollbar-hide px-2 pb-2">
+        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 text-muted hover:text-text hover:bg-bg flex-shrink-0">
+          <span className="text-base sm:text-lg">⭐</span>
+          <span className="font-medium text-sm sm:text-base">My Matches</span>
+        </button>
+        
+        {sports.map((sport) => (
+          <button
+            key={sport.name}
+            onClick={() => setSelectedSport(sport.name)}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 flex-shrink-0 ${
+              selectedSport === sport.name
+                ? "text-accent border-b-2 border-accent"
+                : "text-muted hover:text-accent hover:bg-bg"
+            }`}
+          >
+            <span className="text-base sm:text-lg">{sport.icon}</span>
+            <span className="font-medium text-sm sm:text-base">{sport.name}</span>
           </button>
-        </div>
+        ))}
+        
+        <button className="flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-lg whitespace-nowrap transition-colors duration-200 text-muted hover:text-text hover:bg-bg flex-shrink-0">
+          <span className="font-medium text-sm sm:text-base">More</span>
+          <span className="text-base sm:text-lg">⌄</span>
+        </button>
       </div>
 
-      {/* View Tabs */}
-      <div className="flex gap-2 border-b border-border">
+      <div className="flex gap-1 border-b border-border px-2">
         {views.map((view) => (
           <button
             key={view.id}
             onClick={() => setSelectedView(view.id)}
-            className={`px-4 py-3 text-sm font-semibold transition-all duration-200 relative ${
+            className={`px-3 sm:px-4 py-2 sm:py-3 text-sm font-medium transition-colors duration-200 ${
               selectedView === view.id
-                ? "text-accent"
+                ? "text-accent border-b-2 border-accent"
                 : "text-muted hover:text-accent"
             }`}
           >
             {view.label}
-            {selectedView === view.id && (
-              <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-            )}
           </button>
         ))}
       </div>
 
-      {/* Mobile Match Cards - Enhanced Design */}
-      <div className="block lg:hidden space-y-4">
+      <div className="block lg:hidden space-y-3 px-2">
         {matches.map((match) => (
-          <div key={match.id} className="group relative bg-surface border border-border rounded-xl p-4 hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden">
-            {/* Hover gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            
-            <div className="relative z-10 space-y-4">
-              {/* Match Header */}
+          <div key={match.id} className="bg-surface border border-border rounded-lg p-3 sm:p-4 hover:bg-bg/50 transition-colors cursor-pointer">
+            <div className="space-y-3">
               <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xs font-bold">
-                      ⚽
-                    </div>
-                    <span className="text-xs text-muted">{match.league}</span>
-                  </div>
-                  <h3 className="font-bold text-text text-base leading-tight">
+                  <h3 className="font-semibold text-text text-sm sm:text-base leading-tight line-clamp-2">
                     {match.match}
                   </h3>
+                  <p className="text-xs sm:text-sm text-muted mt-1">{match.league}</p>
                 </div>
-                <div className="flex flex-col items-end gap-1 ml-3">
-                  <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{match.time}</span>
-                  </div>
+                <div className="flex flex-col items-end gap-2 ml-3">
+                  <span className="text-xs sm:text-sm font-semibold text-text">{match.time}</span>
                   <span className="text-xs text-muted">{match.date}</span>
                 </div>
               </div>
               
-              {/* Odds Grid */}
-              <div className="grid grid-cols-3 gap-3">
-                <div className="bg-bg rounded-lg p-3 text-center hover:bg-surface transition-colors">
-                  <div className="text-xs text-muted mb-2 font-medium">Home</div>
-                  <div className={`text-base font-bold ${
-                    match.bestOdds === 'odds1' 
-                      ? 'text-green-500 bg-green-500/10 px-2 py-1 rounded-lg' 
-                      : 'text-text'
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                <div className="text-center">
+                  <div className="text-xs text-muted mb-1">1</div>
+                  <div className={`text-xs sm:text-sm font-semibold ${
+                    match.bestOdds === 'odds1' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'
                   }`}>
                     {formatOdds(match.odds1)}
                   </div>
                 </div>
-                <div className="bg-bg rounded-lg p-3 text-center hover:bg-surface transition-colors">
-                  <div className="text-xs text-muted mb-2 font-medium">Draw</div>
-                  <div className={`text-base font-bold ${
-                    match.bestOdds === 'oddsX' 
-                      ? 'text-green-500 bg-green-500/10 px-2 py-1 rounded-lg' 
-                      : 'text-text'
+                <div className="text-center">
+                  <div className="text-xs text-muted mb-1">X</div>
+                  <div className={`text-xs sm:text-sm font-semibold ${
+                    match.bestOdds === 'oddsX' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'
                   }`}>
                     {formatOdds(match.oddsX)}
                   </div>
                 </div>
-                <div className="bg-bg rounded-lg p-3 text-center hover:bg-surface transition-colors">
-                  <div className="text-xs text-muted mb-2 font-medium">Away</div>
-                  <div className={`text-base font-bold ${
-                    match.bestOdds === 'odds2' 
-                      ? 'text-green-500 bg-green-500/10 px-2 py-1 rounded-lg' 
-                      : 'text-text'
+                <div className="text-center">
+                  <div className="text-xs text-muted mb-1">2</div>
+                  <div className={`text-xs sm:text-sm font-semibold ${
+                    match.bestOdds === 'odds2' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'
                   }`}>
                     {formatOdds(match.odds2)}
                   </div>
                 </div>
               </div>
               
-              {/* Footer */}
               <div className="flex items-center justify-between pt-3 border-t border-border/50">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <svg className="w-4 h-4 text-muted" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="text-xs text-muted">{match.bookmakers} bookmakers</span>
-                  </div>
+                <div className="text-center">
+                  <div className="text-xs text-muted">Bookmakers</div>
+                  <div className="text-sm font-bold text-accent">{match.bookmakers}</div>
                 </div>
-                <button className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white text-sm font-semibold rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105">
+                <button className="px-3 sm:px-4 py-2 bg-accent text-white text-xs sm:text-sm font-semibold rounded-lg hover:bg-accent/90 transition-colors hover:scale-105">
                   View Odds
                 </button>
               </div>
@@ -431,90 +329,49 @@ export default function Matches() {
         ))}
       </div>
 
-      {/* Desktop Table View - Enhanced Design */}
-      <div className="hidden lg:block bg-surface border border-border rounded-xl overflow-hidden shadow-lg">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border-b border-border">
-          <div className="col-span-2 text-sm font-semibold text-text flex items-center gap-2">
-            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
-            Date
-          </div>
-          <div className="col-span-1 text-sm font-semibold text-text flex items-center gap-2">
-            <svg className="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            Time
-          </div>
-          <div className="col-span-4 text-sm font-semibold text-text">Match</div>
-          <div className="col-span-1 text-sm font-semibold text-text text-center">Home</div>
-          <div className="col-span-1 text-sm font-semibold text-text text-center">Draw</div>
-          <div className="col-span-1 text-sm font-semibold text-text text-center">Away</div>
-          <div className="col-span-2 text-sm font-semibold text-text text-center">Bookmakers</div>
+      <div className="hidden lg:block">
+        <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg border border-border rounded-lg">
+          <div className="col-span-2 text-sm font-medium text-muted">Date</div>
+          <div className="col-span-2 text-sm font-medium text-muted">Time</div>
+          <div className="col-span-4 text-sm font-medium text-muted">Match</div>
+          <div className="col-span-1 text-sm font-medium text-muted text-center">1</div>
+          <div className="col-span-1 text-sm font-medium text-muted text-center">X</div>
+          <div className="col-span-1 text-sm font-medium text-muted text-center">2</div>
+          <div className="col-span-1 text-sm font-medium text-muted text-center">B's</div>
         </div>
 
-        {/* Table Body */}
-        <div className="divide-y divide-border">
-          {matches.map((match, index) => (
-            <div 
-              key={match.id} 
-              className="group grid grid-cols-12 gap-4 px-6 py-5 hover:bg-gradient-to-r hover:from-blue-500/5 hover:to-purple-500/5 transition-all duration-300 cursor-pointer"
-            >
-              <div className="col-span-2 flex items-center">
-                <div className="text-sm text-muted font-medium">{match.date}</div>
-              </div>
-              <div className="col-span-1 flex items-center">
-                <div className="px-2 py-1 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-                  <span className="text-sm font-bold text-blue-600 dark:text-blue-400">{match.time}</span>
+        <div className="space-y-4">
+          {matches.map((match) => (
+            <div key={match.id} className="bg-surface border border-border rounded-lg p-4 hover:bg-bg/50 transition-colors cursor-pointer">
+              <div className="grid grid-cols-12 gap-4 items-center">
+                <div className="col-span-2 text-sm text-muted">{match.date}</div>
+                <div className="col-span-2 text-sm text-muted">{match.time}</div>
+                <div className="col-span-4">
+                  <div className="font-medium">{match.match}</div>
+                  <div className="text-xs text-muted">{match.league}</div>
                 </div>
-              </div>
-              <div className="col-span-4 flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                  ⚽
+                <div className="col-span-1 text-center">
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${
+                    match.bestOdds === 'odds1' ? 'bg-green-500/20 text-green-400' : 'text-muted'
+                  }`}>
+                    {match.odds1}
+                  </span>
                 </div>
-                <div>
-                  <div className="font-bold text-text group-hover:text-accent transition-colors">{match.match}</div>
-                  <div className="text-xs text-muted mt-0.5">{match.league}</div>
+                <div className="col-span-1 text-center">
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${
+                    match.bestOdds === 'oddsX' ? 'bg-green-500/20 text-green-400' : 'text-muted'
+                  }`}>
+                    {match.oddsX}
+                  </span>
                 </div>
-              </div>
-              <div className="col-span-1 flex items-center justify-center">
-                <button className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                  match.bestOdds === 'odds1' 
-                    ? 'bg-green-500/20 text-green-500 border-2 border-green-500/30 shadow-lg scale-110' 
-                    : 'bg-bg text-text hover:bg-surface border border-border hover:shadow-md'
-                }`}>
-                  {formatOdds(match.odds1)}
-                </button>
-              </div>
-              <div className="col-span-1 flex items-center justify-center">
-                <button className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                  match.bestOdds === 'oddsX' 
-                    ? 'bg-green-500/20 text-green-500 border-2 border-green-500/30 shadow-lg scale-110' 
-                    : 'bg-bg text-text hover:bg-surface border border-border hover:shadow-md'
-                }`}>
-                  {formatOdds(match.oddsX)}
-                </button>
-              </div>
-              <div className="col-span-1 flex items-center justify-center">
-                <button className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200 ${
-                  match.bestOdds === 'odds2' 
-                    ? 'bg-green-500/20 text-green-500 border-2 border-green-500/30 shadow-lg scale-110' 
-                    : 'bg-bg text-text hover:bg-surface border border-border hover:shadow-md'
-                }`}>
-                  {formatOdds(match.odds2)}
-                </button>
-              </div>
-              <div className="col-span-2 flex items-center justify-center">
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1 px-3 py-1.5 bg-accent/10 border border-accent/20 rounded-lg">
-                    <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                      <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                    </svg>
-                    <span className="text-sm font-bold text-accent">{match.bookmakers}</span>
-                  </div>
+                <div className="col-span-1 text-center">
+                  <span className={`px-2 py-1 rounded text-sm font-medium ${
+                    match.bestOdds === 'odds2' ? 'bg-green-500/20 text-green-400' : 'text-muted'
+                  }`}>
+                    {match.odds2}
+                  </span>
                 </div>
+                <div className="col-span-1 text-center text-muted">{match.bookmakers}</div>
               </div>
             </div>
           ))}

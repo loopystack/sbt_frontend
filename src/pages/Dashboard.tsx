@@ -176,11 +176,12 @@ export default function Dashboard() {
     }
   };
 
-  // Clear notifications when user visits Dashboard
+  // Clear notifications when user visits Dashboard (only once)
   useEffect(() => {
     console.log('🏠 Dashboard visited - clearing notifications');
     clearNotifications();
-  }, [clearNotifications]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array - only run once on mount
 
   // Handle Google OAuth success redirect
   useEffect(() => {

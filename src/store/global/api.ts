@@ -10,8 +10,8 @@ import type {
 } from './types';
 import { logoutAction } from '../user/actions';
 
-export const BASE_URL = 'http://62.169.28.113:8000';
-// export const BASE_URL: string = 'http://localhost:5000';
+export const BASE_URL = 'http://18.199.221.93:5001';
+// export const BASE_URL: string = 'http://18.199.221.93:5000';
 
 export const defaultConfig: Partial<ApiConfig> = {
     timeout: 30000,

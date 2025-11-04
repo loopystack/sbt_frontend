@@ -301,7 +301,32 @@ export default function BettingManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-800">
-              {filteredBettingRecords.map((record) => (
+              {filteredBettingRecords.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="text-6xl mb-4">🎯</div>
+                      <h3 className="text-xl font-bold text-gray-300 mb-2">No Betting Records Found</h3>
+                      <p className="text-gray-400 max-w-md">
+                        {error 
+                          ? "Failed to load betting records. Please check the backend connection."
+                          : filters.status || filters.user_id || filters.search
+                          ? "No records match your filters. Try adjusting your search criteria."
+                          : "Start placing bets to see betting history here."}
+                      </p>
+                      {error && (
+                        <button
+                          onClick={() => fetchBettingRecords()}
+                          className="mt-4 px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors"
+                        >
+                          Retry
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredBettingRecords.map((record) => (
                 <tr key={record.id} className="hover:bg-gray-800/30 transition-colors">
                   <td className="px-6 py-4">
                     <div>
@@ -372,7 +397,8 @@ export default function BettingManagement() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>
