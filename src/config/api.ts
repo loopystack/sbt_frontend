@@ -56,14 +56,22 @@ export const getBaseUrl = (): string => {
   const port = getBackendPort();
   const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
   
-  // If using the same host as frontend and port is 80/443, omit port
+  // Get current frontend port (empty string means default port 80/443)
   const currentHost = window.location.hostname;
   const currentPort = window.location.port;
+  const isDefaultPort = !currentPort || currentPort === '80' || currentPort === '443';
   
-  if (host === currentHost && (port === '80' || port === '443' || !currentPort)) {
+  // Only omit port if:
+  // 1. Frontend and backend are on same host AND
+  // 2. Backend port matches frontend port (both using default ports or both using same non-default port)
+  if (host === currentHost && (
+    (isDefaultPort && (port === '80' || port === '443')) ||
+    (!isDefaultPort && currentPort === port)
+  )) {
     return `${protocol}//${host}`;
   }
   
+  // Otherwise, always include the port for backend
   return `${protocol}//${host}:${port}`;
 };
 
