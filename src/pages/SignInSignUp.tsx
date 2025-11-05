@@ -53,18 +53,10 @@ export default function SignInSignUp() {
   useEffect(() => {
     // Redirect authenticated users away from login page
     if (!authLoading && isAuthenticated) {
-      console.log('User is authenticated, redirecting to dashboard');
       navigate('/dashboard');
       return;
     }
     
-    // Debug logging
-    console.log('SignInSignUp auth state:', { 
-      authLoading, 
-      isAuthenticated, 
-      hasToken: !!localStorage.getItem('access_token'),
-      hasReduxToken: !!localStorage.getItem('token')
-    });
   }, [isAuthenticated, authLoading, navigate]);
 
   useEffect(() => {
@@ -127,7 +119,6 @@ export default function SignInSignUp() {
         setRecaptchaToken(token);
         setRecaptchaVerified(true);
         setRecaptchaError("");
-        console.log('✅ reCAPTCHA verified successfully');
       } else {
         setRecaptchaVerified(false);
         setRecaptchaError(response.message || 'reCAPTCHA verification failed');
@@ -155,7 +146,6 @@ export default function SignInSignUp() {
 
 
   const handleGoogleLogin = () => {
-    console.log('🚀 Google login button clicked');
     
     setIsLoading(true);
     setError("");
@@ -185,11 +175,6 @@ export default function SignInSignUp() {
       `access_type=offline&` +
       `prompt=select_account`; // This allows users to select email
     
-    console.log('🔍 Frontend OAuth Debug:');
-    console.log('   Current Origin:', currentOrigin);
-    console.log('   Backend URL:', backendUrl);
-    console.log('   Redirect URI:', `${backendUrl}/api/auth/google/callback`);
-    console.log('✅ Redirecting to Google OAuth with dynamic redirect:', `${backendUrl}/api/auth/google/callback`);
     window.location.href = googleOAuthUrl;
   };
 
@@ -612,7 +597,6 @@ export default function SignInSignUp() {
             <button 
               onClick={(e) => {
                 e.preventDefault();
-                console.log('🔘 Google button clicked!');
                 handleGoogleLogin();
               }}
               disabled={isLoading}

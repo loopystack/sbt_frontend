@@ -35,15 +35,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [justLoggedOut, setJustLoggedOut] = useState(false);
 
   const checkAuth = async () => {
-    console.log('🔍 checkAuth called, justLoggedOut:', justLoggedOut);
     
     // Check if user just logged out (persistent across page reloads)
     const userJustLoggedOut = localStorage.getItem('userJustLoggedOut') === 'true';
-    console.log('🔍 User just logged out (persistent):', userJustLoggedOut);
     
     // If user just logged out, don't try to authenticate
     if (justLoggedOut || userJustLoggedOut) {
-      console.log('🔍 User just logged out, skipping authentication check');
       setIsAuthenticated(false);
       setUser(null);
       setIsLoading(false);
@@ -57,11 +54,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const reduxToken = localStorage.getItem('token');
     const authToken = token || reduxToken;
     
-    console.log('🔍 Token check:', { 
-      token: !!token, 
-      reduxToken: !!reduxToken, 
-      authToken: !!authToken 
-    });
+
     
     if (authToken) {
       try {
@@ -81,7 +74,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         // Check if it's an authentication error (token expired/invalid)
         if (error?.status === 401 || error?.message?.includes('401') || 
             error?.message?.includes('Unauthorized') || error?.message?.includes('Invalid token')) {
-          console.log("Token expired or invalid - logging out user");
           
           // Clear all tokens and state
           tokenManager.clearTokens();
@@ -100,7 +92,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Show a brief message that session expired
           const currentPath = window.location.pathname;
           if (currentPath !== '/signin' && currentPath !== '/') {
-            console.log("Session expired - redirecting to sign in");
+
             setTimeout(() => {
               window.location.href = '/signin?message=session_expired';
             }, 500);
@@ -145,7 +137,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-    console.log('🚪 Logout called - clearing all tokens and state');
+
     
     // Set flags FIRST to prevent any authentication checks
     setJustLoggedOut(true);
@@ -175,12 +167,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       detail: { isAuthenticated: false, user: null } 
     }));
     
-    console.log('🚪 After logout - all tokens cleared, setting persistent flag');
+
     
     // Set the persistent flag AFTER clearing everything
     setTimeout(() => {
       localStorage.setItem('userJustLoggedOut', 'true');
-      console.log('🚪 Persistent logout flag set, reloading page');
       window.location.reload();
     }, 50);
   };
@@ -222,7 +213,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Periodic token validation (check every 5 minutes)
     const tokenValidationInterval = setInterval(() => {
       if (isAuthenticated && !tokenManager.isAuthenticated()) {
-        console.log('Token expired during periodic check - logging out');
+
         // Token is expired, trigger logout
         const currentPath = window.location.pathname;
         if (currentPath !== '/signin' && currentPath !== '/') {

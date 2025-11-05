@@ -43,40 +43,16 @@ export class CookieManager {
   // Initialize analytics (Google Analytics, etc.)
   static initializeAnalytics(): void {
     if (!this.isAllowed('analytics')) {
-      console.log('Analytics cookies not allowed');
       return;
     }
 
-    // Example: Initialize Google Analytics
-    // You can replace this with your actual analytics implementation
-    console.log('Initializing analytics...');
-    
-    // Example Google Analytics implementation:
-    /*
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('consent', 'update', {
-        'analytics_storage': 'granted'
-      });
-    }
-    */
   }
 
   // Initialize marketing cookies
   static initializeMarketing(): void {
     if (!this.isAllowed('marketing')) {
-      console.log('Marketing cookies not allowed');
       return;
     }
-
-    // Example: Initialize marketing tools
-    console.log('Initializing marketing tools...');
-    
-    // Example Facebook Pixel implementation:
-    /*
-    if (typeof window !== 'undefined' && window.fbq) {
-      window.fbq('consent', 'grant');
-    }
-    */
   }
 
   // Clear all non-essential cookies
@@ -92,7 +68,6 @@ export class CookieManager {
     // Clear marketing cookies
     if (!this.isAllowed('marketing')) {
       // Clear marketing-related cookies
-      console.log('Clearing marketing cookies...');
     }
   }
 
@@ -100,7 +75,7 @@ export class CookieManager {
   static resetConsent(): void {
     localStorage.removeItem(this.COOKIE_CONSENT_KEY);
     localStorage.removeItem(this.COOKIE_PREFERENCES_KEY);
-    console.log('Cookie consent reset');
+
   }
 }
 

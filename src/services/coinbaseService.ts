@@ -62,7 +62,6 @@ class CoinbaseService {
         cancel_url: `${window.location.origin}/profile`
       };
 
-      console.log('Creating Coinbase Commerce payment with payload:', payload);
 
       // Use backend proxy to avoid CORS issues
       const response = await fetch(`${getBaseUrl()}/api/deposits/coinbase/create-payment`, {
@@ -74,7 +73,6 @@ class CoinbaseService {
         body: JSON.stringify(payload)
       });
 
-      console.log('Backend proxy response status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -83,7 +81,6 @@ class CoinbaseService {
       }
 
       const data = await response.json();
-      console.log('Coinbase Commerce API success response:', data);
       return data;
     } catch (error) {
       console.error('Coinbase Commerce payment creation error:', error);
@@ -112,7 +109,6 @@ class CoinbaseService {
   }
 
   redirectToPayment(paymentUrl: string): void {
-    console.log('Redirecting to Coinbase Commerce payment:', paymentUrl);
     window.location.href = paymentUrl;
   }
 

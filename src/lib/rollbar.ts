@@ -25,7 +25,6 @@ if (ROLLBAR_ENABLED && ROLLBAR_ACCESS_TOKEN) {
         },
       },
     });
-    console.log('✅ Rollbar initialized successfully');
   } catch (error) {
     console.error('⚠️  Failed to initialize Rollbar:', error);
   }

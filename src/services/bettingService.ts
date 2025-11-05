@@ -66,21 +66,6 @@ export const bettingService = {
       throw new Error('No access token available');
     }
 
-    console.log('🚀 Sending betting record to API:', {
-      url: `${BASE_URL}/records`,
-      fullUrl: `${getBaseUrl()}${BASE_URL}/records`,
-      token: token ? `${token.substring(0, 20)}...` : 'NONE',
-      record,
-      matchDateDetails: record.match_date ? {
-        originalValue: record.match_date,
-        parsedDate: new Date(record.match_date),
-        parsedHour: new Date(record.match_date).getHours(),
-        parsedMinute: new Date(record.match_date).getMinutes(),
-        utcHour: new Date(record.match_date).getUTCHours(),
-        utcMinute: new Date(record.match_date).getUTCMinutes()
-      } : null
-    });
-
     try {
       const result = await api<BettingRecord>(`${BASE_URL}/records`, {
         method: 'POST',
@@ -91,7 +76,6 @@ export const bettingService = {
         body: JSON.stringify(record),
       });
       
-      console.log('✅ API returned success:', result);
       return result;
     } catch (error: any) {
       console.error('❌ API call failed with full details:', {

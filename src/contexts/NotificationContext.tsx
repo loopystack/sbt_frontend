@@ -51,7 +51,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Add notification immediately when a new bet is placed
   const addNewBetNotification = (betId: number, matchTeams: string, betAmount: number, potentialWin?: number) => {
-    console.log('🎯 Adding new bet notification:', { betId, matchTeams, betAmount, potentialWin });
     
     const newBetNotification: BetNotification = {
       id: betId,
@@ -75,14 +74,12 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     const currentPath = window.location.pathname;
     if (currentPath !== '/dashboard') {
       setIsRead(false);
-      console.log('🔔 Showing notification for new bet:', matchTeams);
     }
   };
 
   // Check for newly settled bets
   const checkSettledBets = async () => {
     if (!isAuthenticated || !isInitialized) {
-      console.log('⏳ Skipping settlement check - not authenticated or not initialized');
       return;
     }
 
@@ -93,10 +90,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       // Get recent betting records to check for newly settled bets
       const response = await bettingService.getBettingRecords(1, 100); // Get recent 100 records
       
-      console.log('🔍 Checking for settled bets...');
-      console.log('📊 Total betting records found:', response.records.length);
-      console.log('🎯 Current user bets:', Array.from(userBets));
-      console.log('📋 Previous bet states:', Array.from(previousBetStates.entries()));
       
       // Track current user's bets
       const currentUserBets = new Set<number>();
@@ -108,14 +101,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         // Track all user bets
         currentUserBets.add(record.id);
         
-        // Debug log for each bet
-        console.log(`📝 Checking bet ${record.id}:`, {
-          match_teams: record.match_teams,
-          bet_status: record.bet_status,
-          is_settled: record.is_settled,
-          settlement_date: record.settlement_date,
-          updated_at: record.updated_at
-        });
         
         // Get previous state of this bet
         const previousState = previousBetStates.get(record.id);
@@ -123,20 +108,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         // Special logging for Sevilla vs Real Betis
         if (record.match_teams?.toLowerCase().includes('sevilla') && 
             record.match_teams?.toLowerCase().includes('betis')) {
-          console.log('⚽ Checking Sevilla vs Real Betis bet:', {
-            id: record.id,
-            match_teams: record.match_teams,
-            bet_status: record.bet_status,
-            is_settled: record.is_settled,
-            settlement_date: record.settlement_date,
-            updated_at: record.updated_at,
-            previousState: previousState ? {
-              bet_status: previousState.bet_status,
-              is_settled: previousState.is_settled,
-              settlement_date: previousState.settlement_date,
-              updated_at: previousState.updated_at
-            } : 'No previous state'
-          });
         }
         
         // Check if this is a newly settled bet
@@ -169,25 +140,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         );
         
         if (isNewSettlement) {
-          console.log('🎉 Found newly settled bet:', {
-            id: record.id,
-            match: record.match_teams,
-            currentStatus: record.bet_status,
-            previousStatus: previousState?.bet_status,
-            currentSettlementDate: record.settlement_date,
-            previousSettlementDate: previousState?.settlement_date,
-            amount: record.bet_amount,
-            potential_win: record.potential_win,
-            actual_profit: record.actual_profit,
-            updatedAt: record.updated_at,
-            statusChanged: statusChanged && isSettled,
-            isNewlySettled: isNewlySettled,
-            settlementDateChanged: settlementDateChanged,
-            isRecentlyUpdated: isRecentlyUpdated,
-            // Special check for Sevilla vs Real Betis
-            isSevillaBetis: record.match_teams?.toLowerCase().includes('sevilla') && 
-                           record.match_teams?.toLowerCase().includes('betis')
-          });
           
           newlySettled.push({
             id: record.id,
@@ -220,7 +172,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       setUserBets(currentUserBets);
 
       if (newlySettled.length > 0) {
-        console.log('🎉 Found', newlySettled.length, 'newly settled bets');
         
         // Add new settled bets to the notification list
         setBetNotifications(prevBets => {
@@ -233,10 +184,8 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         const currentPath = window.location.pathname;
         if (currentPath !== '/dashboard') {
           setIsRead(false);
-          console.log('🔔 Showing notification for', newlySettled.length, 'settled bets');
         }
       } else {
-        console.log('✅ No newly settled bets found');
       }
       
     } catch (error) {
@@ -246,7 +195,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Clear all notifications - memoized to prevent infinite loops
   const clearNotifications = useCallback(() => {
-    console.log('🧹 Clearing all notifications');
     setBetNotifications([]);
     setIsRead(true);
     // Don't clear userBets - we need to keep tracking them to detect new settlements
@@ -259,7 +207,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
 
   // Trigger immediate settlement check (useful when match results are manually updated)
   const triggerSettlementCheck = async () => {
-    console.log('🔄 Manual settlement check triggered');
     await checkSettledBets();
   };
 
@@ -291,8 +238,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
         setPreviousBetStates(initialStates);
         setIsInitialized(true);
         
-        console.log('🎯 Initialized tracking for', initialBets.size, 'user bets');
-        console.log('📊 Initial states set for bets:', Array.from(initialStates.keys()));
         
         // Wait a bit before first check to avoid false positives
         setTimeout(async () => {
@@ -316,7 +261,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     const handleRouteChange = () => {
       const currentPath = window.location.pathname;
       if (currentPath === '/dashboard') {
-        console.log('🏠 Route changed to Dashboard - clearing notifications');
         clearNotifications();
       }
     };
@@ -336,7 +280,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // Listen for new bet placement events and match result updates
   useEffect(() => {
     const handleNewBet = (event: CustomEvent) => {
-      console.log('🎯 New bet placed, updating tracking:', event.detail);
+
       
       // Refresh user bets tracking when a new bet is placed
       const refreshUserBets = async () => {
@@ -347,7 +291,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
           const currentBets = new Set(response.records.map((record: any) => record.id));
           setUserBets(currentBets);
           
-          console.log('🔄 Updated user bets tracking:', currentBets.size, 'total bets');
         } catch (error) {
           console.error('Error refreshing user bets:', error);
         }
@@ -357,7 +300,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
     };
 
     const handleMatchResultUpdate = (event: CustomEvent) => {
-      console.log('⚽ Match result updated, checking for settlements:', event.detail);
       
       // Trigger immediate settlement check when match results are updated
       triggerSettlementCheck();
@@ -376,16 +318,6 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
   // Debug logging
   useEffect(() => {
     if (betNotificationsCount > 0) {
-      console.log('🔔 Current notification state:', {
-        betNotificationsCount,
-        betNotifications: betNotifications.map(bet => ({
-          id: bet.id,
-          match: bet.match_teams,
-          status: bet.bet_status,
-          isNewBet: bet.isNewBet
-        })),
-        isRead
-      });
     }
   }, [betNotificationsCount, betNotifications, isRead]);
 

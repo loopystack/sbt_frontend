@@ -22,11 +22,9 @@ export default function Home() {
       // New format: extract just the ID part
       const matchId = highlightParam.split('_')[0];
       highlightMatchId = parseInt(matchId);
-      console.log('🎯 New highlight format detected:', { highlightParam, extractedId: matchId });
     } else {
       // Old format: just a number
       highlightMatchId = parseInt(highlightParam);
-      console.log('🎯 Old highlight format detected:', highlightMatchId);
     }
   }
 

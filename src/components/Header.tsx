@@ -45,7 +45,7 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
   };
 
   const handleLogoClick = () => {
-    console.log('Logo clicked - clearing selectedLeague and navigating to home');
+    
     setSelectedLeague(null);
     
     // Scroll to top immediately (especially important for mobile)
@@ -57,7 +57,7 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
   };
 
   const handleMobileNavClick = (path: string) => {
-    console.log(`Mobile nav clicked - clearing selectedLeague and navigating to ${path}`);
+    
     setSelectedLeague(null);
     
     // Scroll to top immediately (especially important for mobile)

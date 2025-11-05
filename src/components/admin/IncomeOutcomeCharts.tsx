@@ -76,16 +76,13 @@ export default function IncomeOutcomeCharts() {
       // Try to fetch from the new financial analytics endpoint first
       try {
         const analyticsResponse = await apiMethods.get(`/api/admin/financial-analytics?days=${daysCount}`);
-        console.log('📊 Financial Analytics Response:', analyticsResponse);
         
         // Use the analytics data to create chart data
         const processedData = createChartDataFromAnalytics(analyticsResponse, startDate, endDate, selectedPeriod);
-        console.log('📈 Processed Financial Data from Analytics:', processedData);
         
         setChartData(processedData);
         return; // Exit early if successful
       } catch (analyticsError) {
-        console.log('📊 Analytics endpoint failed, falling back to individual endpoints:', analyticsError);
       }
 
       // Fallback to individual endpoints
@@ -94,10 +91,6 @@ export default function IncomeOutcomeCharts() {
         apiMethods.get(`/api/admin/betting-records?page=1&size=50`)
       ]);
 
-      console.log('📊 Financial Data Response:', {
-        transactions: transactionsResponse,
-        bettingRecords: bettingResponse
-      });
 
       const processedData = processFinancialData(
         transactionsResponse.transactions || transactionsResponse,
@@ -107,7 +100,6 @@ export default function IncomeOutcomeCharts() {
         selectedPeriod
       );
 
-      console.log('📈 Processed Financial Data:', processedData);
 
       setChartData(processedData);
     } catch (err: any) {

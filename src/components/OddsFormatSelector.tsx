@@ -28,7 +28,6 @@ export default function OddsFormatSelector({ className = '' }: OddsFormatSelecto
   const formats: OddsFormat[] = ['moneyline', 'decimal', 'fractional'];
 
   const handleFormatChange = (format: OddsFormat) => {
-    console.log('OddsFormatSelector: Changing format from', oddsFormat, 'to', format);
     setOddsFormat(format);
     setIsOpen(false);
   };

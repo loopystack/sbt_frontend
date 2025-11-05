@@ -15,7 +15,7 @@ export class OddsConverter {
     }
     
     const cleanString = oddsString.trim();
-    console.log(`OddsConverter: Parsing "${cleanString}"`);
+    
     
     // Check if it's already a decimal (contains a dot)
     if (cleanString.includes('.')) {
@@ -47,16 +47,16 @@ export class OddsConverter {
         if (numericValue > 100) {
           // Large numbers are likely moneyline odds
           const result = this.moneylineToDecimal(numericValue);
-          console.log(`OddsConverter: Large number ${numericValue} treated as moneyline -> ${result}`);
+          
           return result;
         } else if (numericValue >= 1.0 && numericValue <= 10.0) {
           // Numbers between 1-10 are likely decimal odds
-          console.log(`OddsConverter: Number ${numericValue} treated as decimal`);
+          
           return numericValue;
         } else {
           // Default to treating as positive moneyline
           const result = this.moneylineToDecimal(numericValue);
-          console.log(`OddsConverter: Number ${numericValue} treated as moneyline -> ${result}`);
+          
           return result;
         }
       }

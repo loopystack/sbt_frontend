@@ -52,7 +52,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(oddsString);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`RightSidebar: Converting ${oddsString} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
 
@@ -90,7 +89,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
   const fetchValueBets = async () => {
     try {
       setLoading(true);
-      console.log('🎯 Fetching value betting opportunities...');
       
       // Try the new value-bets endpoint
       const endpoints = [
@@ -104,7 +102,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       
       for (const endpoint of endpoints) {
         try {
-          console.log('🔗 Trying value bets endpoint:', endpoint);
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
           
@@ -127,23 +124,16 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
           });
           
           clearTimeout(timeoutId);
-          console.log('📡 Value bets API Response status:', response.status);
           
           if (response.ok) {
             const data = await response.json();
-            console.log('🎯 Value bets data received:', data);
             
             if (data.value_bets && data.value_bets.length > 0) {
-              console.log(`✅ Found ${data.value_bets.length} value betting opportunities!`);
-              console.log('📊 Value bets summary:', data.value_bets.map((bet: any) => 
-                `${bet.home_team} vs ${bet.away_team} - ${bet.best_bet_type} - EV: ${bet.expected_value_percent}% (${bet.league})`
-              ));
               
               setValueBets(data.value_bets);
               success = true;
               break;
             } else {
-              console.log('⚠️ No value bets found with current criteria');
               continue;
             }
           } else {
@@ -156,13 +146,11 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       }
       
       if (!success) {
-        console.log('🔄 No value bets found, using sample value betting data...');
         // Use sample value betting data when API fails or no value bets found
         setValueBets(getSampleValueBets());
       }
     } catch (error) {
       console.error('❌ Error fetching value bets:', error);
-      console.log('🔄 Using sample value betting data due to error');
       // Use sample data when there's an error
       setValueBets(getSampleValueBets());
     } finally {
@@ -239,7 +227,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
 
   // Handle click to view matches for a specific league with match highlighting
   const handleViewMatches = (league: string, country: string, matchId: number, homeTeam: string, awayTeam: string, matchDate: string) => {
-    console.log('🎯 View Matches clicked:', { league, country, matchId, homeTeam, awayTeam, matchDate });
     
     // Set clicked match ID for visual feedback
     setClickedMatchId(matchId);
@@ -260,9 +247,7 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
         
         // Create a more robust highlight parameter using team names and date
         const highlightParam = `${matchId}_${homeTeam.replace(/\s+/g, '_')}_${awayTeam.replace(/\s+/g, '_')}_${matchDate}`;
-        console.log('🔗 Navigating with highlight param:', highlightParam);
-        console.log('🎯 Expected to highlight match:', `${homeTeam} vs ${awayTeam} (ID: ${matchId})`);
-        
+
         // Navigate to home page with highlighted match
         navigate(`/?highlight=${highlightParam}`);
         
@@ -275,8 +260,7 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
         setTimeout(() => setClickedMatchId(null), 3000);
       } else {
         console.warn('⚠️ League not found:', league);
-        console.log('🔄 Available leagues in', targetCountry.name, ':', targetCountry.leagues.map(l => l.name));
-        
+
         // Try to find a similar league
         const similarLeague = targetCountry.leagues.find(l => 
           l.name.toLowerCase().includes(league.toLowerCase()) ||
@@ -284,7 +268,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
         );
         
         if (similarLeague) {
-          console.log('🔄 Found similar league, using that instead:', similarLeague.name);
           setSelectedCountry(targetCountry);
           setSelectedLeague(similarLeague);
           
@@ -298,7 +281,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       }
     } else {
       console.warn('⚠️ Country not found:', country);
-      console.log('🔄 Available countries:', countries.map(c => c.name));
       
       // Try to find a similar country
       const similarCountry = countries.find(c => 
@@ -307,7 +289,6 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       );
       
       if (similarCountry) {
-        console.log('🔄 Found similar country, using that instead:', similarCountry.name);
         const targetLeague = similarCountry.leagues.find(l => 
           l.name.toLowerCase() === league.toLowerCase()
         );

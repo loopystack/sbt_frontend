@@ -33,12 +33,11 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
   useEffect(() => {
     const checkCountryRestriction = async () => {
       try {
-        console.log('🔍 Starting country restriction check...');
+  
         
         // Check if user is on sign-in page or if they've already checked
         const skipCheck = localStorage.getItem('skip_country_check') === 'true';
         if (skipCheck) {
-          console.log('⏭️ Skipping country check (skip_country_check=true)');
           setIsChecking(false);
           return;
         }
@@ -47,13 +46,11 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
         const urlParams = new URLSearchParams(window.location.search);
         const testCountry = urlParams.get('test_country');
         
-        console.log('🌍 Test country from URL:', testCountry);
 
         const url = `${getBaseUrl()}/api/analytics/check-country${
           testCountry ? `?test_country=${testCountry}` : ''
         }`;
 
-        console.log('📡 Calling API:', url);
 
         const response = await fetch(url);
         
@@ -64,16 +61,13 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
         }
 
         const data = await response.json();
-        console.log('📍 Country check response:', data);
         
         setCountryInfo(data);
 
         // If access is not allowed, block the user
         if (!data.allowed) {
-          console.log('🚫 Access BLOCKED for country:', data.country_name);
           setIsBlocked(true);
         } else {
-          console.log('✅ Access ALLOWED for country:', data.country_name);
         }
 
       } catch (error) {
@@ -81,7 +75,6 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
         // Fail-open: allow access if check fails
       } finally {
         setIsChecking(false);
-        console.log('✅ Country check complete');
       }
     };
 

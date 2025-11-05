@@ -347,9 +347,7 @@ export default function Profile() {
     setPasswordError("");
     
     try {
-      console.log("Attempting to change password...");
-      console.log("Current password length:", passwordForm.currentPassword.length);
-      console.log("New password length:", passwordForm.newPassword.length);
+
       
       await authService.changePassword(passwordForm.currentPassword, passwordForm.newPassword);
       setPasswordSuccess("Password changed successfully!");
@@ -522,7 +520,6 @@ export default function Profile() {
         webhookUrl: `${window.location.origin}/api/coinbase/webhook`
       };
 
-      console.log('Creating Coinbase Commerce payment request:', paymentRequest);
 
       // Create payment with Coinbase Commerce
       const paymentResponse = await coinbaseService.createPayment(paymentRequest);
@@ -620,7 +617,6 @@ export default function Profile() {
 
     // Prevent multiple simultaneous calls
     if (fundLoading || isApiCallInProgress || apiCallInProgressRef.current) {
-      console.log("Simulation or API call already in progress, skipping...");
       return;
     }
     
@@ -628,8 +624,6 @@ export default function Profile() {
       setFundLoading(true);
       setFundError("");
       setFundSuccess("");
-      
-      console.log(`Starting test transaction simulation for $${amount}`);
       
       // Simulate transaction detection
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -649,7 +643,6 @@ export default function Profile() {
             setTimeout(async () => {
               // Check if API call is already in progress using ref (more reliable)
               if (apiCallInProgressRef.current) {
-                console.log("API call already in progress, skipping duplicate call");
                 return;
               }
               
@@ -660,9 +653,7 @@ export default function Profile() {
                 setFundError("");
                 
                 const callId = Math.random().toString(36).substr(2, 9);
-                console.log(`[${callId}] Adding $${amount} to user funds via API`);
                 const response = await authService.addFunds(parseFloat(amount));
-                console.log(`[${callId}] API response:`, response);
                 
                 setUserFunds(response.new_balance);
                 setFundSuccess(response.message);
@@ -682,7 +673,6 @@ export default function Profile() {
                 
                 // If API is not available, simulate the success for testing
                 if (error instanceof Error && error.message.includes('404')) {
-                  console.log('API not available, simulating success for testing');
                   const simulatedBalance = userFunds + parseFloat(amount);
                   setUserFunds(simulatedBalance);
                   setFundSuccess(`Test transaction completed! Added $${amount} to your account. (Simulated)`);

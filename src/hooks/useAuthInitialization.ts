@@ -18,11 +18,6 @@ export const useAuthInitialization = () => {
         const accessToken = tokenManager.getAccessToken();
         const refreshToken = tokenManager.getRefreshToken();
         
-        if (accessToken || refreshToken) {
-          console.log('Auth tokens found, AuthProvider will handle validation');
-        } else {
-          console.log('No auth tokens found');
-        }
         
         // Dispatch a custom event to notify that auth initialization is complete
         window.dispatchEvent(new CustomEvent('authInitializationComplete'));

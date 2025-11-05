@@ -84,7 +84,6 @@ class CryptomusService {
         except_currencies: request.except_currencies || []
       };
 
-      console.log('Creating Cryptomus payment with payload:', payload);
 
       // Use backend proxy to avoid CORS issues
       const response = await fetch(`${getBaseUrl()}/api/deposits/cryptomus/create-payment`, {
@@ -96,7 +95,6 @@ class CryptomusService {
         body: JSON.stringify(payload)
       });
 
-      console.log('Backend proxy response status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
@@ -105,7 +103,6 @@ class CryptomusService {
       }
 
       const data = await response.json();
-      console.log('Cryptomus API success response:', data);
       return data;
     } catch (error) {
       console.error('Cryptomus payment creation error:', error);
@@ -158,11 +155,6 @@ class CryptomusService {
       const dataToHash = encodedData + this.config.apiKey;
       const signature = CryptoJS.MD5(dataToHash).toString();
       
-      console.log('Signature generation details:');
-      console.log('- JSON data:', jsonData);
-      console.log('- Base64 encoded:', encodedData);
-      console.log('- Data to hash:', dataToHash.substring(0, 50) + '...');
-      console.log('- Final signature:', signature);
       
       return signature;
     } catch (error) {
@@ -229,7 +221,6 @@ class CryptomusService {
    */
   setMerchantId(merchantId: string): void {
     this.config.merchantId = merchantId;
-    console.log('Merchant ID updated to:', merchantId);
   }
 }
 

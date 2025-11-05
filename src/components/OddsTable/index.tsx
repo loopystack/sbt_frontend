@@ -69,7 +69,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     
     // First try exact ID match
     if (parseInt(match.id) === highlightMatchId) {
-      console.log('🎯 Match highlighted by ID:', match.id, 'Teams:', homeTeam, 'vs', awayTeam);
       return true;
     }
     
@@ -83,12 +82,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         const targetHomeTeam = parts[1].replace(/_/g, ' ').toLowerCase();
         const targetAwayTeam = parts[2].replace(/_/g, ' ').toLowerCase();
         
-        console.log('🔍 Checking match for highlighting:', {
-          currentMatch: `${homeTeam} vs ${awayTeam}`,
-          targetMatch: `${targetHomeTeam} vs ${targetAwayTeam}`,
-          matchId: match.id,
-          highlightParam
-        });
         
         // Flexible team name matching
         const normalizeTeamName = (name: string) => {
@@ -105,10 +98,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         const normalizedHomeMatch = normalizeTeamName(homeTeam);
         const normalizedAwayMatch = normalizeTeamName(awayTeam);
         
-        console.log('🔍 Normalized team names:', {
-          target: `${normalizedHomeTarget} vs ${normalizedAwayTarget}`,
-          current: `${normalizedHomeMatch} vs ${normalizedAwayMatch}`
-        });
+
         
         // Check if team names match (either direction)
         const homeMatch = normalizedHomeMatch.includes(normalizedHomeTarget) ||
@@ -119,14 +109,8 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                          normalizedAwayTarget.includes(normalizedAwayMatch) ||
                          normalizedAwayMatch === normalizedAwayTarget;
         
-        console.log('🔍 Match results:', { homeMatch, awayMatch });
         
         if (homeMatch && awayMatch) {
-          console.log('✅ Match highlighted by team names:', {
-            target: `${targetHomeTeam} vs ${targetAwayTeam}`,
-            found: `${homeTeam} vs ${awayTeam}`,
-            matchId: match.id
-          });
           return true;
         }
         
@@ -139,37 +123,16 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                                  normalizedHomeTarget.includes(normalizedAwayMatch) ||
                                  normalizedAwayMatch === normalizedHomeTarget;
         
-        console.log('🔍 Reverse match results:', { homeMatchReversed, awayMatchReversed });
         
         if (homeMatchReversed && awayMatchReversed) {
-          console.log('✅ Match highlighted by REVERSED team names:', {
-            target: `${targetHomeTeam} vs ${targetAwayTeam}`,
-            found: `${homeTeam} vs ${awayTeam}`,
-            matchId: match.id,
-            note: 'Teams were in reverse order'
-          });
           return true;
         }
         
         // If no match found, log why
-        console.log('❌ No match found for:', {
-          target: `${targetHomeTeam} vs ${targetAwayTeam}`,
-          current: `${homeTeam} vs ${awayTeam}`,
-          normalizedTarget: `${normalizedHomeTarget} vs ${normalizedAwayTarget}`,
-          normalizedCurrent: `${normalizedHomeMatch} vs ${normalizedAwayMatch}`,
-          homeMatch, awayMatch, homeMatchReversed, awayMatchReversed
-        });
         
         // Special case: If we're looking for BEST ODDS matches that don't exist in the main list,
         // we'll log it but NOT highlight anything - only exact matches should be highlighted
         if (highlightMatchId === 1 || highlightMatchId === 2 || highlightMatchId === 3) {
-          console.log('🔄 BEST ODDS match not found in current league:', {
-            targetMatch: `${targetHomeTeam} vs ${targetAwayTeam}`,
-            currentMatch: `${homeTeam} vs ${awayTeam}`,
-            matchId: match.id,
-            league: match.league,
-            note: 'This is expected - BEST ODDS matches may not exist in the current league'
-          });
           
           return false; // Don't highlight anything if it's not an exact match
         }
@@ -182,7 +145,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Debug highlighting
   useEffect(() => {
     if (highlightMatchId) {
-      console.log('🎯 OddsTable received highlightMatchId:', highlightMatchId);
     }
   }, [highlightMatchId]);
 
@@ -198,59 +160,33 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(odds);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`OddsTable: Converting ${odds} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
   
-  // Debug authentication state
-  console.log('🎯 OddsTable: Auth state - user:', user?.email || 'null', 'isAuthenticated:', isAuthenticated);
 
   // Function to fetch user's existing bets and get match_ids
   const fetchUserExistingBets = async () => {
-    console.log('🚀 fetchUserExistingBets called');
-    console.log('🔐 isAuthenticated:', isAuthenticated);
-    console.log('👤 user:', user);
-    console.log('🆔 user?.id:', user?.id);
     
     if (!isAuthenticated || !user?.id) {
-      console.log('🚫 Not authenticated or no user ID, clearing bets');
       setUserBetMatchIds(new Set());
       return;
     }
 
     try {
-      console.log('🔄 Fetching user existing bets for match_id comparison...');
-      console.log('👤 Current user ID:', user.id, 'type:', typeof user.id);
       
       const response = await bettingService.getBettingRecords(1, 50); // Get up to 50 records (API limit)
       
-      console.log('📋 Raw betting records response:', response);
-      console.log('📋 Response type:', typeof response);
-      console.log('📋 Response.records:', response?.records);
-      console.log('📋 Response.records length:', response?.records?.length);
-      
       if (response && response.records) {
-        console.log('📊 Total betting records found:', response.records.length);
         
         // Filter records for current user first
         const userRecords = response.records.filter(record => {
           const isUserRecord = record.user_id === user.id;
-          console.log(`👤 Record ${record.id} - user_id: ${record.user_id} (type: ${typeof record.user_id}), current user: ${user.id} (type: ${typeof user.id}), match: ${isUserRecord}`);
           return isUserRecord;
         });
         
-        console.log(`👤 Records for current user (${user.id}):`, userRecords.length);
         
         // Log each record to see the data structure
         userRecords.forEach((record, index) => {
-          console.log(`📝 User Record ${index + 1}:`, {
-            id: record.id,
-            user_id: record.user_id,
-            match_id: record.match_id,
-            match_teams: record.match_teams,
-            match_id_type: typeof record.match_id,
-            bet_status: record.bet_status
-          });
         });
         
         // Extract match_ids from user's betting records
@@ -258,36 +194,24 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           userRecords
             .filter(record => {
               const hasMatchId = record.match_id !== null && record.match_id !== undefined;
-              console.log(`🔍 User Record ${record.id} has match_id: ${hasMatchId}, value: ${record.match_id}, type: ${typeof record.match_id}`);
               return hasMatchId;
             })
             .map(record => {
               const matchIdString = record.match_id!.toString();
-              console.log(`🔄 Converting match_id ${record.match_id} (${typeof record.match_id}) to string: "${matchIdString}"`);
               return matchIdString;
             })
         );
         
         setUserBetMatchIds(matchIds);
-        console.log('✅ User existing bets loaded:', matchIds.size, 'matches');
-        console.log('📊 Match IDs user has bet on (as strings):', Array.from(matchIds));
-        console.log('📊 Match IDs user has bet on (types):', Array.from(matchIds).map(id => ({ value: id, type: typeof id })));
         
         // Enable odds buttons after user bets are loaded
         setIsOddsDisabled(false);
       } else {
-        console.log('⚠️ No records found in response');
-        console.log('⚠️ Response structure:', {
-          hasResponse: !!response,
-          hasRecords: !!(response && response.records),
-          responseKeys: response ? Object.keys(response) : 'no response'
-        });
         
         // Enable odds buttons even when no records are found
         setIsOddsDisabled(false);
       }
     } catch (error) {
-      console.log('❌ Error fetching user existing bets:', error);
       // Enable odds buttons even if there's an error fetching user bets
       setIsOddsDisabled(false);
     }
@@ -296,22 +220,11 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Function to check if user has already bet on a specific match
   const hasUserBetOnMatch = (matchId: string): boolean => {
     const result = userBetMatchIds.has(matchId);
-    console.log(`🔍 Checking if user bet on match "${matchId}" (type: ${typeof matchId}): ${result}`);
-    console.log('📊 Available match IDs in set:', Array.from(userBetMatchIds));
-    console.log('📊 Match ID comparison:', {
-      input: matchId,
-      inputType: typeof matchId,
-      availableIds: Array.from(userBetMatchIds),
-      hasMatch: result
-    });
     return result;
   };
 
   // Fetch user's existing bets when component loads or user changes
   useEffect(() => {
-    console.log('🔄 useEffect triggered - fetchUserExistingBets will be called');
-    console.log('🔐 useEffect - isAuthenticated:', isAuthenticated);
-    console.log('👤 useEffect - user?.id:', user?.id);
     
     // Disable odds buttons during loading if authenticated
     if (isAuthenticated) {
@@ -416,17 +329,14 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Robust market switching function that handles rapid clicks
   const handleMarketSwitch = useCallback((market: string) => {
     const now = Date.now();
-    console.log("Market switch requested:", market, "Current market:", selectedMarket, "Time since last click:", now - lastClickTimeRef.current);
-    
+
     // Debounce rapid clicks (ignore clicks within 300ms)
     if (now - lastClickTimeRef.current < 300) {
-      console.log("Ignoring rapid click - debouncing");
       return;
     }
     
     // If already switching or clicking the same market, ignore
     if (isSwitchingMarket || market === selectedMarket) {
-      console.log("Ignoring market switch - already switching or same market");
       return;
     }
     
@@ -447,7 +357,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     
     // Use a longer timeout for more stable switching
     switchingTimeoutRef.current = setTimeout(() => {
-      console.log("Executing market switch to:", market);
       setSelectedMarket(market);
       setCurrentPage(1);
       if (market === "Next Matches") {
@@ -489,7 +398,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     
     // Prevent rapid clicking
     if (isPlacingBet || isConfirmingBet || showBetConfirmation) {
-      console.log('🚫 Bet placement already in progress, ignoring click');
       return;
     }
     
@@ -531,7 +439,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       
       // Save each betting record to database with better error handling
       try {
-        console.log('💾 Starting to save betting records...');
         
         // Check authentication first
         const token = localStorage.getItem('access_token');
@@ -539,31 +446,11 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           throw new Error('No access token found - please sign in again');
         }
         
-        console.log('🔐 Authentication check passed, proceeding to save records...');
-        console.log('🔍 Debug info:', {
-          tokenExists: !!token,
-          tokenLength: token?.length,
-          tokenStart: token?.substring(0, 20),
-          baseUrl: getBaseUrl(),
-          currentUser: user?.email,
-          selectedOddsCount: selectedOdds.length
-        });
-        
         for (const odds of selectedOdds) {
           // Get the ACTUAL match date and time from the selected match
           const originalMatch = getMatches().find(m => m.id === odds.matchId);
           let realMatchDate: string | null = null;
           
-          console.log('🔍 Processing bet for match:', {
-            matchId: odds.matchId,
-            teams: odds.teams,
-            originalMatch: originalMatch ? {
-              id: originalMatch.id,
-              date: originalMatch.date,
-              time: originalMatch.time,
-              status: originalMatch.status
-            } : 'NOT FOUND'
-          });
           
           if (originalMatch && originalMatch.date && originalMatch.time && originalMatch.time !== "LIVE") {
             try {
@@ -595,26 +482,12 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                 // Format as timezone-naive datetime string
                 realMatchDate = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
                 
-                console.log('📅 Successfully created match date (timezone-naive):', {
-                  matchId: odds.matchId,
-                  teams: odds.teams,
-                  originalDate: originalMatch.date,
-                  originalTime: originalMatch.time,
-                  combinedDateTime: dateTimeString,
-                  savedDateTime: realMatchDate,
-                  displayFormat: matchDateTime.toLocaleString(),
-                  preservedHour: hours,
-                  preservedMinute: minutes,
-                  originalHour: matchDateTime.getHours(),
-                  originalMinute: matchDateTime.getMinutes()
-                });
               }
             } catch (error) {
               console.error('❌ Error creating match date:', error);
               realMatchDate = null;
             }
           } else {
-            console.log('⚠️ No valid match date/time found, saving without match_date');
           }
 
           // Calculate betting return using consistent utility function
@@ -644,11 +517,9 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
             odds_decimal: bettingCalculation.decimalOdds
           };
           
-          console.log('📝 Creating betting record with data:', bettingRecord);
           
           try {
             const savedRecord = await bettingService.createBettingRecord(bettingRecord);
-            console.log('✅ Betting record saved successfully:', savedRecord);
             
             // Add notification immediately after successful bet placement
             if (savedRecord && savedRecord.id) {
@@ -658,14 +529,12 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                 bettingRecord.bet_amount,
                 bettingRecord.potential_win
               );
-              console.log('🔔 Notification added for new bet:', savedRecord.id);
             }
           } catch (saveError: any) {
             console.error('❌ Failed to save individual betting record:', saveError);
             throw saveError; // Re-throw to be caught by outer catch block
           }
         }
-        console.log('🎉 All betting records saved successfully');
         
         // IMMEDIATELY update local state to show "bet placed" effect - FORCE SYNC UPDATE
         const newBetMatchIds = new Set(userBetMatchIds);
@@ -677,7 +546,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         flushSync(() => {
           setUserBetMatchIds(newBetMatchIds);
         });
-        console.log('⚡ INSTANT UI update: Added match IDs to local state:', Array.from(newBetMatchIds));
         
       } catch (recordError: any) {
         console.error('❌ Error saving betting records - FULL ERROR DETAILS:', {
@@ -863,7 +731,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       );
       
       if (!hasValidOdds) {
-        console.log('⚠️ League matches have no valid odds, using default matches');
         return defaultMatches;
       }
       
@@ -892,8 +759,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       return allMatches;
     }
     
-    // If no API data, always return default matches as fallback
-    console.log('⚠️ No API data available, using default matches');
     return defaultMatches;
   };
   const matches = getMatches();
@@ -1105,19 +970,11 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     
     // Debug logging
     if (button) {
-      console.log('OddsTable handleOutsideClick - Button clicked:', {
-        className: button.className,
-        isOddButton,
-        isNavigationButton,
-        isInsideBetSlipContent,
-        isBetSlipHeader,
-        showBetSlip
-      });
+
     }
     
     // Only collapse if clicking outside both the betslip content, header, odd buttons, and navigation buttons
     if (showBetSlip && !isOddButton && !isNavigationButton && !isInsideBetSlipContent && !isBetSlipHeader) {
-      console.log('OddsTable: Collapsing betslip due to outside click');
       setIsBetSlipCollapsed(true);
     }
   };
@@ -1146,7 +1003,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   const fetchCurrentPageMatches = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("Fetching with selectedYear:", selectedYear, "searchQuery:", searchQuery, "selectedMarket:", selectedMarket);
       
       // Build base parameters
       const params: any = { 
@@ -1167,7 +1023,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         
         // When searching, don't apply country/league filters to allow global search
         // This allows users to search across all countries and leagues
-        console.log('🔍 Global search mode - skipping country/league filters');
       } else {
         // Only apply country/league filters when not searching
         // This maintains the normal filtering behavior when browsing
@@ -1188,8 +1043,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         params.date_to = today; // Only past matches
       }
       
-      console.log(`🚀 Fetching page ${currentPage} with backend search/filtering:`, params);
-      console.log(`🔍 Debug - selectedYear: ${selectedYear}, params.season: ${params.season}`);
       const result = await dispatch(getMatchingInfoAction(params)).unwrap();
       
       setMatchingInfo(result.odds);
@@ -1198,23 +1051,14 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       
       // Reset switching state when data is loaded with a small delay
       setTimeout(() => {
-        console.log("Resetting switching state after successful data load");
         setIsSwitchingMarket(false);
         setSwitchingToMarket("");
       }, 200);
       
-      console.log(`✅ Loaded ${result.odds.length} matches (Page ${currentPage}/${result.pages}) with backend filtering`);
-      console.log(`📊 Sample match data:`, result.odds[0] ? {
-        season: result.odds[0].season,
-        date: result.odds[0].date,
-        home_team: result.odds[0].home_team,
-        away_team: result.odds[0].away_team
-      } : 'No matches');
     } catch (error) {
       console.error("Error fetching matching info:", error);
       // Reset switching state even on error with a small delay
       setTimeout(() => {
-        console.log("Resetting switching state after error");
         setIsSwitchingMarket(false);
         setSwitchingToMarket("");
       }, 200);
@@ -1300,7 +1144,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     // Update the current page
     setCurrentPage(newPage);
     
-    console.log('🔄 Page changed to:', newPage, '- scrolled to top');
   }, []);
 
   // Helper function to highlight search terms in text
@@ -1459,7 +1302,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   key={year}
                   onClick={() => {
                     const newYear = selectedYear === year ? undefined : year;
-                    console.log("Year button clicked:", year, "new selectedYear:", newYear);
                     setSelectedYear(newYear);
                     setCurrentPage(1); 
                     setCurrentPage(1); 
@@ -1574,7 +1416,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   <button
                     key={market}
                     onClick={() => {
-                      console.log("Market button clicked:", market);
                       
                       // Set switching state and clear data immediately to prevent flash
                       setIsSwitchingMarket(true);
@@ -1612,7 +1453,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   <button
                     key={market}
                     onClick={() => {
-                      console.log("Market button clicked:", market);
                       
                       // Set switching state and clear data immediately to prevent flash
                       setIsSwitchingMarket(true);
@@ -1646,7 +1486,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                     key={year}
                     onClick={() => {
                       const newYear = selectedYear === year ? undefined : year;
-                      console.log("Year button clicked:", year, "new selectedYear:", newYear);
                       setSelectedYear(newYear);
                       setCurrentPage(1); 
                       setCurrentPage(1); 
@@ -1852,7 +1691,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                     </div>
                     
                     {(() => {
-                      console.log(`🎯 Checking match ${match.id} (type: ${typeof match.id}) for user bets`);
                       return hasUserBetOnMatch(match.id);
                     })() ? (
                       <div className="relative">
@@ -2117,7 +1955,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                         })()}
                       </div>
                     ) : (() => {
-                      console.log(`🎯 Table view - Checking match ${match.id} (type: ${typeof match.id}) for user bets`);
                       return hasUserBetOnMatch(match.id);
                     })() ? (
                       <div className="flex items-center justify-center relative">

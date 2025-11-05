@@ -3,12 +3,6 @@
  * Call this function whenever you update a match result in the database
  */
 export const notifyMatchResultUpdated = (matchId: number, matchTeams: string, newResult: string) => {
-  console.log('⚽ Match result updated:', {
-    matchId,
-    matchTeams,
-    newResult,
-    timestamp: new Date().toISOString()
-  });
   
   // Dispatch custom event to trigger notification check
   window.dispatchEvent(new CustomEvent('matchResultUpdated', {
@@ -35,7 +29,6 @@ declare global {
 // Make the function globally available
 if (typeof window !== 'undefined') {
   window.triggerSettlementCheck = () => {
-    console.log('🔄 Manual settlement check triggered from global function');
     window.dispatchEvent(new CustomEvent('matchResultUpdated', {
       detail: { manualTrigger: true, timestamp: new Date().toISOString() }
     }));
@@ -43,19 +36,14 @@ if (typeof window !== 'undefined') {
   
   // Add a more direct debug function
   window.debugNotificationSystem = async () => {
-    console.log('🐛 Debug notification system...');
-    console.log('Current URL:', window.location.href);
-    console.log('Current path:', window.location.pathname);
     
     // Check if NotificationContext is available
     const notificationElements = document.querySelectorAll('[data-notification-context]');
-    console.log('Notification context elements found:', notificationElements.length);
     
     // Direct API call to check betting records
     try {
       const { bettingService } = await import('../services/bettingService');
       const response = await bettingService.getBettingRecords(1, 10);
-      console.log('🔍 Direct API call result:', response);
       
       // Look for Sevilla vs Real Betis specifically
       const sevillaBet = response.records.find((record: any) => 
@@ -63,11 +51,6 @@ if (typeof window !== 'undefined') {
         record.match_teams?.toLowerCase().includes('betis')
       );
       
-      if (sevillaBet) {
-        console.log('⚽ Found Sevilla vs Real Betis bet:', sevillaBet);
-      } else {
-        console.log('❌ Sevilla vs Real Betis bet not found in API response');
-      }
     } catch (error) {
       console.error('❌ Error calling betting service:', error);
     }

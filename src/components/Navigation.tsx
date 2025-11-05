@@ -158,13 +158,12 @@ export default function Navigation() {
   // 🎯 Clear active tab when league is selected (mutual exclusion)
   useEffect(() => {
     if (selectedLeague && location.pathname === "/") {
-      console.log(`🏆 League selected: ${selectedLeague.name}, clearing active tab`);
       setActiveTab(""); // Clear active tab when league is selected on homepage
     }
   }, [selectedLeague, location.pathname]);
 
   const handleTabClick = (tabId: string) => {
-    console.log('Desktop Navigation clicked:', tabId, '- clearing selectedLeague and navigating');
+
     
     // Scroll to top immediately (especially important for mobile)
     window.scrollTo(0, 0);
@@ -173,7 +172,6 @@ export default function Navigation() {
     
     switch (tabId) {
       case "home":
-        console.log('Navigation Home clicked - clearing selectedLeague and navigating to home');
         // Use the same logic as logo - clear selectedLeague first, then navigate
         setSelectedLeague(null); 
         navigate("/");

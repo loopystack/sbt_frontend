@@ -58,11 +58,6 @@ export default function HeroSection() {
     const encodedTerm = encodeURIComponent(searchTerm.trim());
     const targetUrl = `/all-events?search=${encodedTerm}`;
     
-    console.log('🔍 Home page search redirect:', {
-      searchTerm: searchTerm.trim(),
-      encodedTerm,
-      targetUrl
-    });
     
     // Navigate to all-events page (odds table) with search term as URL parameter
     navigate(targetUrl);
@@ -81,7 +76,6 @@ export default function HeroSection() {
     const fetchFeaturedMatches = async () => {
       try {
         setLoading(true);
-        console.log('🔍 HeroSection: Starting to fetch featured matches...');
         
         const params = { 
           page: 1, 
@@ -89,24 +83,21 @@ export default function HeroSection() {
         };
         
         const result = await dispatch(getMatchingInfoAction(params)).unwrap();
-        console.log('🔍 HeroSection: API result:', result);
-        console.log('🔍 HeroSection: Total matches received:', result.odds?.length || 0);
+
         
         if (!result.odds || result.odds.length === 0) {
-          console.log('⚠️ HeroSection: No matches received from API, using fallback');
           setFeaturedMatches(getFallbackMatches());
           return;
         }
         
         // Filter for upcoming matches and transform data
         const now = new Date();
-        console.log('🔍 HeroSection: Current time:', now.toISOString());
+
         
         const upcomingMatches = result.odds
           .filter((match: MatchingInfo) => {
             const matchDate = new Date(match.date + 'T' + match.time);
             const isUpcoming = matchDate.getTime() >= now.getTime();
-            console.log(`🔍 HeroSection: Match ${match.home_team} vs ${match.away_team} - Date: ${match.date} ${match.time} - Is upcoming: ${isUpcoming}`);
             return isUpcoming;
           })
           .slice(0, 6) // Take first 6 upcoming matches
@@ -124,11 +115,9 @@ export default function HeroSection() {
             status: "Upcoming"
           }));
         
-        console.log('🔍 HeroSection: Upcoming matches found:', upcomingMatches.length);
-        console.log('🔍 HeroSection: Featured matches:', upcomingMatches);
         
         if (upcomingMatches.length === 0) {
-          console.log('⚠️ HeroSection: No upcoming matches found, using fallback');
+
           setFeaturedMatches(getFallbackMatches());
         } else {
           setFeaturedMatches(upcomingMatches);
@@ -208,13 +197,10 @@ export default function HeroSection() {
 
   // Debug: Log when odds format changes
   useEffect(() => {
-    console.log('HeroSection: Odds format changed to:', oddsFormat);
   }, [oddsFormat]);
   
   // Debug: Log featured matches state
   useEffect(() => {
-    console.log('🔍 HeroSection: Featured matches state updated:', featuredMatches);
-    console.log('🔍 HeroSection: Loading state:', loading);
   }, [featuredMatches, loading]);
   
   // Helper function to convert and format odds
@@ -226,7 +212,6 @@ export default function HeroSection() {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(odds);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`HeroSection: Converting ${odds} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
 

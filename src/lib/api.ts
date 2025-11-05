@@ -52,18 +52,9 @@ export async function api<T = any>(
   };
   
   try {
-    console.log(`Making API request to: ${absoluteUrl}`);
-    console.log('Request options:', requestOptions);
-    console.log('Environment check:', {
-      viteApiBaseUrl: import.meta.env.VITE_API_BASE_URL,
-      baseUrl,
-      absoluteUrl,
-      originalUrl: url
-    });
     
     const response = await fetch(absoluteUrl, requestOptions);
     
-    console.log(`Response status: ${response.status}`);
     
     // Handle non-JSON responses (like file downloads)
     const contentType = response.headers.get('content-type');
@@ -101,7 +92,6 @@ export async function api<T = any>(
       throw new ApiError(errorMessage, response.status, data);
     }
     
-    console.log('API Response:', data);
     return data;
     
   } catch (error) {

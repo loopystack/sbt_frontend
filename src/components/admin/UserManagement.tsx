@@ -129,11 +129,8 @@ export default function UserManagement() {
         is_active: permissionForm.is_active
       };
 
-      console.log('🔍 Updating permissions for user:', selectedUser.username);
-      console.log('🔍 Update data:', updateData);
       
       const response = await apiMethods.put(`/api/admin/users/${selectedUser.id}`, updateData);
-      console.log('🔍 API response:', response);
       
       // Update local state immediately for better UX
       setUsers(prevUsers => 

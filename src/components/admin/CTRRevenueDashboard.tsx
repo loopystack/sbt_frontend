@@ -49,14 +49,11 @@ export default function CTRRevenueDashboard() {
   const fetchData = async () => {
     try {
       setIsLoading(true);
-      console.log("🔍 Fetching CTR analytics for period:", selectedPeriod);
       
       let ctrData, matchCTRData, revenueData;
       
       try {
-        console.log("📡 Calling /api/analytics/ctr-metrics...");
         ctrData = await apiMethods.get(`/api/analytics/ctr-metrics?days=${selectedPeriod}`);
-        console.log("✅ CTR Metrics:", ctrData);
       } catch (err: any) {
         console.error("❌ Failed to fetch CTR metrics:", err);
         console.error("❌ Full error:", JSON.stringify(err, null, 2));
@@ -64,15 +61,7 @@ export default function CTRRevenueDashboard() {
       }
       
       try {
-        console.log("📡 Calling /api/analytics/ctr-by-matches with days=", selectedPeriod);
         matchCTRData = await apiMethods.get(`/api/analytics/ctr-by-matches?days=${selectedPeriod}`);
-        console.log("✅ Match CTR Data:", matchCTRData);
-        console.log("✅ Match CTR Length:", matchCTRData?.length);
-        if (matchCTRData && matchCTRData.length > 0) {
-          console.log("✅ Match CTR First Item:", matchCTRData[0]);
-        } else {
-          console.warn("⚠️  Match CTR data is empty or undefined");
-        }
       } catch (err: any) {
         console.error("❌ Failed to fetch match CTR:", err);
         console.error("❌ Error type:", typeof err);
@@ -84,13 +73,11 @@ export default function CTRRevenueDashboard() {
       
       try {
         revenueData = await apiMethods.get(`/api/analytics/revenue?days=${selectedPeriod}`);
-        console.log("✅ Revenue:", revenueData);
       } catch (err: any) {
         console.error("❌ Failed to fetch revenue:", err);
         revenueData = null;
       }
       
-      console.log("📝 Setting states: ctrMetrics=", ctrData?.length, "matchCTR=", matchCTRData?.length, "revenue=", !!revenueData);
       setCtrMetrics(ctrData);
       setMatchCTR(matchCTRData);
       setRevenueMetrics(revenueData);
@@ -314,7 +301,6 @@ export default function CTRRevenueDashboard() {
       <div className="flex items-center space-x-2 mb-6 bg-black/40 backdrop-blur-xl border border-gray-700/50 rounded-xl p-2">
         <button
           onClick={() => {
-            console.log("🔘 Switching to Elements tab");
             setActiveTab('elements');
           }}
           className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
@@ -327,9 +313,6 @@ export default function CTRRevenueDashboard() {
         </button>
         <button
           onClick={() => {
-            console.log("⚽ Switching to Matches tab");
-            console.log("📊 Current matchCTR data:", matchCTR);
-            console.log("📊 matchCTR length:", matchCTR.length);
             setActiveTab('matches');
           }}
           className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${

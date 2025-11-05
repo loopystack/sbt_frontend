@@ -293,40 +293,5 @@ export const getTeamLogo = (teamName: string, country?: string): string | null =
 
 // 🚨 TEAM LOGOS SYSTEM REPORT
 export const reportMissingLogos = () => {
-  console.log(`
-🏆 TEAM LOGO SYSTEM REPORT
 
-✅ COUNTRIES MAPPED:
-- Austria: 12 teams ✅
-- Belgium: 18 teams ✅ (Anderlecht, Antwerp, Brugge, Genk, etc.)
-- Brazil: 28 teams ✅ (Flamengo, Corinthians, Palmeiras, etc.)
-- England: 26 teams ✅ (Arsenal, Chelsea, Liverpool, etc.)
-- France: 20 teams ✅ (PSG, Lyon, Marseille, etc.)
-- Germany: 19 teams ✅ (Bayern, Dortmund, Leipzig, etc.)
-- Italy: 20 teams ✅ (Juventus, Inter, Milan, etc.)
-- Netherlands: 18 teams ✅ (Ajax, PSV, Feyenoord, etc.)
-- Poland: 18 teams ✅ (Legia, Lech, Wisla, etc.)
-- Portugal: 18 teams ✅ (Benfica, Porto, Sporting, etc.)
-- Russia: 16 teams ✅ (Zenit, CSKA, Spartak, etc.)
-- Spain: 24 teams ✅ (Real Madrid, Barcelona, Atletico, etc.)
-- Switzerland: 11 teams ✅ (Basel, Young Boys, Zurich, Winterthur, etc.)
-- Turkey: 19 teams ✅ (Galatasaray, Fenerbahce, Besiktas, etc.)
-- Ukraine: 15 teams ✅ (Shakhtar, Dynamo Kyiv, etc.)
-
-🚨 POTENTIAL CONFLICTS RESOLVED:
-- Arsenal (England) vs Arsenal Tula (Russia) ✅
-- Inter (Italy) vs Internacional (Brazil) ✅
-- Vitoria (Brazil) vs Vitoria Guimaraes (Portugal) ✅
-- Dynamo (Russia) vs Dynamo Kyiv (Ukraine) ✅
-
-💡 USAGE: getTeamLogo(teamName, country)
-- Always provide country parameter for best results
-- System will fallback to global search if country not provided
-
-🎯 EXAMPLES FOR NEWLY ADDED COUNTRIES:
-- Ajax → getTeamLogo("Ajax", "Netherlands") → /assets/team_icons/Netherlands/Ajax.png
-- Flamengo → getTeamLogo("Flamengo", "Brazil") → /assets/team_icons/Brazil/Flamengo RJ.png
-- Legia → getTeamLogo("Legia", "Poland") → /assets/team_icons/Poland/Legia.png
-- Anderlecht → getTeamLogo("Anderlecht", "Belgium") → /assets/team_icons/Belgium/Anderlecht.png
-  `);
 };

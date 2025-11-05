@@ -13,7 +13,6 @@ import ReduxProvider from "./contexts/ReduxContext";
 import CookieConsent from "./components/CookieConsent";
 import CountryBlocked from "./components/CountryBlocked";
 import { CookieManager, CookiePreferences } from "./utils/cookieManager";
-import "./utils/testNotificationSystem"; // Load test utilities
 
 const router = createBrowserRouter(routes);
 
@@ -66,7 +65,7 @@ const AppContent: React.FC = () => {
 
 const App: React.FC = () => {
   const handleCookieAccept = (preferences: CookiePreferences) => {
-    console.log('Cookie preferences accepted:', preferences);
+    
     
     // Save preferences
     CookieManager.savePreferences(preferences);
@@ -89,7 +88,7 @@ const App: React.FC = () => {
   };
 
   const handleCookieDecline = () => {
-    console.log('Non-essential cookies declined');
+    
     
     // Save preferences with only essential cookies
     const preferences: CookiePreferences = {

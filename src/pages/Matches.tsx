@@ -27,7 +27,6 @@ export default function Matches() {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(odds);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`Matches: Converting ${odds} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
   

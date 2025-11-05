@@ -30,7 +30,6 @@ export default function Dashboard() {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(oddsString);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`Dashboard: Converting ${oddsString} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
 
@@ -128,7 +127,6 @@ export default function Dashboard() {
       try {
         await bettingService.fixMissingMatchDates();
       } catch (error) {
-        console.log('No missing dates to fix or error fixing dates:', error);
       }
       
       const [recordsResponse, statsResponse] = await Promise.all([
@@ -155,15 +153,9 @@ export default function Dashboard() {
     
     try {
       setTransactionsLoading(true);
-      console.log('🔄 Fetching transaction data...');
       const transactionsResponse = await transactionService.getTransactions(transactionCurrentPage, 10);
       
-      console.log('📊 Transaction data received:', {
-        transactionCount: transactionsResponse.transactions.length,
-        transactions: transactionsResponse.transactions,
-        page: transactionsResponse.page,
-        totalPages: transactionsResponse.total_pages
-      });
+
       
       setTransactions(transactionsResponse.transactions);
       setTransactionTotalPages(transactionsResponse.total_pages);
@@ -178,7 +170,6 @@ export default function Dashboard() {
 
   // Clear notifications when user visits Dashboard (only once)
   useEffect(() => {
-    console.log('🏠 Dashboard visited - clearing notifications');
     clearNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - only run once on mount
@@ -190,7 +181,6 @@ export default function Dashboard() {
     const refreshToken = searchParams.get('refresh_token');
     
     if (googleAuth === 'success' && accessToken && refreshToken) {
-      console.log('🎉 Google OAuth success! Setting tokens and staying on dashboard...');
       // Store tokens immediately
       tokenManager.setTokens(accessToken, refreshToken);
       
@@ -240,7 +230,6 @@ export default function Dashboard() {
         // Refresh betting data to get latest stats
         await fetchBettingData();
         
-        console.log('✅ All data refreshed successfully');
       } catch (error) {
         console.error('❌ Error refreshing data:', error);
       } finally {
@@ -263,14 +252,6 @@ export default function Dashboard() {
       
       // Debug logging
       if (isOutOfSync) {
-        console.log('⚠️ Balance discrepancy detected:', {
-          currentBalance,
-          latestTransactionBalance,
-          difference,
-          latestTransactionDate: latestTransaction.created_at,
-          latestTransactionType: latestTransaction.transaction_type,
-          latestTransactionAmount: latestTransaction.amount
-        });
       }
       
       return {
@@ -287,7 +268,6 @@ export default function Dashboard() {
   // Listen for betting data changes
   useEffect(() => {
     const handleBettingDataChange = () => {
-      console.log('🔄 Betting data changed, refreshing...');
       fetchBettingData();
       fetchTransactionData(); // Also refresh transaction data
     };

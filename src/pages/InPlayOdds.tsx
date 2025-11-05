@@ -41,7 +41,6 @@ export default function InPlayOdds() {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(odds);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`InPlayOdds: Converting ${odds} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
 

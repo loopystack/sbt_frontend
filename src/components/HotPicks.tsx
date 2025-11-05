@@ -15,7 +15,6 @@ export default function HotPicks() {
     // Use the robust string parser with correct conversion formulas
     const decimalOdds = OddsConverter.stringToDecimal(odds);
     const formatted = getOddsInFormat(decimalOdds);
-    console.log(`HotPicks: Converting ${odds} -> ${decimalOdds} -> ${formatted} (format: ${oddsFormat})`);
     return formatted;
   };
 

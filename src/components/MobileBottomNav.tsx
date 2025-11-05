@@ -35,7 +35,6 @@ export default function MobileBottomNav({ onLeftSidebarToggle, onRightSidebarTog
         {/* Dashboard */}
         <button
           onClick={() => {
-            console.log('Mobile Dashboard clicked - clearing selectedLeague and navigating');
             setSelectedLeague(null);
             navigate("/dashboard");
           }}
@@ -69,7 +68,7 @@ export default function MobileBottomNav({ onLeftSidebarToggle, onRightSidebarTog
         {/* Profile */}
         <button
           onClick={() => {
-            console.log('Mobile Profile clicked - clearing selectedLeague and navigating');
+
             setSelectedLeague(null);
             navigate("/profile");
           }}

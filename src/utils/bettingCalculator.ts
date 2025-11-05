@@ -131,39 +131,21 @@ export function validateConsistentBetting(stake: number, decimalOdds: number): {
  * Example usage and testing
  */
 export function runBettingTests(): void {
-  console.log('🧪 Running Betting Logic Tests...');
   
   // Test 1: Same odds, different stakes
   const test1a = calculateBettingReturn(10, 2.5);
   const test1b = calculateBettingReturn(20, 2.5);
   
-  console.log('Test 1 - Same odds (2.5), different stakes:');
-  console.log(`  $10 stake: $${test1a.profit.toFixed(2)} profit`);
-  console.log(`  $20 stake: $${test1b.profit.toFixed(2)} profit`);
-  console.log(`  Ratio: ${(test1b.profit / test1a.profit).toFixed(2)}x (should be 2x)`);
   
   // Test 2: Same stake, different odds
   const test2a = calculateBettingReturn(10, 2.0);
   const test2b = calculateBettingReturn(10, 3.0);
   
-  console.log('Test 2 - Same stake ($10), different odds:');
-  console.log(`  2.0 odds: $${test2a.profit.toFixed(2)} profit`);
-  console.log(`  3.0 odds: $${test2b.profit.toFixed(2)} profit`);
-  
   // Test 3: American odds conversion
   const test3a = calculateBettingReturnFromAmerican(10, '+150');
   const test3b = calculateBettingReturnFromAmerican(10, '-200');
   
-  console.log('Test 3 - American odds conversion:');
-  console.log(`  +150 odds: $${test3a.profit.toFixed(2)} profit`);
-  console.log(`  -200 odds: $${test3b.profit.toFixed(2)} profit`);
   
   // Test 4: The specific bug case - $10 at 2.5 odds
   const test4 = calculateBettingReturnFromDecimal(10, '2.5');
-  console.log('Test 4 - $10 at 2.5 odds (the bug case):');
-  console.log(`  Total Return: $${test4.totalReturn.toFixed(2)} (should be $25.00)`);
-  console.log(`  Profit: $${test4.profit.toFixed(2)} (should be $15.00)`);
-  console.log(`  Correct: ${test4.totalReturn === 25 && test4.profit === 15 ? '✅' : '❌'}`);
-  
-  console.log('✅ All tests completed!');
 }

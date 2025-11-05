@@ -106,7 +106,6 @@ export const tokenManager = {
       
       // Check if token is expired
       if (payload.exp && payload.exp < currentTime) {
-        console.log('Token is expired');
         return false;
       }
       
@@ -216,10 +215,6 @@ export const authService = {
       throw new Error('No access token available');
     }
 
-    console.log('Making change password request...');
-    console.log('Token available:', !!token);
-    console.log('Current password provided:', !!currentPassword);
-    console.log('New password provided:', !!newPassword);
 
     try {
       const response = await api<{ message: string }>(`${BASE_URL}/change-password`, {
@@ -233,7 +228,6 @@ export const authService = {
           new_password: newPassword 
         }),
       });
-      console.log('Password change successful');
       return response;
     } catch (error: any) {
       console.error('Change password API error:', error);

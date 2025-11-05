@@ -86,7 +86,7 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
   };
 
   const handleLeagueClick = (league: any, country: any) => {
-    console.log(`🏆 League clicked: ${country.name} ${league.name}`);
+
     setSelectedCountry(country);  // Set the country first
     setSelectedLeague(league);    // Then set the league
     

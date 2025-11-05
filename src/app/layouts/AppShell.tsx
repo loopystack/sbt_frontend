@@ -75,7 +75,7 @@ export default function AppShell() {
     document.body.scrollTop = 0;
     document.documentElement.scrollTop = 0;
     
-    console.log('🔄 Route changed, scrolling to top:', location.pathname);
+    
   }, [location.pathname]);
 
   // iPad swipe gesture handlers
@@ -138,7 +138,7 @@ export default function AppShell() {
     navigate(path);
     setIsMobileMenuOpen(false);
     
-    console.log('🔄 Navigating to:', path, '- scrolled to top');
+    
   };
 
   return (
