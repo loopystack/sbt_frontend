@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getBaseUrl } from '../config/api';
 
 interface SweepSummary {
   pending_sweeps: number;
@@ -52,7 +53,7 @@ const WalletManagement: React.FC = () => {
 
   const fetchSweepSummary = async () => {
     try {
-      const response = await fetch('http://18.199.221.93:5001/api/wallet/sweep-summary');
+      const response = await fetch(`${getBaseUrl()}/api/wallet/sweep-summary`);
       if (response.ok) {
         const data = await response.json();
         setSweepSummary(data);
@@ -64,7 +65,7 @@ const WalletManagement: React.FC = () => {
 
   const fetchPendingDeposits = async () => {
     try {
-      const response = await fetch('http://18.199.221.93:5001/api/wallet/pending-deposits?limit=20');
+      const response = await fetch(`${getBaseUrl()}/api/wallet/pending-deposits?limit=20`);
       if (response.ok) {
         const data = await response.json();
         setPendingDeposits(data.deposits);
@@ -80,9 +81,9 @@ const WalletManagement: React.FC = () => {
     setSuccess('');
 
     try {
-      let url = 'http://18.199.221.93:5001/api/wallet/sweep-all';
+      let url = `${getBaseUrl()}/api/wallet/sweep-all`;
       if (asset && network) {
-        url = `http://18.199.221.93:5001/api/wallet/sweep/${asset}/${network}`;
+        url = `${getBaseUrl()}/api/wallet/sweep/${asset}/${network}`;
       }
 
       const response = await fetch(url, { method: 'POST' });

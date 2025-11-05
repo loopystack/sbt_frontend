@@ -5,6 +5,7 @@ import { useCountry } from "../contexts/CountryContext";
 import { getTeamLogo } from "../utils/teamLogos";
 import { useOddsFormat } from "../hooks/useOddsFormat";
 import { OddsConverter } from "../utils/oddsConverter";
+import { getBaseUrl } from '../config/api';
 
 interface ValueBet {
   id: number;
@@ -93,10 +94,10 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
       
       // Try the new value-bets endpoint
       const endpoints = [
-        'http://18.199.221.93:5001/api/odds/value-bets?limit=3&min_ev=0.03',
-        'http://18.199.221.93:5001/api/odds/value-bets?limit=5&min_ev=0.02',
-        'http://18.199.221.93:5001/api/odds/value-bets?limit=3&min_ev=0.03',
-        'http://18.199.221.93:5001/api/odds/value-bets?limit=5&min_ev=0.02'
+        `${getBaseUrl()}/api/odds/value-bets?limit=3&min_ev=0.03`,
+        `${getBaseUrl()}/api/odds/value-bets?limit=5&min_ev=0.02`,
+        `${getBaseUrl()}/api/odds/value-bets?limit=3&min_ev=0.03`,
+        `${getBaseUrl()}/api/odds/value-bets?limit=5&min_ev=0.02`
       ];
       
       let success = false;

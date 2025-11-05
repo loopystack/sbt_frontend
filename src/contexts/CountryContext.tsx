@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getBaseUrl } from '../config/api';
 
 export interface Match {
   id: string;
@@ -81,7 +82,7 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
 
         // Fetch countries and leagues from the API
         try {
-          const response = await fetch('http://18.199.221.93:5001/api/odds/leagues/list');
+          const response = await fetch(`${getBaseUrl()}/api/odds/leagues/list`);
           if (!response.ok) {
             throw new Error('Failed to fetch leagues');
           }

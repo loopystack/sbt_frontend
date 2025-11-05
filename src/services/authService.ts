@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import { getBaseUrl } from '../config/api';
 
 const BASE_URL = '/api/auth';
 
@@ -133,7 +134,7 @@ export const authService = {
     formData.append('username', credentials.email); // FastAPI OAuth2PasswordRequestForm expects 'username' field
     formData.append('password', credentials.password);
 
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/login`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/login`, {
       method: 'POST',
       body: formData,
     });

@@ -3,6 +3,7 @@
  * Handles authentication, error handling, and response parsing
  */
 import { reportError } from './rollbar';
+import { getBaseUrl } from '../config/api';
 
 interface ApiRequestOptions extends RequestInit {
   headers?: Record<string, string>;
@@ -24,8 +25,8 @@ export async function api<T = any>(
   url: string, 
   options: ApiRequestOptions = {}
 ): Promise<T> {
-  // Get base URL from environment or default to 18.199.221.93
-  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001';
+  // Get base URL from centralized config
+  const baseUrl = getBaseUrl();
   
   // Ensure URL is absolute
   const absoluteUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;

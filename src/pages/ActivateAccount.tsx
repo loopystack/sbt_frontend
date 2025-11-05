@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { getBaseUrl } from '../config/api';
 
 export default function ActivateAccount() {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,7 +22,7 @@ export default function ActivateAccount() {
       }
 
       try {
-        const response = await fetch('http://18.199.221.93:5001/api/auth/activate', {
+        const response = await fetch(`${getBaseUrl()}/api/auth/activate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

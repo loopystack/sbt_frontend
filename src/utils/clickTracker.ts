@@ -3,6 +3,8 @@
  * Automatically tracks user engagement with matches, buttons, and key actions
  */
 
+import { getBaseUrl } from '../config/api';
+
 const sessionId = localStorage.getItem('session_id') || generateSessionId();
 
 function generateSessionId(): string {
@@ -51,7 +53,7 @@ export async function trackClick(
     // Send to backend if authenticated
     if (accessToken) {
       await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}/api/analytics/clicks`,
+        `${getBaseUrl()}/api/analytics/clicks`,
         {
           method: 'POST',
           headers: {
@@ -93,7 +95,7 @@ export async function trackPageView(
 
     if (accessToken) {
       await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}/api/analytics/pageviews`,
+        `${getBaseUrl()}/api/analytics/pageviews`,
         {
           method: 'POST',
           headers: {
@@ -136,7 +138,7 @@ export async function trackConversion(
 
     if (accessToken) {
       await fetch(
-        `${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}/api/analytics/conversions`,
+        `${getBaseUrl()}/api/analytics/conversions`,
         {
           method: 'POST',
           headers: {

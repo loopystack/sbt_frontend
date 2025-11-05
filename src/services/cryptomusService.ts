@@ -2,6 +2,7 @@
 // This service handles integration with Cryptomus payment gateway
 
 import CryptoJS from 'crypto-js';
+import { getBaseUrl } from '../config/api';
 
 interface CryptomusPaymentRequest {
   amount: number;
@@ -86,7 +87,7 @@ class CryptomusService {
       console.log('Creating Cryptomus payment with payload:', payload);
 
       // Use backend proxy to avoid CORS issues
-      const response = await fetch(`http://18.199.221.93:5001/api/deposits/cryptomus/create-payment`, {
+      const response = await fetch(`${getBaseUrl()}/api/deposits/cryptomus/create-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

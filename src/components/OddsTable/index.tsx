@@ -18,6 +18,7 @@ import { transformMatchingInfoToMatch } from "../../data/sampleData";
 import { getTeamLogo } from "../../utils/teamLogos";
 import FantasticLoader from "../FantasticLoader";
 import CongratulationsAlert from "../CongratulationsAlert";
+import { getBaseUrl } from '../../config/api';
 type Match = {
   id: string;
   time: string;
@@ -543,7 +544,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           tokenExists: !!token,
           tokenLength: token?.length,
           tokenStart: token?.substring(0, 20),
-          baseUrl: import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001',
+          baseUrl: getBaseUrl(),
           currentUser: user?.email,
           selectedOddsCount: selectedOdds.length
         });

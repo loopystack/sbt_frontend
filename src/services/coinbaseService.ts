@@ -1,4 +1,5 @@
 // Coinbase Commerce Service
+import { getBaseUrl } from '../config/api';
 export interface CoinbasePaymentRequest {
   amount: number;
   currency: string;
@@ -64,7 +65,7 @@ class CoinbaseService {
       console.log('Creating Coinbase Commerce payment with payload:', payload);
 
       // Use backend proxy to avoid CORS issues
-      const response = await fetch(`http://18.199.221.93:5001/api/deposits/coinbase/create-payment`, {
+      const response = await fetch(`${getBaseUrl()}/api/deposits/coinbase/create-payment`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +93,7 @@ class CoinbaseService {
 
   async getPaymentStatus(paymentId: string): Promise<CoinbasePaymentResponse> {
     try {
-      const response = await fetch(`http://18.199.221.93:5001/api/deposits/coinbase/payment-status/${paymentId}`, {
+      const response = await fetch(`${getBaseUrl()}/api/deposits/coinbase/payment-status/${paymentId}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`

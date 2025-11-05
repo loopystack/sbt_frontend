@@ -4,6 +4,7 @@ import { authService, User } from "../services/authService";
 import { paymentService, CardPaymentRequest, BankTransferRequest, PayPalPaymentRequest } from "../services/paymentService";
 import { coinbaseService } from "../services/coinbaseService";
 import { useAuth } from "../contexts/AuthContext";
+import { getBaseUrl } from '../config/api';
 
 interface ProfileData extends User {
   member_since?: string;
@@ -212,7 +213,7 @@ export default function Profile() {
         return;
       }
 
-      const response = await fetch('http://18.199.221.93:5001/api/auth/profile', {
+      const response = await fetch(`${getBaseUrl()}/api/auth/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -470,7 +471,7 @@ export default function Profile() {
 
   const fetchSupportedAssets = async () => {
     try {
-      const response = await fetch('http://18.199.221.93:5001/api/deposits/supported-assets');
+      const response = await fetch(`${getBaseUrl()}/api/deposits/supported-assets`);
       if (response.ok) {
         const assets = await response.json();
         setSupportedAssets(assets);

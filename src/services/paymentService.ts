@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import { getBaseUrl } from '../config/api';
 
 const BASE_URL = '/api/payments';
 
@@ -84,7 +85,7 @@ export interface WithdrawalResponse {
 export const paymentService = {
   // Process Visa payment
   processVisaPayment: async (paymentData: CardPaymentRequest): Promise<PaymentResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/process-card`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/process-card`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -122,7 +123,7 @@ export const paymentService = {
 
   // Process Mastercard payment
   processMastercardPayment: async (paymentData: CardPaymentRequest): Promise<PaymentResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/process-card`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/process-card`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -160,7 +161,7 @@ export const paymentService = {
 
   // Process Bank Transfer payment
   processBankTransfer: async (paymentData: BankTransferRequest): Promise<PaymentResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/process-bank-transfer`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/process-bank-transfer`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -195,7 +196,7 @@ export const paymentService = {
 
   // Process PayPal payment
   processPayPalPayment: async (paymentData: PayPalPaymentRequest): Promise<PaymentResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/process-paypal`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/process-paypal`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -230,7 +231,7 @@ export const paymentService = {
 
   // Get available payment methods
   getPaymentMethods: async (): Promise<PaymentMethodsResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/payment-methods`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/payment-methods`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`,
@@ -260,7 +261,7 @@ export const paymentService = {
     transaction_hash?: string;
     verification_details?: any;
   }> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/confirm-crypto-deposit`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/confirm-crypto-deposit`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -295,7 +296,7 @@ export const paymentService = {
 
   // Process withdrawal
   processWithdrawal: async (withdrawalData: WithdrawalRequest): Promise<WithdrawalResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/withdraw`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/withdraw`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -330,7 +331,7 @@ export const paymentService = {
 
   // Get withdrawal methods
   getWithdrawalMethods: async (): Promise<PaymentMethodsResponse> => {
-    const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/withdrawal-methods`, {
+    const response = await fetch(`${getBaseUrl()}${BASE_URL}/withdrawal-methods`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token') || localStorage.getItem('access_token')}`,

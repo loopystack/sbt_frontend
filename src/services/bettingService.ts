@@ -1,4 +1,5 @@
 import { api } from '../lib/api';
+import { getBaseUrl } from '../config/api';
 
 const BASE_URL = '/api/betting';
 
@@ -67,7 +68,7 @@ export const bettingService = {
 
     console.log('🚀 Sending betting record to API:', {
       url: `${BASE_URL}/records`,
-      fullUrl: `${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}${BASE_URL}/records`,
+      fullUrl: `${getBaseUrl()}${BASE_URL}/records`,
       token: token ? `${token.substring(0, 20)}...` : 'NONE',
       record,
       matchDateDetails: record.match_date ? {

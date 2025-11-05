@@ -1,8 +1,9 @@
 import { useEffect } from "react";
+import { getWebSocketUrl } from "../config/api";
 
 export function useOddsSocket(onMessage?: (data: any) => void) {
   useEffect(() => {
-    const url = (import.meta.env.VITE_WS_URL as string) || "ws://18.199.221.93:5001/ws/odds";
+    const url = getWebSocketUrl('/ws/odds');
     const ws = new WebSocket(url);
     ws.onopen = () => ws.send(JSON.stringify({ type: "subscribe", matches: ["match-1"] }));
     ws.onmessage = (e) => {

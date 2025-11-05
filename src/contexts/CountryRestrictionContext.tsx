@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { getBaseUrl } from '../config/api';
 
 interface CountryRestrictionContextType {
   isChecking: boolean;
@@ -42,13 +43,13 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
           return;
         }
 
-        // Get test country from URL params (for 18.199.221.93 testing)
+        // Get test country from URL params (for LOCAL_IP testing)
         const urlParams = new URLSearchParams(window.location.search);
         const testCountry = urlParams.get('test_country');
         
         console.log('🌍 Test country from URL:', testCountry);
 
-        const url = `${import.meta.env.VITE_API_BASE_URL || 'http://18.199.221.93:5001'}/api/analytics/check-country${
+        const url = `${getBaseUrl()}/api/analytics/check-country${
           testCountry ? `?test_country=${testCountry}` : ''
         }`;
 

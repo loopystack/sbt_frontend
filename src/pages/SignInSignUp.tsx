@@ -6,6 +6,7 @@ import { authService, tokenManager } from "../services/authService";
 import ReCaptchaComponent, { ReCaptchaRef } from "../components/ReCaptcha";
 import RecaptchaDebug from "../components/RecaptchaDebug";
 import { recaptchaService } from "../services/recaptchaService";
+import { getBaseUrl, isLocalOrigin } from "../config/api";
 export default function SignInSignUp() {
   const [searchParams] = useSearchParams();
   const [isSignIn, setIsSignIn] = useState(true);
@@ -164,8 +165,8 @@ export default function SignInSignUp() {
     
     // Determine backend URL based on current domain
     let backendUrl;
-    if (currentOrigin.includes('18.199.221.93')) {
-      backendUrl = 'http://18.199.221.93:5001';
+    if (isLocalOrigin()) {
+      backendUrl = getBaseUrl();
     } else {
       // For production and any other domain, use production backend
       backendUrl = 'https://sportsbetting-seiw.onrender.com';

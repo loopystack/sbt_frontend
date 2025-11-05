@@ -9,9 +9,9 @@ import type {
     ApiHandler
 } from './types';
 import { logoutAction } from '../user/actions';
+import { getBaseUrl } from '../../config/api';
 
-export const BASE_URL = 'http://18.199.221.93:5001';
-// export const BASE_URL: string = 'http://18.199.221.93:5000';
+export const BASE_URL = getBaseUrl();
 
 export const defaultConfig: Partial<ApiConfig> = {
     timeout: 30000,
