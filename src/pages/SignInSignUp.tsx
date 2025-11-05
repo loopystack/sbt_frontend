@@ -211,11 +211,12 @@ export default function SignInSignUp() {
     setRecaptchaError("");
 
     // Check reCAPTCHA verification
-    if (!recaptchaVerified) {
-      setError("Please complete the reCAPTCHA verification first");
-      setIsLoading(false);
-      return;
-    }
+    // Temporarily disabled - no domain for captcha verification
+    // if (!recaptchaVerified) {
+    //   setError("Please complete the reCAPTCHA verification first");
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     try {
       if (isSignIn) {
@@ -544,7 +545,8 @@ export default function SignInSignUp() {
             )}
             
             {/* Google reCAPTCHA */}
-            <ReCaptchaComponent
+            {/* Temporarily disabled - no domain for captcha verification */}
+            {/* <ReCaptchaComponent
               ref={recaptchaRef}
               siteKey={recaptchaService.getSiteKey()}
               onVerify={handleRecaptchaVerify}
@@ -553,7 +555,7 @@ export default function SignInSignUp() {
               theme="dark"
               size="normal"
               className="mb-6"
-            />
+            /> */}
             
             {/* reCAPTCHA Error Display */}
             {recaptchaError && (
@@ -564,7 +566,7 @@ export default function SignInSignUp() {
             
             <button
               type="submit"
-              disabled={isLoading || !email || !password || (!isSignIn && (!confirmPassword || !username)) || !recaptchaVerified}
+              disabled={isLoading || !email || !password || (!isSignIn && (!confirmPassword || !username)) /* || !recaptchaVerified */ }
               className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 disabled:from-gray-600 disabled:to-gray-600 disabled:cursor-not-allowed text-black py-3 px-4 rounded-lg transition-all duration-300 font-bold text-sm shadow-lg hover:shadow-xl transform hover:scale-[1.02] flex items-center justify-center gap-2"
             >
               {isLoading ? (
