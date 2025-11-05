@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { apiMethods } from "../../lib/api";
 import { getTeamLogo } from "../../utils/teamLogos";
-import jsPDF from "jspdf";
+import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 
 interface CTRMetrics {

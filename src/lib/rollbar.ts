@@ -1,7 +1,7 @@
 /**
  * Rollbar error tracking setup for React frontend
  */
-import * as Rollbar from 'rollbar';
+import Rollbar from 'rollbar';
 
 const ROLLBAR_ACCESS_TOKEN = import.meta.env.VITE_ROLLBAR_ACCESS_TOKEN;
 const ROLLBAR_ENVIRONMENT = import.meta.env.VITE_ROLLBAR_ENVIRONMENT || 'development';
@@ -77,7 +77,7 @@ export const setUserContext = (user: {
     rollbar.configure({
       payload: {
         person: {
-          id: user.id?.toString(),
+          id: user.id?.toString() ?? null,
           username: user.username,
           email: user.email,
         },
@@ -94,7 +94,7 @@ export const clearUserContext = (): void => {
   try {
     rollbar.configure({
       payload: {
-        person: null,
+        person: undefined,
       },
     });
   } catch (err) {
