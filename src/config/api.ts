@@ -2,7 +2,7 @@
  * Centralized API configuration
  * Change LOCAL_IP here to update all API endpoints across the application
  */
-export const LOCAL_IP = '127.0.0.1';
+export const LOCAL_IP = 'localhost';
 
 /**
  * Get the backend hostname
