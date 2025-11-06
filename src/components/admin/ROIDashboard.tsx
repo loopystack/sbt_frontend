@@ -117,79 +117,98 @@ export default function ROIDashboard() {
       {/* Daily ROI Trend */}
       <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">Daily ROI Trend</h3>
-        <div style={{ height: "300px" }}>
-          <Line
-            data={{
-              labels: roiData.daily_roi_trend.map(item => new Date(item.date).toLocaleDateString()),
-              datasets: [
-                {
-                  label: "ROI %",
-                  data: roiData.daily_roi_trend.map(item => item.roi),
-                  borderColor: "#8B5CF6",
-                  backgroundColor: "rgba(139, 92, 246, 0.1)",
-                  tension: 0.4,
+        {roiData.daily_roi_trend && roiData.daily_roi_trend.length > 0 ? (
+          <div style={{ height: "300px" }}>
+            <Line
+              data={{
+                labels: roiData.daily_roi_trend.map(item => {
+                  try {
+                    return new Date(item.date).toLocaleDateString();
+                  } catch (e) {
+                    return item.date || 'Unknown';
+                  }
+                }),
+                datasets: [
+                  {
+                    label: "ROI %",
+                    data: roiData.daily_roi_trend.map(item => item.roi || 0),
+                    borderColor: "#8B5CF6",
+                    backgroundColor: "rgba(139, 92, 246, 0.1)",
+                    tension: 0.4,
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: { color: "#9CA3AF" },
+                  },
                 },
-              ],
-            }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  labels: { color: "#9CA3AF" },
+                scales: {
+                  x: {
+                    ticks: { color: "#9CA3AF" },
+                    grid: { color: "#374151" },
+                  },
+                  y: {
+                    ticks: { color: "#9CA3AF" },
+                    grid: { color: "#374151" },
+                  },
                 },
-              },
-              scales: {
-                x: {
-                  ticks: { color: "#9CA3AF" },
-                  grid: { color: "#374151" },
-                },
-                y: {
-                  ticks: { color: "#9CA3AF" },
-                  grid: { color: "#374151" },
-                },
-              },
-            }}
-          />
-        </div>
+              }}
+            />
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            <p>No daily ROI trend data available for this period.</p>
+          </div>
+        )}
       </div>
 
       {/* ROI by Source */}
       <div className="bg-black/30 backdrop-blur-xl border border-white/10 rounded-xl p-6">
         <h3 className="text-xl font-bold text-white mb-4">ROI by Source</h3>
-        <div style={{ height: "300px" }}>
-          <Bar
-            data={{
-              labels: Object.keys(roiData.roi_by_source),
-              datasets: [
-                {
-                  label: "ROI %",
-                  data: Object.values(roiData.roi_by_source),
-                  backgroundColor: "#8B5CF6",
+        {Object.keys(roiData.roi_by_source).length > 0 ? (
+          <div style={{ height: "300px" }}>
+            <Bar
+              data={{
+                labels: Object.keys(roiData.roi_by_source),
+                datasets: [
+                  {
+                    label: "ROI %",
+                    data: Object.values(roiData.roi_by_source),
+                    backgroundColor: "#8B5CF6",
+                  },
+                ],
+              }}
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: { color: "#9CA3AF" },
+                  },
                 },
-              ],
-            }}
-            options={{
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  labels: { color: "#9CA3AF" },
+                scales: {
+                  x: {
+                    ticks: { color: "#9CA3AF" },
+                    grid: { color: "#374151" },
+                  },
+                  y: {
+                    ticks: { color: "#9CA3AF" },
+                    grid: { color: "#374151" },
+                  },
                 },
-              },
-              scales: {
-                x: {
-                  ticks: { color: "#9CA3AF" },
-                  grid: { color: "#374151" },
-                },
-                y: {
-                  ticks: { color: "#9CA3AF" },
-                  grid: { color: "#374151" },
-                },
-              },
-            }}
-          />
-        </div>
+              }}
+            />
+          </div>
+        ) : (
+          <div className="text-center py-12 text-gray-400">
+            <p>No ROI data by source available.</p>
+            <p className="text-sm mt-2">Cost tracking per source is not yet implemented. ROI by source will appear once cost tracking is enabled.</p>
+          </div>
+        )}
       </div>
 
       {/* ROI by Campaign */}

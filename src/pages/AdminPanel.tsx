@@ -9,7 +9,6 @@ import CTRRevenueDashboard from "../components/admin/CTRRevenueDashboard";
 import ComplianceDashboard from "../components/admin/ComplianceDashboard";
 import AffiliateDashboard from "../components/admin/AffiliateDashboard";
 import ROIDashboard from "../components/admin/ROIDashboard";
-import MonitoringDashboard from "../components/admin/MonitoringDashboard";
 import ConversionHeatmap from "../components/admin/ConversionHeatmap";
 import ComplianceTesting from "../components/admin/ComplianceTesting";
 
@@ -53,7 +52,6 @@ export default function AdminPanel() {
     { id: "ctr-revenue", name: "CTR & Revenue", icon: "📈" },
     { id: "roi", name: "ROI", icon: "💰" },
     { id: "affiliates", name: "Affiliates", icon: "🤝" },
-    { id: "monitoring", name: "Monitoring", icon: "📡" },
     { id: "heatmap", name: "Heatmaps", icon: "🔥" },
     { id: "compliance", name: "Compliance", icon: "🛡️" },
     { id: "compliance-test", name: "Compliance Test", icon: "🧪" },
@@ -188,7 +186,6 @@ export default function AdminPanel() {
         {activeTab === "ctr-revenue" && <CTRRevenueDashboard />}
         {activeTab === "roi" && <ROIDashboard />}
         {activeTab === "affiliates" && <AffiliateDashboard />}
-        {activeTab === "monitoring" && <MonitoringDashboard />}
         {activeTab === "heatmap" && <ConversionHeatmap />}
         {activeTab === "compliance" && <ComplianceDashboard />}
         {activeTab === "compliance-test" && <ComplianceTesting />}
