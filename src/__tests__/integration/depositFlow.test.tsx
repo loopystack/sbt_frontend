@@ -293,7 +293,7 @@ describe('Deposit Flow Integration Tests', () => {
           btn.textContent?.toLowerCase().includes('confirm') || 
           btn.textContent?.toLowerCase().includes('visa') ||
           btn.textContent?.toLowerCase().includes('pay')
-        );
+        ) as HTMLButtonElement | undefined;
         if (paymentButton && !paymentButton.disabled) {
           fireEvent.click(paymentButton);
         }

@@ -105,6 +105,7 @@ export default function Profile() {
   const [currentConfirmations, setCurrentConfirmations] = useState(0);
   const [depositStatus, setDepositStatus] = useState("pending");
   const [depositId, setDepositId] = useState<number | null>(null);
+  const [expiresAt, setExpiresAt] = useState<string>("");
   const [supportedAssets, setSupportedAssets] = useState<any[]>([
     { asset: "USDT", networks: ["Ethereum", "TRON", "Polygon", "BSC"], memo_required: false },
     { asset: "USDC", networks: ["Ethereum", "Polygon", "Base", "BSC"], memo_required: false },
