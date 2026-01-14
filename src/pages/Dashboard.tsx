@@ -972,10 +972,10 @@ export default function Dashboard() {
             <p className="text-muted mb-4">Add funds or place bets to see your transaction history!</p>
             <div className="flex gap-3 justify-center">
               <button
-                onClick={() => navigate('/profile')}
+                onClick={() => navigate('/deposit')}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
               >
-                Add Funds
+                Deposit Funds
               </button>
               <button
                 onClick={() => navigate('/')}

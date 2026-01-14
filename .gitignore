@@ -28,6 +28,7 @@ Thumbs.db
 .idea/
 *.sublime-project
 *.sublime-workspace
+*.md
 
 # TypeScript cache
 .tsbuildinfo

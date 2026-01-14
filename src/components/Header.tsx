@@ -165,6 +165,24 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
                           <button
                             onClick={() => {
                               setShowUserDropdown(false);
+                              navigate("/deposit");
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                          >
+                            <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center">
+                              <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                              </svg>
+                            </div>
+                            <div>
+                              <span className="text-text font-semibold text-lg">Deposit</span>
+                              <p className="text-muted text-sm">Add funds to your account</p>
+                            </div>
+                          </button>
+                          
+                          <button
+                            onClick={() => {
+                              setShowUserDropdown(false);
                               navigate("/dashboard");
                             }}
                             className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-[1.02]"

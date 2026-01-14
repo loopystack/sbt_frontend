@@ -9,6 +9,7 @@ import { CountryRestrictionProvider, useCountryRestriction } from "./contexts/Co
 import { AuthProvider } from "./contexts/AuthContext";
 import { PreferencesProvider } from "./contexts/PreferencesContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
+import { DepositModalProvider } from "./contexts/DepositModalContext";
 import ReduxProvider from "./contexts/ReduxContext";
 import CookieConsent from "./components/CookieConsent";
 import CountryBlocked from "./components/CountryBlocked";
@@ -50,11 +51,13 @@ const AppContent: React.FC = () => {
         <ThemeProvider>
           <CountryProvider>
             <AuthProvider>
-              <NotificationProvider>
-                <PreferencesProvider>
-                  <RouterProvider router={router} />
-                </PreferencesProvider>
-              </NotificationProvider>
+              <DepositModalProvider>
+                <NotificationProvider>
+                  <PreferencesProvider>
+                    <RouterProvider router={router} />
+                  </PreferencesProvider>
+                </NotificationProvider>
+              </DepositModalProvider>
             </AuthProvider>
           </CountryProvider>
         </ThemeProvider>
@@ -64,8 +67,17 @@ const AppContent: React.FC = () => {
 };
 
 const App: React.FC = () => {
+  React.useEffect(() => {
+    console.log('📱 App: Component mounted');
+    console.log('📱 App: Environment', {
+      mode: import.meta.env.MODE,
+      apiUrl: import.meta.env.VITE_API_BASE_URL,
+      version: import.meta.env.VITE_APP_VERSION || '1.0.0'
+    });
+  }, []);
+
   const handleCookieAccept = (preferences: CookiePreferences) => {
-    
+    console.log('🍪 Cookies: User accepted preferences', preferences);
     
     // Save preferences
     CookieManager.savePreferences(preferences);
@@ -88,7 +100,7 @@ const App: React.FC = () => {
   };
 
   const handleCookieDecline = () => {
-    
+    console.log('🍪 Cookies: User declined non-essential cookies');
     
     // Save preferences with only essential cookies
     const preferences: CookiePreferences = {

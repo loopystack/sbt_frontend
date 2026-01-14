@@ -52,9 +52,37 @@ export async function api<T = any>(
   };
   
   try {
+    // Log request details
+    const method = requestOptions.method || 'GET';
+    let requestBody = null;
+    if (options.body) {
+      try {
+        if (typeof options.body === 'string') {
+          requestBody = JSON.parse(options.body);
+        } else {
+          requestBody = options.body;
+        }
+      } catch {
+        requestBody = '[Non-JSON body]';
+      }
+    }
+    
+    console.group(`🌐 API Request: ${method} ${absoluteUrl}`);
+    console.log('📤 Request:', {
+      method,
+      url: absoluteUrl,
+      headers: Object.fromEntries(new Headers(requestOptions.headers as HeadersInit).entries()),
+      body: requestBody
+    });
     
     const response = await fetch(absoluteUrl, requestOptions);
     
+    // Log response details
+    console.log('📥 Response:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries())
+    });
     
     // Handle non-JSON responses (like file downloads)
     const contentType = response.headers.get('content-type');
@@ -69,7 +97,12 @@ export async function api<T = any>(
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('API Error Response:', data);
+      console.error('❌ API Error Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: data
+      });
+      console.groupEnd();
       
       // Handle different error response formats
       let errorMessage = 'An error occurred';
@@ -92,10 +125,25 @@ export async function api<T = any>(
       throw new ApiError(errorMessage, response.status, data);
     }
     
+    // Log successful response
+    console.log('✅ API Success:', {
+      status: response.status,
+      data: import.meta.env.DEV ? data : '[Data hidden in production]'
+    });
+    console.groupEnd();
+    
     return data;
     
   } catch (error) {
-    console.error('API Request failed:', error);
+    console.error('❌ API Request failed:', {
+      url: absoluteUrl,
+      method: requestOptions.method || 'GET',
+      error: error instanceof Error ? {
+        message: error.message,
+        stack: error.stack
+      } : error
+    });
+    console.groupEnd();
     
     // Report error to Rollbar
     reportError(

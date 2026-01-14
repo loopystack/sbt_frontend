@@ -129,21 +129,51 @@ export const authService = {
 
   // Login user
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
+    const loginUrl = `${getBaseUrl()}${BASE_URL}/login`;
+    
+    console.group(`🔐 Auth: Login Request`);
+    console.log('📤 Request:', {
+      method: 'POST',
+      url: loginUrl,
+      email: credentials.email
+    });
+    
     const formData = new FormData();
     formData.append('username', credentials.email); // FastAPI OAuth2PasswordRequestForm expects 'username' field
     formData.append('password', credentials.password);
 
-    const response = await fetch(`${getBaseUrl()}${BASE_URL}/login`, {
-      method: 'POST',
-      body: formData,
-    });
+    try {
+      const response = await fetch(loginUrl, {
+        method: 'POST',
+        body: formData,
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.detail || 'Login failed');
+      console.log('📥 Response:', {
+        status: response.status,
+        statusText: response.statusText
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('❌ Login failed:', errorData);
+        console.groupEnd();
+        throw new Error(errorData.detail || 'Login failed');
+      }
+
+      const authResponse = await response.json();
+      console.log('✅ Login successful:', {
+        tokenType: authResponse.token_type,
+        hasAccessToken: !!authResponse.access_token,
+        hasRefreshToken: !!authResponse.refresh_token
+      });
+      console.groupEnd();
+      
+      return authResponse;
+    } catch (error) {
+      console.error('❌ Login error:', error);
+      console.groupEnd();
+      throw error;
     }
-
-    return response.json();
   },
 
   // Refresh access token

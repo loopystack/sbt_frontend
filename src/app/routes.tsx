@@ -17,6 +17,7 @@ import VerifyEmail from "../pages/VerifyEmail";
 import Profile from "../pages/Profile";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import AdminPanel from "../pages/AdminPanel";
+import Deposit from "../pages/Deposit";
 
 export const routes: RouteObject[] = [
   {
@@ -34,6 +35,7 @@ export const routes: RouteObject[] = [
       { path: "bonuses", element: <Bonuses /> },
       { path: "dashboard", element: <Dashboard /> },
       { path: "profile", element: <Profile /> },
+      { path: "deposit", element: <Deposit /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> }
     ]
   },

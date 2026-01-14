@@ -35,12 +35,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [justLoggedOut, setJustLoggedOut] = useState(false);
 
   const checkAuth = async () => {
+    console.log('🔐 Auth: Checking authentication status...');
     
     // Check if user just logged out (persistent across page reloads)
     const userJustLoggedOut = localStorage.getItem('userJustLoggedOut') === 'true';
     
     // If user just logged out, don't try to authenticate
     if (justLoggedOut || userJustLoggedOut) {
+      console.log('🔐 Auth: User just logged out, skipping auth check');
       setIsAuthenticated(false);
       setUser(null);
       setIsLoading(false);
@@ -54,22 +56,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const reduxToken = localStorage.getItem('token');
     const authToken = token || reduxToken;
     
-
+    console.log('🔐 Auth: Token check', {
+      hasToken: !!authToken,
+      hasAccessToken: !!token,
+      hasReduxToken: !!reduxToken
+    });
     
     if (authToken) {
       try {
         // Sync tokens between systems
         if (token && !reduxToken) {
           localStorage.setItem('token', token);
+          console.log('🔐 Auth: Synced access_token to token');
         } else if (reduxToken && !token) {
           localStorage.setItem('access_token', reduxToken);
+          console.log('🔐 Auth: Synced token to access_token');
         }
         
+        console.log('🔐 Auth: Fetching current user...');
         const userData = await authService.getCurrentUser();
+        console.log('🔐 Auth: User authenticated', {
+          userId: userData.id,
+          email: userData.email,
+          username: userData.username
+        });
         setUser(userData);
         setIsAuthenticated(true);
       } catch (error: any) {
-        console.error("Failed to get user data:", error);
+        console.error("❌ Auth: Failed to get user data:", {
+          error: error.message,
+          status: error.status,
+          details: error
+        });
         
         // Check if it's an authentication error (token expired/invalid)
         if (error?.status === 401 || error?.message?.includes('401') || 
@@ -113,13 +131,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const login = async (email: string, password: string) => {
+    console.log('🔐 Auth: Login attempt', { email });
     setIsLoading(true);
     try {
       const response = await authService.login({ email, password });
+      console.log('🔐 Auth: Login successful, setting tokens');
       tokenManager.setTokens(response.access_token, response.refresh_token);
       
       // Get user data
+      console.log('🔐 Auth: Fetching user data...');
       const userData = await authService.getCurrentUser();
+      console.log('🔐 Auth: User data retrieved', {
+        userId: userData.id,
+        email: userData.email,
+        username: userData.username
+      });
       setUser(userData);
       setIsAuthenticated(true);
       setJustLoggedOut(false); // Reset logout flag on successful login
@@ -129,7 +155,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       window.dispatchEvent(new CustomEvent('authStateChanged', { 
         detail: { isAuthenticated: true, user: userData } 
       }));
+      console.log('✅ Auth: Login complete, user authenticated');
     } catch (error) {
+      console.error('❌ Auth: Login failed', error);
       throw error;
     } finally {
       setIsLoading(false);
@@ -137,7 +165,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = () => {
-
+    console.log('🔐 Auth: Logout initiated', {
+      userId: user?.id,
+      email: user?.email
+    });
     
     // Set flags FIRST to prevent any authentication checks
     setJustLoggedOut(true);
@@ -167,11 +198,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       detail: { isAuthenticated: false, user: null } 
     }));
     
-
+    console.log('✅ Auth: Logout complete, clearing all tokens and state');
     
     // Set the persistent flag AFTER clearing everything
     setTimeout(() => {
       localStorage.setItem('userJustLoggedOut', 'true');
+      console.log('🔄 Auth: Reloading page after logout');
       window.location.reload();
     }, 50);
   };
@@ -183,6 +215,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    console.log('🔐 Auth: AuthProvider mounted, checking authentication...');
     checkAuth();
 
     // Listen for storage changes

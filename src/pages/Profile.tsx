@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { authService, User } from "../services/authService";
 import { paymentService, CardPaymentRequest, BankTransferRequest, PayPalPaymentRequest } from "../services/paymentService";
 import { coinbaseService } from "../services/coinbaseService";
+import { depositService, DepositHistoryItem } from "../services/depositService";
+import { walletService, UnifiedBalanceResponse } from "../services/walletService";
+import { transactionService, Transaction } from "../services/transactionService";
 import { useAuth } from "../contexts/AuthContext";
 import { getBaseUrl } from '../config/api';
 
@@ -14,6 +17,7 @@ interface ProfileData extends User {
 }
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user: authUser, isAuthenticated, isLoading: authLoading, logout, refreshUser } = useAuth();
   const [user, setUser] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -57,7 +61,14 @@ export default function Profile() {
   const [fundLoading, setFundLoading] = useState(false);
   const [fundError, setFundError] = useState("");
   const [fundSuccess, setFundSuccess] = useState("");
-  const [userFunds, setUserFunds] = useState(0.00); // Real funds from backend
+  const [userFunds, setUserFunds] = useState(0.00); // Total unified balance (Stripe + Crypto)
+  const [balanceBreakdown, setBalanceBreakdown] = useState<UnifiedBalanceResponse | null>(null);
+  const [balanceLoading, setBalanceLoading] = useState(false);
+  
+  // Deposit history states
+  const [cryptoDeposits, setCryptoDeposits] = useState<DepositHistoryItem[]>([]);
+  const [stripeDeposits, setStripeDeposits] = useState<Transaction[]>([]);
+  const [depositHistoryLoading, setDepositHistoryLoading] = useState(false);
   
   // Withdrawal states
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
@@ -120,8 +131,6 @@ export default function Profile() {
   const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const apiCallInProgressRef = useRef(false);
 
-  const navigate = useNavigate();
-
   useEffect(() => {
     // Don't redirect if auth is still loading
     if (authLoading) {
@@ -159,6 +168,57 @@ export default function Profile() {
     );
   }
 
+  // Fetch unified balance (Stripe + Crypto)
+  const fetchUnifiedBalance = async () => {
+    try {
+      setBalanceLoading(true);
+      const balanceData = await walletService.getTotalBalance();
+      setBalanceBreakdown(balanceData);
+      setUserFunds(parseFloat(balanceData.total_available_usd));
+    } catch (err) {
+      console.error("Error fetching unified balance:", err);
+      // Fallback to funds_usd if unified balance fails
+      try {
+        const userData = await authService.getCurrentUser();
+        setUserFunds(userData.funds_usd || 0.00);
+      } catch (fallbackErr) {
+        console.error("Error fetching fallback balance:", fallbackErr);
+      }
+    } finally {
+      setBalanceLoading(false);
+    }
+  };
+
+  // Fetch deposit history (both crypto and Stripe)
+  const fetchDepositHistory = async () => {
+    try {
+      setDepositHistoryLoading(true);
+      
+      // Fetch crypto deposits
+      const cryptoHistory = await depositService.getDepositHistory(50, 0);
+      setCryptoDeposits(cryptoHistory);
+      
+      // Fetch Stripe deposits (from transactions)
+      const transactions = await transactionService.getTransactions(1, 50, 'deposit');
+      // Filter for Stripe payments (payment_method contains 'stripe' or card types)
+      const stripeTransactions = transactions.transactions.filter(t => 
+        t.payment_method && (
+          t.payment_method.includes('stripe') || 
+          t.payment_method.includes('card') ||
+          t.payment_method.includes('VISA') ||
+          t.payment_method.includes('Mastercard') ||
+          t.payment_method.includes('PayPal') ||
+          t.payment_method.includes('Bank')
+        )
+      );
+      setStripeDeposits(stripeTransactions);
+    } catch (err) {
+      console.error("Error fetching deposit history:", err);
+    } finally {
+      setDepositHistoryLoading(false);
+    }
+  };
+
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
@@ -179,11 +239,16 @@ export default function Profile() {
       };
       
       setUser(profileData);
-      setUserFunds(userData.funds_usd || 0.00); // Set real funds from backend
       setEditForm({
         full_name: profileData.full_name || "",
         username: profileData.username,
       });
+
+      // Fetch unified balance (Stripe + Crypto)
+      await fetchUnifiedBalance();
+      
+      // Fetch deposit history
+      await fetchDepositHistory();
     } catch (err) {
       console.error("Error fetching user profile:", err);
       setError("Failed to load profile. Please try again.");
@@ -500,6 +565,7 @@ export default function Profile() {
     try {
       setFundLoading(true);
       setFundError("");
+      setFundSuccess("");
       
       // Validate amount
       if (!amount || parseFloat(amount) <= 0) {
@@ -507,34 +573,33 @@ export default function Profile() {
         return;
       }
 
-      // Map our currency and network to Coinbase Commerce format
-      const coinbaseCurrency = coinbaseService.mapCurrencyToCoinbase(selectedCurrency, selectedNetwork);
-      
-      // Create payment request
-      const paymentRequest = {
-        amount: parseFloat(amount),
-        currency: coinbaseCurrency,
-        orderId: `deposit_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        description: `Deposit ${amount} ${selectedCurrency} via ${selectedNetwork}`,
-        redirectUrl: `${window.location.origin}/profile`,
-        webhookUrl: `${window.location.origin}/api/coinbase/webhook`
-      };
+      // Use the new deposit service (Week 5 implementation)
+      const depositResponse = await depositService.initiateDeposit({
+        asset: selectedCurrency,
+        network: selectedNetwork === "TRC20" ? "TRC20" : selectedNetwork, // Normalize TRC20
+        amount_usd: parseFloat(amount)
+      });
 
-
-      // Create payment with Coinbase Commerce
-      const paymentResponse = await coinbaseService.createPayment(paymentRequest);
+      // Set deposit details
+      setDepositAddress(depositResponse.address);
+      setQrCode(depositResponse.qr_code);
+      setExplorerUrl(depositResponse.explorer_url);
+      setDepositId(depositResponse.id);
+      setDepositStatus(depositResponse.status);
+      setRequiredConfirmations(depositResponse.required_confirmations);
+      setExpiresAt(depositResponse.expires_at);
       
-      if (paymentResponse.id && (paymentResponse.hosted_url || paymentResponse.url)) {
-        // Redirect to Coinbase Commerce payment page
-        const paymentUrl = paymentResponse.hosted_url || paymentResponse.url;
-        coinbaseService.redirectToPayment(paymentUrl);
-      } else {
-        setFundError("Failed to create payment. Please try again.");
-      }
+      setFundSuccess(`Deposit address generated! Send ${selectedCurrency} to this address.`);
+      
+      // Refresh deposit history
+      await fetchDepositHistory();
+      
+      // Close modal - user can see deposit in history
+      setShowAddFundModal(false);
       
     } catch (error) {
-      console.error('Coinbase Commerce payment creation error:', error);
-      setFundError(`Failed to initiate payment: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Deposit initiation error:', error);
+      setFundError(`Failed to initiate deposit: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setFundLoading(false);
     }
@@ -655,7 +720,10 @@ export default function Profile() {
                 const callId = Math.random().toString(36).substr(2, 9);
                 const response = await authService.addFunds(parseFloat(amount));
                 
-                setUserFunds(response.new_balance);
+                // Refresh unified balance (Stripe + Crypto)
+                await fetchUnifiedBalance();
+                // Refresh deposit history
+                await fetchDepositHistory();
                 setFundSuccess(response.message);
                 
                 // Also update the user object if it exists
@@ -948,8 +1016,10 @@ export default function Profile() {
         }
 
         if (paymentResponse.status === 'success') {
-          // Update user funds with real data from backend
-          setUserFunds(paymentResponse.new_balance);
+          // Refresh unified balance (Stripe + Crypto)
+          await fetchUnifiedBalance();
+          // Refresh deposit history
+          await fetchDepositHistory();
           setFundSuccess(paymentResponse.message);
 
           // Also update the user object if it exists
@@ -1185,8 +1255,8 @@ export default function Profile() {
       const response = await paymentService.processWithdrawal(withdrawalData);
       
       if (response.status === 'success') {
-        // Update user funds
-        setUserFunds(response.new_balance);
+        // Refresh unified balance (Stripe + Crypto)
+        await fetchUnifiedBalance();
         setWithdrawSuccess(response.message);
         
         // Also update the user object if it exists
@@ -1416,7 +1486,7 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-bg text-text">
-      <div className="max-w-6xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
@@ -1499,9 +1569,9 @@ export default function Profile() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
           {/* Profile Information */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-8">
             <div className="bg-surface border border-border rounded-xl p-4 sm:p-6">
               <h3 className="text-lg sm:text-xl font-semibold text-text mb-4 sm:mb-6">Profile Information</h3>
               
@@ -1663,7 +1733,7 @@ export default function Profile() {
           </div>
 
           {/* Statistics Sidebar */}
-          <div className="space-y-6">
+          <div className="lg:col-span-4 space-y-6">
             {/* Available Funds - Prominent Display */}
             <div className="bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-600/20 border border-emerald-500/30 rounded-xl p-6 mb-6">
               <div className="text-center">
@@ -1677,9 +1747,23 @@ export default function Profile() {
                 </div>
                 
                 <div className="mb-8">
-                  <div className="text-5xl font-bold text-emerald-400 mb-2">
-                    ${userFunds.toFixed(2)}
-                  </div>
+                  {balanceLoading ? (
+                    <div className="text-5xl font-bold text-emerald-400 mb-2 animate-pulse">
+                      Loading...
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-5xl font-bold text-emerald-400 mb-2">
+                        ${userFunds.toFixed(2)}
+                      </div>
+                      {balanceBreakdown && (
+                        <div className="text-xs text-gray-400 mt-2 space-y-1">
+                          <div>Fiat: ${parseFloat(balanceBreakdown.breakdown.fiat.amount).toFixed(2)}</div>
+                          <div>Crypto: {parseFloat(balanceBreakdown.breakdown.crypto.amount).toFixed(6)} USDT (${parseFloat(balanceBreakdown.breakdown.crypto.usd_equivalent).toFixed(2)})</div>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </div>
                 
                 <div className="flex gap-2 justify-center">
@@ -1751,6 +1835,92 @@ export default function Profile() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Deposit History */}
+            <div className="bg-surface border border-border rounded-xl p-6 mb-6">
+              <h3 className="text-lg font-semibold text-text mb-4">Deposit History</h3>
+              {depositHistoryLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-400 mx-auto"></div>
+                  <p className="text-muted mt-2">Loading deposit history...</p>
+                </div>
+              ) : cryptoDeposits.length === 0 && stripeDeposits.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted">No deposit history yet</p>
+                </div>
+              ) : (
+                <div className="space-y-3 max-h-96 overflow-y-auto">
+                  {/* Crypto Deposits */}
+                  {cryptoDeposits.map((deposit) => (
+                    <div key={`crypto-${deposit.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-text">Crypto Deposit</p>
+                          <p className="text-xs text-muted">
+                            {deposit.asset} • {deposit.network} • {deposit.status}
+                          </p>
+                          {deposit.tx_hash && (
+                            <p className="text-xs text-muted font-mono truncate max-w-xs">
+                              {deposit.tx_hash.substring(0, 16)}...
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-emerald-400">
+                          +${deposit.amount_usd.toFixed(2)}
+                        </p>
+                        {deposit.amount_crypto && (
+                          <p className="text-xs text-muted">
+                            {deposit.amount_crypto.toFixed(6)} {deposit.asset}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted">
+                          {new Date(deposit.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Stripe Deposits */}
+                  {stripeDeposits.map((transaction) => (
+                    <div key={`stripe-${transaction.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-text">Stripe Deposit</p>
+                          <p className="text-xs text-muted">
+                            {transaction.payment_method || 'Card Payment'} • {transaction.status}
+                          </p>
+                          {transaction.external_reference && (
+                            <p className="text-xs text-muted font-mono truncate max-w-xs">
+                              {transaction.external_reference.substring(0, 16)}...
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-emerald-400">
+                          +${transaction.amount.toFixed(2)}
+                        </p>
+                        <p className="text-xs text-muted">
+                          {new Date(transaction.created_at).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Quick Actions */}
@@ -2088,7 +2258,7 @@ export default function Profile() {
               disabled={fundLoading || !amount}
               className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors text-sm"
             >
-              {fundLoading ? "Redirecting..." : "Deposit with Coinbase"}
+              {fundLoading ? "Generating Address..." : "Generate Deposit Address"}
             </button>
           </div>
                 </>
