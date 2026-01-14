@@ -56,14 +56,20 @@ export const getBaseUrl = (): string => {
   const port = getBackendPort();
   const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
   
-  // Get current frontend port (empty string means default port 80/443)
+  // Get current frontend hostname and port
   const currentHost = window.location.hostname;
   const currentPort = window.location.port;
   const isDefaultPort = !currentPort || currentPort === '80' || currentPort === '443';
   
-  // Only omit port if:
-  // 1. Frontend and backend are on same host AND
-  // 2. Backend port matches frontend port (both using default ports or both using same non-default port)
+  // In production (not localhost/127.0.0.1), use same origin (nginx proxy)
+  // This ensures API calls go through nginx proxy at /api instead of direct backend
+  if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && currentHost !== '0.0.0.0') {
+    // Use same origin - nginx will proxy /api to backend
+    return `${protocol}//${currentHost}${isDefaultPort ? '' : `:${currentPort}`}`;
+  }
+  
+  // In development, connect directly to backend with port
+  // Only omit port if frontend and backend are on same host and same port
   if (host === currentHost && (
     (isDefaultPort && (port === '80' || port === '443')) ||
     (!isDefaultPort && currentPort === port)
@@ -72,7 +78,9 @@ export const getBaseUrl = (): string => {
   }
   
   // Otherwise, always include the port for backend
-  return `${protocol}//${host}:${port}`;
+  // Never use 0.0.0.0 - use localhost or 127.0.0.1 instead
+  const safeHost = host === '0.0.0.0' ? 'localhost' : host;
+  return `${protocol}//${safeHost}:${port}`;
 };
 
 /**
