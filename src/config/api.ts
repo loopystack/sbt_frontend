@@ -47,28 +47,34 @@ const getBackendPort = (): string => {
  * Uses environment variable if available, otherwise constructs from host and port
  */
 export const getBaseUrl = (): string => {
-  // If full URL is provided via environment variable, use it
-  if (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.startsWith('http')) {
-    return import.meta.env.VITE_API_BASE_URL;
-  }
-
-  const host = getBackendHost();
-  const port = getBackendPort();
-  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
-  
   // Get current frontend hostname and port
   const currentHost = window.location.hostname;
   const currentPort = window.location.port;
   const isDefaultPort = !currentPort || currentPort === '80' || currentPort === '443';
+  const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
   
-  // In production (not localhost/127.0.0.1), use same origin (nginx proxy)
+  // In production (not localhost/127.0.0.1/0.0.0.0), always use same origin (nginx proxy)
   // This ensures API calls go through nginx proxy at /api instead of direct backend
   if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && currentHost !== '0.0.0.0') {
     // Use same origin - nginx will proxy /api to backend
     return `${protocol}//${currentHost}${isDefaultPort ? '' : `:${currentPort}`}`;
   }
   
-  // In development, connect directly to backend with port
+  // In development (localhost), check environment variable first
+  // But ignore if it contains 0.0.0.0 (invalid for browser)
+  if (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.startsWith('http')) {
+    const envUrl = import.meta.env.VITE_API_BASE_URL;
+    // Never use 0.0.0.0 - replace with localhost
+    if (envUrl.includes('0.0.0.0')) {
+      return envUrl.replace('0.0.0.0', 'localhost');
+    }
+    return envUrl;
+  }
+
+  // Fallback: construct URL for development
+  const host = getBackendHost();
+  const port = getBackendPort();
+  
   // Only omit port if frontend and backend are on same host and same port
   if (host === currentHost && (
     (isDefaultPort && (port === '80' || port === '443')) ||
