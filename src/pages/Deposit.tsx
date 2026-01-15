@@ -29,10 +29,10 @@ const Deposit: React.FC = () => {
   const [txHash, setTxHash] = useState<string>('');
   const [expiresAt, setExpiresAt] = useState<string>('');
   const [supportedAssets, setSupportedAssets] = useState<any[]>([
-    { asset: "USDT", networks: ["TRC20", "Ethereum", "Polygon", "BSC"], memo_required: false },
+    { asset: "USDT", networks: ["TRC20"], memo_required: false },  // Only TRC20 for USDT
     { asset: "USDC", networks: ["Ethereum", "Polygon", "Base", "BSC"], memo_required: false },
     { asset: "BNB", networks: ["BSC"], memo_required: false },
-    { asset: "TRX", networks: ["TRON"], memo_required: false },
+    { asset: "TRX", networks: ["TRC20"], memo_required: false },  // TRX uses TRC20 network
     { asset: "BTC", networks: ["Bitcoin"], memo_required: false }
   ]);
   
@@ -113,23 +113,42 @@ const Deposit: React.FC = () => {
   const fetchSupportedAssets = async () => {
     try {
       const assets = await depositService.getSupportedAssets();
-      setSupportedAssets(assets);
-      // Ensure TRC20 is selected if USDT is selected and TRC20 is available
-      if (selectedAsset === 'USDT') {
-        const usdtAsset = assets.find(a => a.asset === 'USDT');
-        if (usdtAsset && usdtAsset.networks.includes('TRC20')) {
-          setSelectedNetwork('TRC20');
+      // Filter networks: For USDT, only allow TRC20 (remove Ethereum, Polygon, BSC, etc.)
+      const filteredAssets = assets.map(asset => {
+        if (asset.asset === 'USDT') {
+          return {
+            ...asset,
+            networks: asset.networks.filter(n => n === 'TRC20' || n === 'TRON').map(n => n === 'TRON' ? 'TRC20' : n)
+          };
         }
+        return asset;
+      });
+      setSupportedAssets(filteredAssets);
+      // Ensure TRC20 is selected if USDT is selected
+      if (selectedAsset === 'USDT') {
+        setSelectedNetwork('TRC20');
       }
     } catch (error) {
       console.error('Failed to fetch supported assets:', error);
-      // Keep the default hardcoded values if API fails
+      // Keep the default hardcoded values if API fails, but ensure USDT only has TRC20
+      const fallbackAssets = supportedAssets.map(asset => {
+        if (asset.asset === 'USDT') {
+          return { ...asset, networks: ['TRC20'] };
+        }
+        return asset;
+      });
+      setSupportedAssets(fallbackAssets);
     }
   };
 
   const getNetworksForAsset = (asset: string) => {
     const assetData = supportedAssets.find(a => a.asset === asset);
-    return assetData ? assetData.networks : [];
+    if (!assetData) return [];
+    // For USDT, only return TRC20 (filter out any other networks)
+    if (asset === 'USDT') {
+      return assetData.networks.filter(n => n === 'TRC20' || n === 'TRON').map(n => n === 'TRON' ? 'TRC20' : n);
+    }
+    return assetData.networks;
   };
 
   const getMinDeposit = (currency: string) => {
@@ -556,8 +575,8 @@ const Deposit: React.FC = () => {
                             setSelectedAsset(asset.asset);
                             const networks = getNetworksForAsset(asset.asset);
                             if (networks.length > 0) {
-                              // Prefer TRC20 for USDT if available
-                              if (asset.asset === 'USDT' && networks.includes('TRC20')) {
+                              // Always use TRC20 for USDT
+                              if (asset.asset === 'USDT') {
                                 setSelectedNetwork('TRC20');
                               } else {
                                 setSelectedNetwork(networks[0]);
@@ -607,8 +626,8 @@ const Deposit: React.FC = () => {
                           setSelectedAsset(e.target.value);
                           const networks = getNetworksForAsset(e.target.value);
                           if (networks.length > 0) {
-                            // Prefer TRC20 for USDT if available
-                            if (e.target.value === 'USDT' && networks.includes('TRC20')) {
+                            // Always use TRC20 for USDT
+                            if (e.target.value === 'USDT') {
                               setSelectedNetwork('TRC20');
                             } else {
                               setSelectedNetwork(networks[0]);
@@ -627,18 +646,25 @@ const Deposit: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium mb-2">Network</label>
-                      <select
-                        value={selectedNetwork}
-                        onChange={(e) => setSelectedNetwork(e.target.value)}
-                        className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                        disabled={loading || !!depositAddress}
-                      >
-                        {getNetworksForAsset(selectedAsset).map((network: string) => (
-                          <option key={network} value={network}>
-                            {network}
-                          </option>
-                        ))}
-                      </select>
+                      {selectedAsset === 'USDT' && getNetworksForAsset(selectedAsset).length === 1 ? (
+                        // If USDT only has TRC20, show it as a read-only field
+                        <div className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white">
+                          TRC20 (Only supported network)
+                        </div>
+                      ) : (
+                        <select
+                          value={selectedNetwork}
+                          onChange={(e) => setSelectedNetwork(e.target.value)}
+                          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                          disabled={loading || !!depositAddress}
+                        >
+                          {getNetworksForAsset(selectedAsset).map((network: string) => (
+                            <option key={network} value={network}>
+                              {network}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </div>
                   </div>
 
