@@ -146,7 +146,7 @@ const Deposit: React.FC = () => {
     if (!assetData) return [];
     // For USDT, only return TRC20 (filter out any other networks)
     if (asset === 'USDT') {
-      return assetData.networks.filter(n => n === 'TRC20' || n === 'TRON').map(n => n === 'TRON' ? 'TRC20' : n);
+      return assetData.networks.filter((n: string) => n === 'TRC20' || n === 'TRON').map((n: string) => n === 'TRON' ? 'TRC20' : n);
     }
     return assetData.networks;
   };
