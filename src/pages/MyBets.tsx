@@ -34,6 +34,20 @@ const MyBets: React.FC = () => {
     }
   };
 
+  const handleCancelBet = async (betId: number) => {
+    if (!window.confirm('Are you sure you want to cancel this bet? The stake will be returned to your available balance.')) {
+      return;
+    }
+
+    try {
+      await betService.cancelBet(betId);
+      toast.success('Bet cancelled successfully');
+      fetchBets(); // Refresh list
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to cancel bet');
+    }
+  };
+
   const getStatusColor = (status: BetStatus): string => {
     switch (status) {
       case 'won':
@@ -152,12 +166,15 @@ const MyBets: React.FC = () => {
                 <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Selection</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-right">Odds</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-right">Stake</th>
-                <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-right">Potential Profit</th>
+                <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-right">
+                  {bets.some(b => b.status === 'won' || b.status === 'lost') ? 'Profit/Payout' : 'Potential Profit'}
+                </th>
                 <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Status</th>
                 <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Placed At</th>
                 {bets.some(b => b.settled_at) && (
                   <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Settled At</th>
                 )}
+                <th className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -176,7 +193,24 @@ const MyBets: React.FC = () => {
                     {bet.stake.toFixed(2)} {bet.currency}
                   </td>
                   <td className="border border-gray-300 dark:border-gray-700 px-4 py-2 text-right">
-                    {bet.potential_profit.toFixed(2)} {bet.currency}
+                    {bet.status === 'won' && bet.profit !== undefined ? (
+                      <span className="text-green-600 dark:text-green-400 font-semibold">
+                        +{bet.profit.toFixed(2)} {bet.currency}
+                        {bet.payout && ` (Payout: ${bet.payout.toFixed(2)})`}
+                      </span>
+                    ) : bet.status === 'lost' ? (
+                      <span className="text-red-600 dark:text-red-400">
+                        -{bet.stake.toFixed(2)} {bet.currency}
+                      </span>
+                    ) : bet.status === 'void' || bet.status === 'cancelled' ? (
+                      <span className="text-gray-600 dark:text-gray-400">
+                        0.00 {bet.currency}
+                      </span>
+                    ) : (
+                      <span>
+                        {bet.potential_profit.toFixed(2)} {bet.currency}
+                      </span>
+                    )}
                   </td>
                   <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${getStatusColor(bet.status)}`}>
@@ -191,6 +225,16 @@ const MyBets: React.FC = () => {
                       {formatDate(bet.settled_at)}
                     </td>
                   )}
+                  <td className="border border-gray-300 dark:border-gray-700 px-4 py-2">
+                    {bet.status === 'pending' && (
+                      <button
+                        onClick={() => handleCancelBet(bet.id)}
+                        className="px-3 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

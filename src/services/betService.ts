@@ -21,6 +21,8 @@ export interface Bet {
   settled_at?: string;
   potential_profit: number;
   potential_payout: number;
+  profit?: number;  // Actual profit if settled
+  payout?: number;  // Actual payout if settled
 }
 
 export interface BetWithMatch extends Bet {
@@ -119,6 +121,23 @@ class BetService {
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.detail || 'Failed to get bet');
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Cancel a pending bet (unlock reserved funds)
+   */
+  async cancelBet(betId: number): Promise<Bet> {
+    const response = await fetch(`${this.baseUrl}/api/bets/${betId}/cancel`, {
+      method: 'POST',
+      headers: this.getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.detail || 'Failed to cancel bet');
     }
 
     return response.json();
