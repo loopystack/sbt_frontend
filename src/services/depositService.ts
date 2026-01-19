@@ -1,6 +1,6 @@
 /**
  * Deposit Service
- * Week 5 Day 6: Service for handling deposit operations
+ * Service for handling deposit operations
  */
 import { getBaseUrl } from '../config/api';
 

@@ -71,7 +71,7 @@ const Deposit: React.FC = () => {
     }
   }, [isAuthenticated]);
 
-  // Week 6 Day 5: Poll for deposit status and history until settled
+  // Poll for deposit status and history until settled
   useEffect(() => {
     if (!currentDepositId || !polling) return;
 
@@ -309,7 +309,7 @@ const Deposit: React.FC = () => {
       setRequiredConfirmations(status.required_confirmations);
       setTxHash(status.tx_hash || '');
       
-      // Week 6 Day 5: Stop polling when deposit is settled
+      // Stop polling when deposit is settled
       if (status.status === 'settled' || status.settled_at) {
         setSuccess('Deposit confirmed and funds credited to your account!');
         setPolling(false);
@@ -670,7 +670,7 @@ const Deposit: React.FC = () => {
 
                   {/* Warnings */}
                   <div className="space-y-2">
-                    {/* Week 6 Day 5: Enhanced warning text for TRC20/USDT */}
+                    {/* Enhanced warning text for TRC20/USDT */}
                     {(selectedAsset === 'USDT' && selectedNetwork === 'TRC20') ? (
                       <div className="flex items-start gap-2 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
                         <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

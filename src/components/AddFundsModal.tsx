@@ -111,7 +111,7 @@ const AddFundsModal: React.FC = () => {
         return;
       }
 
-      // Use the deposit service (Week 5 implementation)
+      // Use the deposit service
       const depositResponse = await depositService.initiateDeposit({
         asset: selectedCurrency,
         network: selectedNetwork === "TRC20" ? "TRC20" : selectedNetwork, // Normalize TRC20

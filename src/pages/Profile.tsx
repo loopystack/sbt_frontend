@@ -574,7 +574,7 @@ export default function Profile() {
         return;
       }
 
-      // Use the new deposit service (Week 5 implementation)
+      // Use the new deposit service
       const depositResponse = await depositService.initiateDeposit({
         asset: selectedCurrency,
         network: selectedNetwork === "TRC20" ? "TRC20" : selectedNetwork, // Normalize TRC20
