@@ -5,6 +5,7 @@ import AdminDashboard from "../components/admin/AdminDashboard";
 import UserManagement from "../components/admin/UserManagement";
 import BettingManagement from "../components/admin/BettingManagement";
 import TransactionManagement from "../components/admin/TransactionManagement";
+import WithdrawalManagement from "../components/admin/WithdrawalManagement";
 import CTRRevenueDashboard from "../components/admin/CTRRevenueDashboard";
 import ComplianceDashboard from "../components/admin/ComplianceDashboard";
 import AffiliateDashboard from "../components/admin/AffiliateDashboard";
@@ -57,7 +58,8 @@ export default function AdminPanel() {
     { id: "compliance-test", name: "Compliance Test", icon: "🧪" },
     { id: "users", name: "Users", icon: "👥" },
     { id: "betting", name: "Betting Records", icon: "🎯" },
-    { id: "transactions", name: "Transactions", icon: "💵" }
+    { id: "transactions", name: "Transactions", icon: "💵" },
+    { id: "withdrawals", name: "Withdrawals", icon: "💸" }
   ];
 
   return (
@@ -192,6 +194,7 @@ export default function AdminPanel() {
         {activeTab === "users" && <UserManagement />}
         {activeTab === "betting" && <BettingManagement />}
         {activeTab === "transactions" && <TransactionManagement />}
+        {activeTab === "withdrawals" && <WithdrawalManagement />}
       </div>
     </div>
   );

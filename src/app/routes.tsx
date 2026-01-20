@@ -18,6 +18,8 @@ import Profile from "../pages/Profile";
 import PrivacyPolicy from "../pages/PrivacyPolicy";
 import AdminPanel from "../pages/AdminPanel";
 import Deposit from "../pages/Deposit";
+import Withdraw from "../pages/Withdraw";
+import Withdrawals from "../pages/Withdrawals";
 
 export const routes: RouteObject[] = [
   {
@@ -36,6 +38,10 @@ export const routes: RouteObject[] = [
       { path: "dashboard", element: <Dashboard /> },
       { path: "profile", element: <Profile /> },
       { path: "deposit", element: <Deposit /> },
+      { path: "withdraw", element: <Withdraw /> },
+      { path: "withdrawals", element: <Withdrawals /> },
+      { path: "wallet/withdraw", element: <Withdraw /> },
+      { path: "wallet/withdrawals", element: <Withdrawals /> },
       { path: "privacy-policy", element: <PrivacyPolicy /> }
     ]
   },
