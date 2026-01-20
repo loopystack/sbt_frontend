@@ -1,6 +1,6 @@
 /**
  * Withdraw Page
- * User interface for requesting withdrawals (USDT TRC20 only for Week 8)
+ * User interface for requesting withdrawals (USDT TRC20 only in initial implementation)
  */
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -72,7 +72,7 @@ const Withdraw: React.FC = () => {
       return;
     }
 
-    // Week 8: TRC20 only, USDT only
+    // Initial implementation: TRC20 only, USDT only
     const withdrawalData: WithdrawalIntentCreate = {
       asset: 'USDT',
       network: 'TRC20',
@@ -137,7 +137,7 @@ const Withdraw: React.FC = () => {
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
             <label htmlFor="asset" className="block text-sm font-medium mb-2">
-              Asset (Week 8: USDT only)
+              Asset (USDT only in initial implementation)
             </label>
             <input
               type="text"
@@ -150,7 +150,7 @@ const Withdraw: React.FC = () => {
 
           <div className="mb-4">
             <label htmlFor="network" className="block text-sm font-medium mb-2">
-              Network (Week 8: TRC20 only)
+              Network (TRC20 only in initial implementation)
             </label>
             <input
               type="text"

@@ -10,7 +10,7 @@ import { walletService } from '../services/walletService';
 import { toast } from 'react-toastify';
 
 const Withdrawals: React.FC = () => {
-  const REQUIRED_CONFIRMATIONS = 2; // Week 9 default; backend currently defaults to 2
+  const REQUIRED_CONFIRMATIONS = 2; // On-chain execution default; backend currently defaults to 2
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -61,7 +61,7 @@ const Withdrawals: React.FC = () => {
     }
   };
 
-  // Week 9: Poll for status/confirmations while a withdrawal is active (pending/approved/processing).
+  // On-chain execution: Poll for status/confirmations while a withdrawal is active (pending/approved/processing).
   // Stops automatically on final statuses and when user navigates away (effect cleanup).
   const pollingEnabled = withdrawals.some(w => ['pending', 'approved', 'processing'].includes((w.status || '').toLowerCase()));
   useEffect(() => {

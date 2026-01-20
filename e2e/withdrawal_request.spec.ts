@@ -21,7 +21,7 @@ async function login(page: any, email: string, password: string) {
   await page.waitForURL('**/*', { timeout: 15_000 });
 }
 
-test.describe('Week 8 - Withdrawal Request System', () => {
+test.describe('Withdrawal Request System - End-to-End Tests', () => {
   test('User: initiate withdrawal -> history shows pending -> cancel -> history shows cancelled', async ({ page }) => {
     const email = process.env.E2E_USER_EMAIL;
     const password = process.env.E2E_USER_PASSWORD;

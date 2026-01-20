@@ -12,6 +12,9 @@ import AffiliateDashboard from "../components/admin/AffiliateDashboard";
 import ROIDashboard from "../components/admin/ROIDashboard";
 import ConversionHeatmap from "../components/admin/ConversionHeatmap";
 import ComplianceTesting from "../components/admin/ComplianceTesting";
+import SystemHealthDashboard from "../components/admin/SystemHealthDashboard";
+import SystemAlertsManagement from "../components/admin/SystemAlertsManagement";
+import ReconciliationReports from "../components/admin/ReconciliationReports";
 
 export default function AdminPanel() {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -56,6 +59,9 @@ export default function AdminPanel() {
     { id: "heatmap", name: "Heatmaps", icon: "🔥" },
     { id: "compliance", name: "Compliance", icon: "🛡️" },
     { id: "compliance-test", name: "Compliance Test", icon: "🧪" },
+    { id: "system-health", name: "System Health", icon: "❤️" },
+    { id: "system-alerts", name: "System Alerts", icon: "🚨" },
+    { id: "reconciliation", name: "Reconciliation", icon: "⚖️" },
     { id: "users", name: "Users", icon: "👥" },
     { id: "betting", name: "Betting Records", icon: "🎯" },
     { id: "transactions", name: "Transactions", icon: "💵" },
@@ -191,6 +197,9 @@ export default function AdminPanel() {
         {activeTab === "heatmap" && <ConversionHeatmap />}
         {activeTab === "compliance" && <ComplianceDashboard />}
         {activeTab === "compliance-test" && <ComplianceTesting />}
+        {activeTab === "system-health" && <SystemHealthDashboard />}
+        {activeTab === "system-alerts" && <SystemAlertsManagement />}
+        {activeTab === "reconciliation" && <ReconciliationReports />}
         {activeTab === "users" && <UserManagement />}
         {activeTab === "betting" && <BettingManagement />}
         {activeTab === "transactions" && <TransactionManagement />}

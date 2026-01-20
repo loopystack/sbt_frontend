@@ -262,7 +262,7 @@ const WithdrawalManagement: React.FC = () => {
     <div className="p-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-white mb-2">Withdrawal Management</h2>
-        <p className="text-gray-400">Approve/reject requests and execute/retry approved/failed withdrawals (Week 9).</p>
+        <p className="text-gray-400">Approve/reject requests and execute/retry approved/failed withdrawals.</p>
       </div>
 
       {/* Filters */}
@@ -713,7 +713,7 @@ const WithdrawalManagement: React.FC = () => {
               
               <div className="mb-4 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-md">
                 <p className="text-sm text-yellow-200">
-                  <strong>Note (Week 8):</strong> This approval does NOT send funds on-chain. Funds remain locked (reserved)
+                  <strong>Note:</strong> This approval does NOT send funds on-chain. Funds remain locked (reserved)
                   until execution is implemented in a future update.
                 </p>
               </div>
