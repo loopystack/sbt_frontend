@@ -4,6 +4,9 @@ import path from "path";
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    host: '0.0.0.0', // Bind to all interfaces to support both IPv4 and IPv6
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

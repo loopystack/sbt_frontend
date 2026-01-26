@@ -42,6 +42,24 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
   // Odds format conversion
   const { getOddsInFormat, oddsFormat } = useOddsFormat();
   
+  // Helper function to convert name to URL slug (lowercase, hyphenated)
+  const toSlug = (name: string): string => {
+    return name.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
+  };
+  
+  // Build URL path like OddsPortal: /football/{country}/{league}/ (Next Matches by default)
+  const buildLeaguePath = (country: any, league: any, highlightParam?: string): string => {
+    if (!country || !league) {
+      return highlightParam ? `/?highlight=${highlightParam}` : '/';
+    }
+    const countrySlug = toSlug(country.name);
+    const leagueSlug = toSlug(league.name);
+    const basePath = `/football/${countrySlug}/${leagueSlug}/`;
+    return highlightParam ? `${basePath}?highlight=${highlightParam}` : basePath;
+  };
+
   // Helper function to convert and format odds
   const formatOdds = (odds: string | number): string => {
     const oddsString = odds.toString();
@@ -248,8 +266,9 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
         // Create a more robust highlight parameter using team names and date
         const highlightParam = `${matchId}_${homeTeam.replace(/\s+/g, '_')}_${awayTeam.replace(/\s+/g, '_')}_${matchDate}`;
 
-        // Navigate to home page with highlighted match
-        navigate(`/?highlight=${highlightParam}`);
+        // Navigate to OddsPortal-style route with highlighted match
+        const route = buildLeaguePath(targetCountry, targetLeague, highlightParam);
+        navigate(route);
         
         // Close the sidebar if onClose function is provided
         if (onClose) {
@@ -272,7 +291,8 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
           setSelectedLeague(similarLeague);
           
           const highlightParam = `${matchId}_${homeTeam.replace(/\s+/g, '_')}_${awayTeam.replace(/\s+/g, '_')}_${matchDate}`;
-          navigate(`/?highlight=${highlightParam}`);
+          const route = buildLeaguePath(targetCountry, similarLeague, highlightParam);
+          navigate(route);
           setTimeout(() => setClickedMatchId(null), 3000);
         } else {
           // Clear clicked state if no league found
@@ -298,7 +318,8 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
           setSelectedLeague(targetLeague);
           
           const highlightParam = `${matchId}_${homeTeam.replace(/\s+/g, '_')}_${awayTeam.replace(/\s+/g, '_')}_${matchDate}`;
-          navigate(`/?highlight=${highlightParam}`);
+          const route = buildLeaguePath(similarCountry, targetLeague, highlightParam);
+          navigate(route);
           setTimeout(() => setClickedMatchId(null), 3000);
         } else {
           setTimeout(() => setClickedMatchId(null), 2000);

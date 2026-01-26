@@ -179,7 +179,7 @@ export default function Navigation() {
         break;
       case "next-matches":
         setSelectedLeague(null); // Clear league selection
-        navigate("/matches");
+        navigate("/next-matches");
         setActiveTab(tabId);
         break;
       case "dropping-odds":

@@ -15,7 +15,11 @@ import CookieConsent from "./components/CookieConsent";
 import CountryBlocked from "./components/CountryBlocked";
 import { CookieManager, CookiePreferences } from "./utils/cookieManager";
 
-const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes, {
+  future: {
+    v7_startTransition: true,
+  },
+});
 
 // Wrapper component to handle country blocking
 const AppContent: React.FC = () => {

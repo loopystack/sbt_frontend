@@ -67,22 +67,27 @@ export async function api<T = any>(
       }
     }
     
-    console.group(`🌐 API Request: ${method} ${absoluteUrl}`);
-    console.log('📤 Request:', {
-      method,
-      url: absoluteUrl,
-      headers: Object.fromEntries(new Headers(requestOptions.headers as HeadersInit).entries()),
-      body: requestBody
-    });
+    // Only log in development mode
+    if (import.meta.env.DEV) {
+      console.group(`🌐 API Request: ${method} ${absoluteUrl}`);
+      console.log('📤 Request:', {
+        method,
+        url: absoluteUrl,
+        headers: Object.fromEntries(new Headers(requestOptions.headers as HeadersInit).entries()),
+        body: requestBody
+      });
+    }
     
     const response = await fetch(absoluteUrl, requestOptions);
     
-    // Log response details
-    console.log('📥 Response:', {
-      status: response.status,
-      statusText: response.statusText,
-      headers: Object.fromEntries(response.headers.entries())
-    });
+    // Only log response details in development mode
+    if (import.meta.env.DEV) {
+      console.log('📥 Response:', {
+        status: response.status,
+        statusText: response.statusText,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+    }
     
     // Handle non-JSON responses (like file downloads)
     const contentType = response.headers.get('content-type');
@@ -102,7 +107,9 @@ export async function api<T = any>(
         statusText: response.statusText,
         error: data
       });
-      console.groupEnd();
+      if (import.meta.env.DEV) {
+        console.groupEnd();
+      }
       
       // Handle different error response formats
       let errorMessage = 'An error occurred';
@@ -125,12 +132,14 @@ export async function api<T = any>(
       throw new ApiError(errorMessage, response.status, data);
     }
     
-    // Log successful response
-    console.log('✅ API Success:', {
-      status: response.status,
-      data: import.meta.env.DEV ? data : '[Data hidden in production]'
-    });
-    console.groupEnd();
+    // Only log successful response in development mode
+    if (import.meta.env.DEV) {
+      console.log('✅ API Success:', {
+        status: response.status,
+        data: data
+      });
+      console.groupEnd();
+    }
     
     return data;
     
@@ -143,7 +152,9 @@ export async function api<T = any>(
         stack: error.stack
       } : error
     });
-    console.groupEnd();
+    if (import.meta.env.DEV) {
+      console.groupEnd();
+    }
     
     // Report error to Rollbar
     reportError(

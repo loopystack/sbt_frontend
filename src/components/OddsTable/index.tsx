@@ -4,7 +4,7 @@ import { useCountry } from "../../contexts/CountryContext";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotifications } from "../../contexts/NotificationContext";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { useOddsFormat } from "../../hooks/useOddsFormat";
 import { OddsConverter } from "../../utils/oddsConverter";
 import { trackClick, trackConversion } from "../../utils/clickTracker";
@@ -57,7 +57,39 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   const { user, isAuthenticated } = useAuth();
   const { addNewBetNotification } = useNotifications();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Helper function to convert name to URL slug (lowercase, hyphenated)
+  const toSlug = (name: string): string => {
+    return name.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
+  };
+  
+  // Build URL path like OddsPortal: /football/{country}/{league}/results/ or /football/{country}/{league}/
+  const buildLeaguePath = (market: string = "Next Matches"): string => {
+    if (!selectedCountry || !selectedLeague) {
+      // Fallback to simple routes if no country/league selected
+      return market === "Results" ? "/results" : "/next-matches";
+    }
+    
+    const countrySlug = toSlug(selectedCountry.name);
+    const leagueSlug = toSlug(selectedLeague.name);
+    
+    if (market === "Results") {
+      return `/football/${countrySlug}/${leagueSlug}/results/`;
+    }
+    return `/football/${countrySlug}/${leagueSlug}/`;
+  };
+  
+  // Determine initial market from URL pathname
+  const getMarketFromPath = (pathname: string): string => {
+    if (pathname.includes('/results')) {
+      return "Results";
+    }
+    return "Next Matches"; // Default (matches OddsPortal where no /results means next matches)
+  };
   
 
   // Helper function to check if a match should be highlighted
@@ -164,29 +196,24 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   };
   
 
+  // Ref to track if component is mounted and prevent state updates after unmount
+  const isMountedRef = useRef(true);
+  
   // Function to fetch user's existing bets and get match_ids
-  const fetchUserExistingBets = async () => {
-    
+  const fetchUserExistingBets = useCallback(async () => {
     if (!isAuthenticated || !user?.id) {
       setUserBetMatchIds(new Set());
       return;
     }
 
     try {
-      
       const response = await bettingService.getBettingRecords(1, 50); // Get up to 50 records (API limit)
       
       if (response && response.records) {
-        
         // Filter records for current user first
         const userRecords = response.records.filter(record => {
           const isUserRecord = record.user_id === user.id;
           return isUserRecord;
-        });
-        
-        
-        // Log each record to see the data structure
-        userRecords.forEach((record, index) => {
         });
         
         // Extract match_ids from user's betting records
@@ -203,19 +230,26 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         );
         
         setUserBetMatchIds(matchIds);
-        
-        // Enable odds buttons after user bets are loaded
-        setIsOddsDisabled(false);
-      } else {
-        
-        // Enable odds buttons even when no records are found
-        setIsOddsDisabled(false);
       }
-    } catch (error) {
-      // Enable odds buttons even if there's an error fetching user bets
-      setIsOddsDisabled(false);
+    } catch (error: any) {
+      // Ignore abort errors (request was cancelled)
+      if (error?.name !== 'AbortError' && !error?.message?.includes('aborted')) {
+        console.error('Error fetching user bets:', error);
+      }
+      // Don't set isOddsDisabled here - let the useEffect handle it
     }
-  };
+  }, [isAuthenticated, user?.id]);
+  
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      // Cancel any pending requests
+      if (fetchAbortControllerRef.current) {
+        fetchAbortControllerRef.current.abort();
+      }
+    };
+  }, []);
 
   // Function to check if user has already bet on a specific match
   const hasUserBetOnMatch = (matchId: string): boolean => {
@@ -225,18 +259,52 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
 
   // Fetch user's existing bets when component loads or user changes
   useEffect(() => {
-    
     // Disable odds buttons during loading if authenticated
-    if (isAuthenticated) {
+    if (isAuthenticated && user?.id) {
       setIsOddsDisabled(true);
+      
+      // Set a timeout to ensure isOddsDisabled is reset even if API call fails or hangs
+      const timeoutId = setTimeout(() => {
+        setIsOddsDisabled(false);
+      }, 3000); // 3 second timeout (reduced from 5)
+      
+      // Call fetch function and ensure state is reset
+      fetchUserExistingBets()
+        .then(() => {
+          clearTimeout(timeoutId);
+          setIsOddsDisabled(false);
+        })
+        .catch(() => {
+          clearTimeout(timeoutId);
+          setIsOddsDisabled(false);
+        });
+    } else {
+      // If not authenticated or no user, ensure odds are enabled
+      setIsOddsDisabled(false);
     }
-    
-    fetchUserExistingBets();
-  }, [isAuthenticated, user?.id]);
+  }, [fetchUserExistingBets, isAuthenticated, user?.id]);
 
-  const [selectedMarket, setSelectedMarket] = useState("Next Matches");
-  const [viewMode, setViewMode] = useState<"cards" | "rows">("cards");
-  const [selectedYear, setSelectedYear] = useState<number | undefined>(undefined);
+  const [selectedMarket, setSelectedMarket] = useState(() => getMarketFromPath(location.pathname));
+  const [viewMode, setViewMode] = useState<"cards" | "rows">("rows");
+  // Default to latest season (2025) when Results is selected, undefined for Next Matches
+  const [selectedYear, setSelectedYear] = useState<number | undefined>(() => {
+    const marketFromPath = getMarketFromPath(location.pathname);
+    return marketFromPath === "Results" ? 2025 : undefined;
+  });
+  const formatSeasonLabel = (year?: number) => {
+    if (!year) return "";
+    return `${year}/${year + 1}`;
+  };
+  
+  // Format time to remove seconds (HH:MM:SS -> HH:MM)
+  const formatTime = (time: string): string => {
+    if (!time || time === "LIVE") return time;
+    // If time includes seconds (HH:MM:SS), remove them
+    if (time.includes(':') && time.split(':').length === 3) {
+      return time.substring(0, 5); // Take first 5 characters (HH:MM)
+    }
+    return time; // Already in HH:MM format or other format
+  };
   const [currentPage, setCurrentPage] = useState(1);
   const matchesPerPage = 20;
   const [selectedOdds, setSelectedOdds] = useState<{
@@ -355,16 +423,56 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     setMatchingInfo([]);
     setLoading(true);
     
+    // Navigate to the correct route based on market (OddsPortal-style: /football/{country}/{league}/results/ or /football/{country}/{league}/)
+    const route = buildLeaguePath(market);
+    
     // Use a longer timeout for more stable switching
     switchingTimeoutRef.current = setTimeout(() => {
+      // Navigate to the route
+      navigate(route, { replace: true });
       setSelectedMarket(market);
       setCurrentPage(1);
       if (market === "Next Matches") {
         setSelectedYear(undefined);
+      } else if (market === "Results") {
+        // Default to latest season (2025) when switching to Results, only if no year is selected
+        if (selectedYear === undefined) {
+          setSelectedYear(2025);
+        }
       }
       switchingTimeoutRef.current = null;
     }, 150);
-  }, [isSwitchingMarket, selectedMarket]);
+  }, [isSwitchingMarket, selectedMarket, navigate]);
+  
+  // Sync market state with route changes
+  useEffect(() => {
+    const marketFromRoute = getMarketFromPath(location.pathname);
+    if (marketFromRoute !== selectedMarket && !isSwitchingMarket) {
+      setSelectedMarket(marketFromRoute);
+      setCurrentPage(1);
+      if (marketFromRoute === "Next Matches") {
+        setSelectedYear(undefined);
+      } else if (marketFromRoute === "Results") {
+        // Default to latest season (2025) when Results is detected from route
+        // Only set if not already set to avoid overriding user selection
+        if (selectedYear === undefined) {
+          setSelectedYear(2025);
+        }
+      }
+    }
+  }, [location.pathname, selectedMarket, isSwitchingMarket, selectedYear]);
+  
+  // Update URL when league is selected (if we're already viewing a league)
+  useEffect(() => {
+    if (selectedCountry && selectedLeague && !isSwitchingMarket) {
+      const expectedPath = buildLeaguePath(selectedMarket);
+      // Only update URL if we're already on a football route but path doesn't match current selection
+      const isOnFootballRoute = location.pathname.includes('/football/');
+      if (isOnFootballRoute && location.pathname !== expectedPath) {
+        navigate(expectedPath, { replace: true });
+      }
+    }
+  }, [selectedCountry, selectedLeague, selectedMarket, isSwitchingMarket, navigate, location.pathname]);
   
   // Betting states
   const [isPlacingBet, setIsPlacingBet] = useState(false);
@@ -774,18 +882,21 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       grouped[date].push(match);
     });
     
+    const isResults = selectedMarket === "Results";
     return Object.entries(grouped)
       .sort(([dateA], [dateB]) => {
         if (dateA === 'No Date') return 1;
         if (dateB === 'No Date') return -1;
-        return new Date(dateA).getTime() - new Date(dateB).getTime();
+        const a = new Date(dateA).getTime();
+        const b = new Date(dateB).getTime();
+        return isResults ? b - a : a - b;
       })
       .map(([date, matches]) => ({ 
         date, 
         matches: matches.sort((a, b) => {
           const timeA = a.time.replace(':', '');
           const timeB = b.time.replace(':', '');
-          return parseInt(timeA) - parseInt(timeB);
+          return isResults ? parseInt(timeB) - parseInt(timeA) : parseInt(timeA) - parseInt(timeB);
         })
       }));
   };
@@ -1000,7 +1111,19 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       default: return "text-muted bg-muted/20 border-muted/30";
     }
   };
+  // Ref to track current fetch request and cancel previous ones
+  const fetchAbortControllerRef = useRef<AbortController | null>(null);
+  
   const fetchCurrentPageMatches = useCallback(async () => {
+    // Cancel previous request if it exists
+    if (fetchAbortControllerRef.current) {
+      fetchAbortControllerRef.current.abort();
+    }
+    
+    // Create new AbortController for this request
+    const abortController = new AbortController();
+    fetchAbortControllerRef.current = abortController;
+    
     try {
       setLoading(true);
       
@@ -1011,7 +1134,10 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       };
       
       // Add year filter (season)
-      if (selectedYear) {
+      // For Results, always filter by season (default to latest season 2025 if not selected)
+      if (selectedMarket === "Results") {
+        params.season = selectedYear || 2025; // Default to 2025 if no year selected
+      } else if (selectedYear) {
         params.season = selectedYear;
       }
       
@@ -1045,36 +1171,50 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       
       const result = await dispatch(getMatchingInfoAction(params)).unwrap();
       
+      // Check if request was aborted before updating state
+      if (abortController.signal.aborted) {
+        return;
+      }
+      
       setMatchingInfo(result.odds);
       setApiTotalPages(result.pages);
       setApiTotalMatches(result.total);
       
       // Reset switching state when data is loaded with a small delay
       setTimeout(() => {
-        setIsSwitchingMarket(false);
-        setSwitchingToMarket("");
+        if (!abortController.signal.aborted) {
+          setIsSwitchingMarket(false);
+          setSwitchingToMarket("");
+        }
       }, 200);
       
-    } catch (error) {
+    } catch (error: any) {
+      // Ignore abort errors
+      if (error?.name === 'AbortError' || abortController.signal.aborted) {
+        return;
+      }
+      
       console.error("Error fetching matching info:", error);
       // Reset switching state even on error with a small delay
       setTimeout(() => {
-        setIsSwitchingMarket(false);
-        setSwitchingToMarket("");
+        if (!abortController.signal.aborted) {
+          setIsSwitchingMarket(false);
+          setSwitchingToMarket("");
+        }
       }, 200);
     } finally {
-      setLoading(false);
+      // Only update loading state if request wasn't aborted
+      if (!abortController.signal.aborted) {
+        setLoading(false);
+      }
     }
-  }, [dispatch, currentPage, selectedYear, selectedCountry, selectedLeague, selectedMarket, shouldTriggerSearch]);
+  }, [dispatch, currentPage, selectedYear, selectedCountry, selectedLeague, selectedMarket, searchQuery]);
     
   
   useEffect(() => {
     fetchCurrentPageMatches();
-    // Also refresh user's existing bets when loading new matches
-    // This ensures bet status is always up-to-date even after time passes
-    if (isAuthenticated && user?.id) {
-      fetchUserExistingBets();
-    }
+    // Note: fetchUserExistingBets is called separately when auth state changes
+    // to avoid race conditions and cancelled requests
   }, [fetchCurrentPageMatches]);
 
   // Reset to page 1 when filters change
@@ -1211,46 +1351,30 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
         </div>
       )}
       
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3 sm:gap-0 px-2">
-        <div>
-                               <h2 className="text-xl sm:text-2xl font-bold text-text">
-            {searchQuery.trim() 
-              ? `Global Search Results for "${searchQuery}"`
-              : selectedYear 
-                ? selectedLeague
-                  ? `${selectedLeague.name} ${selectedYear} Results`
-                  : `${selectedYear} Results Only` 
-                : selectedLeague && selectedCountry
-                  ? `${selectedCountry.name} ${selectedLeague.name} Matches`
-                  : selectedMarket === "Results"
-                    ? "Match Results"
-                    : selectedMarket === "Next Matches"
-                      ? "Upcoming Matches"
-                      : selectedCountry 
-                        ? `${selectedCountry.name} - Football` 
-                        : 'Live Matches'
-            }
-          </h2>
-                     <p className="text-sm text-muted mt-1">
-             {searchQuery.trim() 
-               ? `${totalMatches} matches found across all leagues and countries`
-               : selectedYear && selectedLeague
-                 ? `${totalMatches} ${selectedCountry?.name} ${selectedLeague.name} matches from ${selectedYear}`
-                 : selectedYear && !selectedLeague
-                   ? `${totalMatches} matches from ${selectedYear}`
-                   : selectedLeague && !selectedYear
-                     ? `${totalMatches} ${selectedCountry?.name} ${selectedLeague.name} matches`
-                     : selectedMarket === "Results"
-                       ? `${totalMatches} historical matches`
-                       : selectedMarket === "Next Matches"
-                         ? `${totalMatches} upcoming matches`
-                         : `${totalMatches} matches`
-             }
-           </p>
-        </div>
+      <div className="mb-4 sm:mb-6 px-2">
+        {/* Title at the top */}
+        <h2 className="text-xl sm:text-2xl font-bold text-text mb-4">
+          {searchQuery.trim() 
+            ? `Global Search Results for "${searchQuery}"`
+            : selectedYear 
+              ? selectedLeague
+                ? `${selectedLeague.name} ${formatSeasonLabel(selectedYear)} Results`
+                : `${formatSeasonLabel(selectedYear)} Results Only` 
+              : selectedLeague && selectedCountry
+                ? `${selectedCountry.name} ${selectedLeague.name} Matches`
+                : selectedMarket === "Results"
+                  ? "Match Results"
+                  : selectedMarket === "Next Matches"
+                    ? "Upcoming Matches"
+                    : selectedCountry 
+                      ? `${selectedCountry.name} - Football` 
+                      : 'Live Matches'
+          }
+        </h2>
         
-        {/* Desktop: Original single row layout */}
-        <div className="hidden lg:flex gap-2 overflow-x-auto scrollbar-hide">
+        {/* Desktop: Two-row layout to keep market buttons visible */}
+        <div className="hidden lg:flex flex-col gap-2">
+          <div className="flex gap-2 items-center overflow-x-auto scrollbar-hide">
           {/* Search Box */}
           <div className="relative min-w-[200px] sm:min-w-[250px] flex">
             <input
@@ -1295,29 +1419,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
             )}
           </div>
           
-          {selectedMarket !== "Next Matches" && (
-            <div className="flex gap-1 bg-surface border border-border rounded-lg p-1 mr-2">
-              {[2021, 2022, 2023, 2024, 2025].map(year => (
-                <button
-                  key={year}
-                  onClick={() => {
-                    const newYear = selectedYear === year ? undefined : year;
-                    setSelectedYear(newYear);
-                    setCurrentPage(1); 
-                    setCurrentPage(1); 
-                  }}
-                  className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
-                    selectedYear === year
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-muted hover:text-text hover:bg-surface/80"
-                  }`}
-                >
-                  {year}
-                </button>
-              ))}
-            </div>
-          )}
-          
           {/* Show mode toggle */}
           <div className="flex gap-1 bg-surface border border-border rounded-lg p-1">
             <button
@@ -1359,6 +1460,43 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
               {market}
             </button>
           ))}
+          </div>
+          {selectedMarket === "Results" && (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-1 bg-surface border border-border rounded-lg p-1 w-fit">
+                {[2025, 2024, 2023, 2022, 2021].map(year => (
+                  <button
+                    key={year}
+                    onClick={() => {
+                      const newYear = selectedYear === year ? undefined : year;
+                      setSelectedYear(newYear);
+                      setCurrentPage(1); 
+                      setCurrentPage(1); 
+                    }}
+                    className={`px-3 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                      selectedYear === year
+                        ? "bg-blue-600 text-white shadow-sm"
+                        : "text-muted hover:text-text hover:bg-surface/80"
+                    }`}
+                  >
+                    {formatSeasonLabel(year)}
+                  </button>
+                ))}
+              </div>
+              {totalMatches > 0 && (
+                <p className="text-sm text-muted">
+                  {searchQuery.trim() 
+                    ? `${totalMatches} matches found`
+                    : selectedYear && selectedLeague
+                      ? `${totalMatches} matches`
+                      : selectedYear && !selectedLeague
+                        ? `${totalMatches} matches`
+                        : `${totalMatches} matches`
+                  }
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Mobile: Two-row layout */}
@@ -1480,25 +1618,39 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
               </div>
             ) : (
               // Show year filters on second row for Results
-              <div className="flex gap-1 bg-surface border border-border rounded-lg p-1">
-                {[2021, 2022, 2023, 2024, 2025].map(year => (
-                  <button
-                    key={year}
-                    onClick={() => {
-                      const newYear = selectedYear === year ? undefined : year;
-                      setSelectedYear(newYear);
-                      setCurrentPage(1); 
-                      setCurrentPage(1); 
-                    }}
-                    className={`px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
-                      selectedYear === year
-                        ? "bg-blue-600 text-white shadow-sm"
-                        : "text-muted hover:text-text hover:bg-surface/80"
-                    }`}
-                  >
-                    {year}
-                  </button>
-                ))}
+              <div className="flex flex-col gap-2">
+                <div className="flex gap-1 bg-surface border border-border rounded-lg p-1">
+                  {[2025, 2024, 2023, 2022, 2021].map(year => (
+                    <button
+                      key={year}
+                      onClick={() => {
+                        const newYear = selectedYear === year ? undefined : year;
+                        setSelectedYear(newYear);
+                        setCurrentPage(1); 
+                        setCurrentPage(1); 
+                      }}
+                      className={`px-2 py-2 rounded-md text-xs font-medium transition-all duration-200 ${
+                        selectedYear === year
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-muted hover:text-text hover:bg-surface/80"
+                      }`}
+                    >
+                      {formatSeasonLabel(year)}
+                    </button>
+                  ))}
+                </div>
+                {totalMatches > 0 && (
+                  <p className="text-sm text-muted">
+                    {searchQuery.trim() 
+                      ? `${totalMatches} matches found`
+                      : selectedYear && selectedLeague
+                        ? `${totalMatches} matches`
+                        : selectedYear && !selectedLeague
+                          ? `${totalMatches} matches`
+                          : `${totalMatches} matches`
+                    }
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -1586,7 +1738,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   </div>
                   <div className="text-right">
                     <div className="text-xs text-muted">{match.date}</div>
-                    <div className="text-xs text-muted">{match.time}</div>
+                    <div className="text-xs text-muted">{formatTime(match.time)}</div>
                   </div>
                 </div>
                 
@@ -1882,7 +2034,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   </div>
                   
                   <div className="col-span-1 flex items-center justify-center">
-                    <span className="text-sm text-muted">{match.time}</span>
+                    <span className="text-sm text-muted">{formatTime(match.time)}</span>
                   </div>
                   
                   <div className="col-span-4 flex items-center">
@@ -2451,10 +2603,10 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       
              {totalMatches > 0 && (
          <div className="text-center mt-4 text-sm text-muted">
-           {selectedYear 
-             ? selectedLeague
-               ? `Showing ${totalMatches} ${selectedLeague.name} matches from ${selectedYear} only (${Math.ceil(totalMatches / matchesPerPage)} pages)`
-               : `Showing ${totalMatches} matches from ${selectedYear} only (${Math.ceil(totalMatches / matchesPerPage)} pages)`
+          {selectedYear 
+            ? selectedLeague
+              ? `Showing ${totalMatches} ${selectedLeague.name} matches from ${formatSeasonLabel(selectedYear)} only (${Math.ceil(totalMatches / matchesPerPage)} pages)`
+              : `Showing ${totalMatches} matches from ${formatSeasonLabel(selectedYear)} only (${Math.ceil(totalMatches / matchesPerPage)} pages)`
              : selectedLeague
                ? `Showing all ${totalMatches} ${selectedCountry?.name} ${selectedLeague.name} matches (${Math.ceil(totalMatches / matchesPerPage)} pages)`
                : `Showing ${Math.min(startIndex + 1, totalMatches)}-${Math.min(endIndex, totalMatches)} of ${totalMatches} matches`

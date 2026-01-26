@@ -85,13 +85,30 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
     toggleSportExpansion(sportName);
   };
 
-  const handleLeagueClick = (league: any, country: any) => {
+  // Helper function to convert name to URL slug (lowercase, hyphenated)
+  const toSlug = (name: string): string => {
+    return name.toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^\w-]/g, '');
+  };
+  
+  // Build URL path like OddsPortal: /football/{country}/{league}/ (Next Matches by default)
+  const buildLeaguePath = (country: any, league: any): string => {
+    if (!country || !league) {
+      return '/';
+    }
+    const countrySlug = toSlug(country.name);
+    const leagueSlug = toSlug(league.name);
+    return `/football/${countrySlug}/${leagueSlug}/`;
+  };
 
+  const handleLeagueClick = (league: any, country: any) => {
     setSelectedCountry(country);  // Set the country first
     setSelectedLeague(league);    // Then set the league
     
-    // Navigate to homepage to show the league matches
-    navigate('/');
+    // Navigate to OddsPortal-style route: /football/{country}/{league}/ (Next Matches by default)
+    const route = buildLeaguePath(country, league);
+    navigate(route);
     
     // Close the sidebar if onClose function is provided
     if (onClose) {

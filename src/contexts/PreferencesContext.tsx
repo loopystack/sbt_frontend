@@ -11,7 +11,7 @@ interface PreferencesContextType {
 }
 
 const PreferencesContext = createContext<PreferencesContextType>({
-  oddsFormat: 'moneyline',
+  oddsFormat: 'decimal',
   language: 'en',
   setOddsFormat: () => {},
   setLanguage: () => {}
@@ -37,7 +37,7 @@ export const PreferencesProvider: React.FC<PreferencesProviderProps> = ({ childr
         return savedFormat;
       }
     }
-    return 'moneyline';
+    return 'decimal'; // Default to Decimal Odds for all locales
   });
 
   const [language, setLanguageState] = useState<Language>(() => {

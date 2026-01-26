@@ -27,7 +27,13 @@ export const routes: RouteObject[] = [
     element: <AppShell />,
     children: [
       { index: true, element: <Home /> },
+      // OddsPortal-style routes: /football/{country}/{league}/results/ or /football/{country}/{league}/
+      { path: "football/:country/:league/results/", element: <Matches /> },
+      { path: "football/:country/:league/", element: <Matches /> },
+      // Fallback simple routes
       { path: "matches", element: <Matches /> },
+      { path: "results", element: <Matches /> },
+      { path: "next-matches", element: <Matches /> },
       { path: "dropping-odds", element: <DroppingOdds /> },
       { path: "sure-bets", element: <SureBets /> },
       { path: "in-play-odds", element: <InPlayOdds /> },
