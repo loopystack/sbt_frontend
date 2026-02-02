@@ -56,15 +56,17 @@ export const getBaseUrl = (): string => {
   // In production (not localhost/127.0.0.1/0.0.0.0), always use same origin (nginx proxy)
   // This ensures API calls go through nginx proxy at /api instead of direct backend
   if (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && currentHost !== '0.0.0.0') {
-    // Use same origin - nginx will proxy /api to backend
+    return `${protocol}//${currentHost}${isDefaultPort ? '' : `:${currentPort}`}`;
+  }
+
+  // In production build, never use 0.0.0.0 (invalid for browser); use same origin when possible
+  if (import.meta.env.PROD && import.meta.env.VITE_API_BASE_URL?.includes('0.0.0.0')) {
     return `${protocol}//${currentHost}${isDefaultPort ? '' : `:${currentPort}`}`;
   }
   
   // In development (localhost), check environment variable first
-  // But ignore if it contains 0.0.0.0 (invalid for browser)
   if (import.meta.env.VITE_API_BASE_URL && import.meta.env.VITE_API_BASE_URL.startsWith('http')) {
     const envUrl = import.meta.env.VITE_API_BASE_URL;
-    // Never use 0.0.0.0 - replace with localhost
     if (envUrl.includes('0.0.0.0')) {
       return envUrl.replace('0.0.0.0', 'localhost');
     }

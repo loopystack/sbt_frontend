@@ -153,21 +153,39 @@ export const authService = {
         statusText: response.statusText
       });
 
+      const contentType = response.headers.get('content-type') || '';
+      const isJson = contentType.includes('application/json');
+      const text = await response.text();
+
+      if (!isJson) {
+        console.error('❌ Login failed: non-JSON response', { status: response.status });
+        console.groupEnd();
+        if (response.status === 502 || response.status === 503) {
+          throw new Error('Server unavailable. Please try again later.');
+        }
+        throw new Error('Login failed. Please try again.');
+      }
+
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData: { detail?: string } = {};
+        try {
+          errorData = JSON.parse(text);
+        } catch {
+          errorData = { detail: 'Login failed' };
+        }
         console.error('❌ Login failed:', errorData);
         console.groupEnd();
         throw new Error(errorData.detail || 'Login failed');
       }
 
-      const authResponse = await response.json();
+      const authResponse = JSON.parse(text);
       console.log('✅ Login successful:', {
         tokenType: authResponse.token_type,
         hasAccessToken: !!authResponse.access_token,
         hasRefreshToken: !!authResponse.refresh_token
       });
       console.groupEnd();
-      
+
       return authResponse;
     } catch (error) {
       console.error('❌ Login error:', error);

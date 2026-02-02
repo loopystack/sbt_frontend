@@ -2,11 +2,12 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import { rollbar } from "./lib/rollbar";
+import { getBaseUrl } from "./config/api";
 
 // Enable console logs
 console.log('%c🚀 Frontend App Initializing...', 'color: #4CAF50; font-size: 14px; font-weight: bold;');
 console.log('Environment:', import.meta.env.MODE);
-console.log('API Base URL:', import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001');
+console.log('API Base URL:', getBaseUrl());
 
 // Set up global error handlers for React errors
 window.addEventListener('error', (event) => {
