@@ -7,7 +7,7 @@ export type MatchingInfo = {
     time: string;
     home_team: string;
     away_team: string;
-    result: string;
+    result: string | null;
     odd_1: number | null;
     odd_X: number | null;
     odd_2: number | null;

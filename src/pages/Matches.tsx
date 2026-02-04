@@ -1,13 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useParams } from "react-router-dom";
 import { openBettingSiteByName } from "../config/bettingSites";
 import { useCountry } from "../contexts/CountryContext";
+import type { Country } from "../contexts/CountryContext";
 import { useOddsFormat } from "../hooks/useOddsFormat";
 import { OddsConverter } from "../utils/oddsConverter";
 import OddsTable from "../components/OddsTable";
 
+function toSlug(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^\w-]/g, "");
+}
+
 export default function Matches() {
-  const { selectedLeague } = useCountry();
+  const { selectedLeague, selectedCountry, setSelectedCountry, setSelectedLeague, countries } = useCountry();
+  const params = useParams<{ country?: string; league?: string }>();
   const [selectedDate, setSelectedDate] = useState("today");
   const [selectedSport, setSelectedSport] = useState("Football");
   const [searchParams] = useSearchParams();
@@ -118,6 +124,23 @@ export default function Matches() {
       bestOdds: "odds2"
     }
   ];
+
+  // On load/refresh: sync URL params to context so /football/england/premier-league/results/ shows the correct league.
+  // Only depend on URL and countries so we don't re-run after setting state (avoids "Maximum update depth" loop).
+  useEffect(() => {
+    const countrySlug = params.country;
+    const leagueSlug = params.league;
+    if (!countrySlug || !leagueSlug || countries.length === 0) return;
+
+    const country = countries.find((c: Country) => toSlug(c.name) === countrySlug);
+    if (!country) return;
+
+    const league = country.leagues.find((l: { name: string }) => toSlug(l.name) === leagueSlug);
+    if (!league) return;
+
+    setSelectedCountry(country);
+    setSelectedLeague(league);
+  }, [params.country, params.league, countries, setSelectedCountry, setSelectedLeague]);
 
   // If a league is selected, show the OddsTable (same as Home page)
   if (selectedLeague) {

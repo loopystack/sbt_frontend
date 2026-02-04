@@ -19,5 +19,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["src", "vite-env.d.ts", "src/types", "src/vitest.d.ts"]
+  "include": ["src", "vite-env.d.ts", "src/types", "src/vitest.d.ts"],
+  "exclude": ["node_modules", "playwright.config.ts"]
 }
