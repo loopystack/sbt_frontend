@@ -59,8 +59,8 @@ const Deposit: React.FC = () => {
   const [paymentErrors, setPaymentErrors] = useState<any>({});
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   
-  // Sorting states
-  const [sortColumn, setSortColumn] = useState<'id' | 'type' | null>('id');
+  // Sorting states (default: by date, newest first)
+  const [sortColumn, setSortColumn] = useState<'id' | 'type' | 'created'>('created');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
   // Fetch deposit history and supported assets on mount
@@ -388,18 +388,25 @@ const Deposit: React.FC = () => {
   };
 
   // Handle column sorting
-  const handleSort = (column: 'id' | 'type') => {
+  const handleSort = (column: 'id' | 'type' | 'created') => {
     if (sortColumn === column) {
       // Toggle direction if clicking the same column
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
     } else {
-      // Set new column and default to descending
+      // Set new column and default to descending for id/created, desc for type
       setSortColumn(column);
-      setSortDirection('desc');
+      setSortDirection(column === 'type' ? 'desc' : 'desc');
     }
   };
 
-  // Get sorted combined history
+  // Get created_at timestamp for sorting
+  const getCreatedAt = (item: { type: 'crypto' | 'card'; deposit?: DepositHistoryItem; payment?: Transaction }) => {
+    if (item.type === 'crypto' && item.deposit) return new Date(item.deposit.created_at).getTime();
+    if (item.type === 'card' && item.payment) return new Date(item.payment.created_at).getTime();
+    return 0;
+  };
+
+  // Get sorted combined history (crypto + card, sorted by selected column)
   const getSortedHistory = () => {
     // Combine crypto deposits and payment transactions into a unified structure
     const combined: Array<{
@@ -413,34 +420,35 @@ const Deposit: React.FC = () => {
     ];
 
     // Sort the combined array
-    if (sortColumn === 'id') {
+    if (sortColumn === 'created') {
       combined.sort((a, b) => {
-        if (sortDirection === 'asc') {
-          return a.id - b.id;
-        } else {
-          return b.id - a.id;
-        }
+        const timeA = getCreatedAt(a);
+        const timeB = getCreatedAt(b);
+        if (sortDirection === 'asc') return timeA - timeB;
+        return timeB - timeA;
+      });
+    } else if (sortColumn === 'id') {
+      combined.sort((a, b) => {
+        if (sortDirection === 'asc') return a.id - b.id;
+        return b.id - a.id;
       });
     } else if (sortColumn === 'type') {
       combined.sort((a, b) => {
         const typeA = a.type;
         const typeB = b.type;
-        if (sortDirection === 'asc') {
-          return typeA.localeCompare(typeB);
-        } else {
-          return typeB.localeCompare(typeA);
-        }
+        if (sortDirection === 'asc') return typeA.localeCompare(typeB);
+        return typeB.localeCompare(typeA);
       });
     } else {
-      // Default: sort by ID descending (newest first)
-      combined.sort((a, b) => b.id - a.id);
+      // Fallback: sort by date descending (newest first)
+      combined.sort((a, b) => getCreatedAt(b) - getCreatedAt(a));
     }
 
     return combined;
   };
 
   // Sort indicator component
-  const SortIndicator = ({ column }: { column: 'id' | 'type' }) => {
+  const SortIndicator = ({ column }: { column: 'id' | 'type' | 'created' }) => {
     const isActive = sortColumn === column;
     
     if (!isActive) {
@@ -1063,7 +1071,19 @@ const Deposit: React.FC = () => {
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Status</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Confirmations</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Transaction</th>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Created</th>
+                    <th
+                      className={`px-4 py-3 text-left text-sm font-semibold cursor-pointer select-none transition-all duration-200 group ${
+                        sortColumn === 'created'
+                          ? 'bg-blue-500/20 text-blue-300 border-l-2 border-blue-400'
+                          : 'text-gray-300 hover:bg-gray-600/70 hover:text-white'
+                      }`}
+                      onClick={() => handleSort('created')}
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <span>Created</span>
+                        <SortIndicator column="created" />
+                      </div>
+                    </th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Detected</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Confirmed</th>
                     <th className="px-4 py-3 text-left text-sm font-medium text-gray-300">Settled</th>

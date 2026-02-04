@@ -45,7 +45,7 @@ class WalletService {
    * Get unified total balance (Stripe + Crypto)
    */
   async getTotalBalance(): Promise<UnifiedBalanceResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const response = await fetch(`${this.baseUrl}/api/wallet/total-balance`, {
       method: 'GET',
       headers: {
@@ -66,7 +66,7 @@ class WalletService {
    * Get crypto balance for specific asset
    */
   async getCryptoBalance(asset: string = 'USDT'): Promise<CryptoBalanceResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const response = await fetch(`${this.baseUrl}/api/wallet/balance?asset=${asset}`, {
       method: 'GET',
       headers: {
@@ -87,7 +87,7 @@ class WalletService {
    * Get wallet transactions (ledger)
    */
   async getTransactions(asset?: string, limit: number = 100, offset: number = 0) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const params = new URLSearchParams({
       limit: limit.toString(),
       offset: offset.toString()

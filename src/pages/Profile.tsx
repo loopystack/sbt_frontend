@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService, User } from "../services/authService";
 import { paymentService, CardPaymentRequest, BankTransferRequest, PayPalPaymentRequest } from "../services/paymentService";
@@ -132,19 +132,46 @@ export default function Profile() {
   const [isApiCallInProgress, setIsApiCallInProgress] = useState(false);
   const apiCallInProgressRef = useRef(false);
 
+  // Single deposit history list sorted by date (newest first), regardless of card vs crypto
+  const sortedDepositHistory = useMemo(() => {
+    const entries: { type: 'crypto' | 'stripe'; date: number; crypto?: DepositHistoryItem; stripe?: Transaction }[] = [];
+    cryptoDeposits.forEach((c) => entries.push({ type: 'crypto', date: new Date(c.created_at).getTime(), crypto: c }));
+    stripeDeposits.forEach((t) => entries.push({ type: 'stripe', date: new Date(t.created_at).getTime(), stripe: t }));
+    entries.sort((a, b) => b.date - a.date);
+    return entries;
+  }, [cryptoDeposits, stripeDeposits]);
+
   useEffect(() => {
     // Don't redirect if auth is still loading
     if (authLoading) {
       return;
     }
-    
+
     if (isAuthenticated) {
+      // Show profile shell immediately from auth user so the page paints fast
+      if (authUser) {
+        const profileFromAuth: ProfileData = {
+          ...authUser,
+          member_since: authUser.created_at
+            ? new Date(authUser.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long' })
+            : '',
+          total_bets: 0,
+          win_rate: 0,
+          favorite_sport: 'Football',
+        };
+        setUser(profileFromAuth);
+        setEditForm({
+          full_name: authUser.full_name || '',
+          username: authUser.username ?? '',
+        });
+        setLoading(false);
+      }
       fetchUserProfile();
       fetchSupportedAssets();
     } else {
       navigate("/signin");
     }
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, navigate, authUser]);
 
   // Poll for deposit status updates
   useEffect(() => {
@@ -190,21 +217,18 @@ export default function Profile() {
     }
   };
 
-  // Fetch deposit history (both crypto and Stripe)
+  // Fetch deposit history (both crypto and Stripe) — crypto and card fetches in parallel
   const fetchDepositHistory = async () => {
     try {
       setDepositHistoryLoading(true);
-      
-      // Fetch crypto deposits
-      const cryptoHistory = await depositService.getDepositHistory(50, 0);
+      const [cryptoHistory, transactions] = await Promise.all([
+        depositService.getDepositHistory(50, 0),
+        transactionService.getTransactions(1, 50, 'deposit'),
+      ]);
       setCryptoDeposits(cryptoHistory);
-      
-      // Fetch Stripe deposits (from transactions)
-      const transactions = await transactionService.getTransactions(1, 50, 'deposit');
-      // Filter for Stripe payments (payment_method contains 'stripe' or card types)
-      const stripeTransactions = transactions.transactions.filter(t => 
+      const stripeTransactions = transactions.transactions.filter(t =>
         t.payment_method && (
-          t.payment_method.includes('stripe') || 
+          t.payment_method.includes('stripe') ||
           t.payment_method.includes('card') ||
           t.payment_method.includes('VISA') ||
           t.payment_method.includes('Mastercard') ||
@@ -222,12 +246,16 @@ export default function Profile() {
 
   const fetchUserProfile = async () => {
     try {
-      setLoading(true);
       setError("");
-      
-      const userData = await authService.getCurrentUser();
-      
-      // Format the user data with additional computed fields
+
+      // Load user, balance, and deposit history in parallel (not sequential)
+      const [userData] = await Promise.all([
+        authService.getCurrentUser(),
+        fetchUnifiedBalance(),
+        fetchDepositHistory(),
+      ]);
+
+      // Format the user data with additional computed fields and update shell
       const profileData: ProfileData = {
         ...userData,
         member_since: new Date(userData.created_at).toLocaleDateString('en-US', {
@@ -238,18 +266,12 @@ export default function Profile() {
         win_rate: Math.floor(Math.random() * 30) + 60, // Mock data for now
         favorite_sport: "Football", // Mock data for now
       };
-      
+
       setUser(profileData);
       setEditForm({
         full_name: profileData.full_name || "",
         username: profileData.username,
       });
-
-      // Fetch unified balance (Stripe + Crypto)
-      await fetchUnifiedBalance();
-      
-      // Fetch deposit history
-      await fetchDepositHistory();
     } catch (err) {
       console.error("Error fetching user profile:", err);
       setError("Failed to load profile. Please try again.");
@@ -1298,7 +1320,8 @@ export default function Profile() {
     }
   };
 
-  if (loading) {
+  // Skip full-page skeleton when we have auth user (show real shell immediately)
+  if (loading && !authUser) {
     return (
       <div className="min-h-screen bg-bg text-text">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -1453,7 +1476,7 @@ export default function Profile() {
     );
   }
 
-  if (error && !user) {
+  if (error && !user && !authUser) {
     return (
       <div className="min-h-screen bg-bg flex items-center justify-center">
         <div className="text-center max-w-md mx-auto px-4">
@@ -1483,7 +1506,8 @@ export default function Profile() {
     );
   }
 
-  if (!user) return null;
+  const displayUser = user ?? authUser ?? null;
+  if (!displayUser) return null;
 
   return (
     <div className="min-h-screen bg-bg text-text">
@@ -1512,28 +1536,28 @@ export default function Profile() {
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 sm:gap-6">
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6 w-full lg:w-auto">
               <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-accent to-accent/70 rounded-full flex items-center justify-center text-button-text text-xl sm:text-2xl font-bold shadow-lg flex-shrink-0">
-                {getInitials(user.full_name || "", user.username)}
+                {getInitials(displayUser.full_name || "", displayUser.username)}
               </div>
               <div className="text-center sm:text-left flex-1 min-w-0">
                 <h2 className="text-xl sm:text-2xl font-bold text-text mb-1">
-                  {user.full_name || user.username}
+                  {displayUser.full_name || displayUser.username}
                 </h2>
-                <p className="text-muted mb-2">@{user.username}</p>
-                <p className="text-muted mb-3 text-sm sm:text-base break-all">{user.email}</p>
+                <p className="text-muted mb-2">@{displayUser.username}</p>
+                <p className="text-muted mb-3 text-sm sm:text-base break-all">{displayUser.email}</p>
                 <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
                   <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    user.is_verified 
+                    displayUser.is_verified 
                       ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                       : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'
                   }`}>
-                    {user.is_verified ? '✓ Verified' : '⚠ Unverified'}
+                    {displayUser.is_verified ? '✓ Verified' : '⚠ Unverified'}
                   </span>
                   <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap ${
-                    user.is_active 
+                    displayUser.is_active 
                       ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                       : 'bg-red-500/20 text-red-400 border border-red-500/30'
                   }`}>
-                    {user.is_active ? '🟢 Active' : '🔴 Inactive'}
+                    {displayUser.is_active ? '🟢 Active' : '🔴 Inactive'}
                   </span>
                 </div>
               </div>
@@ -1608,7 +1632,7 @@ export default function Profile() {
                   <label className="block text-sm font-medium text-text mb-2">Email Address</label>
                   <input
                     type="email"
-                    value={user.email}
+                    value={displayUser.email}
                     disabled
                     className="w-full px-4 py-3 bg-bg border border-border rounded-lg text-muted cursor-not-allowed"
                   />
@@ -1709,7 +1733,7 @@ export default function Profile() {
                     </div>
                     <div>
                       <p className="text-text font-medium">Member Since</p>
-                      <p className="text-sm text-muted">{user.member_since}</p>
+                      <p className="text-sm text-muted">{(displayUser as ProfileData).member_since ?? '—'}</p>
                     </div>
                   </div>
                 </div>
@@ -1724,7 +1748,7 @@ export default function Profile() {
                     <div>
                       <p className="text-text font-medium">Last Login</p>
                       <p className="text-sm text-muted">
-                        {user.last_login ? new Date(user.last_login).toLocaleDateString() : 'Today'}
+                        {displayUser.last_login ? new Date(displayUser.last_login).toLocaleDateString() : 'Today'}
                       </p>
                     </div>
                   </div>
@@ -1803,7 +1827,7 @@ export default function Profile() {
                     </div>
                     <div>
                       <p className="text-sm text-muted">Total Bets</p>
-                      <p className="font-semibold text-text">{user.total_bets}</p>
+                      <p className="font-semibold text-text">{(displayUser as ProfileData).total_bets ?? '—'}</p>
                     </div>
                   </div>
                 </div>
@@ -1817,7 +1841,7 @@ export default function Profile() {
                     </div>
                     <div>
                       <p className="text-sm text-muted">Win Rate</p>
-                      <p className="font-semibold text-text">{user.win_rate}%</p>
+                      <p className="font-semibold text-text">{(displayUser as ProfileData).win_rate != null ? `${(displayUser as ProfileData).win_rate}%` : '—'}</p>
                     </div>
                   </div>
                 </div>
@@ -1831,7 +1855,7 @@ export default function Profile() {
                     </div>
                     <div>
                       <p className="text-sm text-muted">Favorite Sport</p>
-                      <p className="font-semibold text-text">{user.favorite_sport}</p>
+                      <p className="font-semibold text-text">{(displayUser as ProfileData).favorite_sport ?? '—'}</p>
                     </div>
                   </div>
                 </div>
@@ -1852,74 +1876,73 @@ export default function Profile() {
                 </div>
               ) : (
                 <div className="space-y-3 max-h-96 overflow-y-auto">
-                  {/* Crypto Deposits */}
-                  {cryptoDeposits.map((deposit) => (
-                    <div key={`crypto-${deposit.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-                          </svg>
+                  {/* All deposits (crypto + card) ordered by date, newest first */}
+                  {sortedDepositHistory.map((entry) =>
+                    entry.type === 'crypto' && entry.crypto ? (
+                      <div key={`crypto-${entry.crypto.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-yellow-500/20 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-text">Crypto Deposit</p>
+                            <p className="text-xs text-muted">
+                              {entry.crypto.asset} • {entry.crypto.network} • {entry.crypto.status}
+                            </p>
+                            {entry.crypto.tx_hash && (
+                              <p className="text-xs text-muted font-mono truncate max-w-xs">
+                                {entry.crypto.tx_hash.substring(0, 16)}...
+                              </p>
+                            )}
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-text">Crypto Deposit</p>
-                          <p className="text-xs text-muted">
-                            {deposit.asset} • {deposit.network} • {deposit.status}
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-emerald-400">
+                            +${entry.crypto.amount_usd.toFixed(2)}
                           </p>
-                          {deposit.tx_hash && (
-                            <p className="text-xs text-muted font-mono truncate max-w-xs">
-                              {deposit.tx_hash.substring(0, 16)}...
+                          {entry.crypto.amount_crypto != null && (
+                            <p className="text-xs text-muted">
+                              {entry.crypto.amount_crypto.toFixed(6)} {entry.crypto.asset}
                             </p>
                           )}
+                          <p className="text-xs text-muted">
+                            {new Date(entry.crypto.created_at).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-emerald-400">
-                          +${deposit.amount_usd.toFixed(2)}
-                        </p>
-                        {deposit.amount_crypto && (
-                          <p className="text-xs text-muted">
-                            {deposit.amount_crypto.toFixed(6)} {deposit.asset}
-                          </p>
-                        )}
-                        <p className="text-xs text-muted">
-                          {new Date(deposit.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                  
-                  {/* Stripe Deposits */}
-                  {stripeDeposits.map((transaction) => (
-                    <div key={`stripe-${transaction.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-text">Stripe Deposit</p>
-                          <p className="text-xs text-muted">
-                            {transaction.payment_method || 'Card Payment'} • {transaction.status}
-                          </p>
-                          {transaction.external_reference && (
-                            <p className="text-xs text-muted font-mono truncate max-w-xs">
-                              {transaction.external_reference.substring(0, 16)}...
+                    ) : entry.type === 'stripe' && entry.stripe ? (
+                      <div key={`stripe-${entry.stripe.id}`} className="flex items-center justify-between p-3 bg-bg/50 border border-border/50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-text">Stripe Deposit</p>
+                            <p className="text-xs text-muted">
+                              {entry.stripe.payment_method || 'Card Payment'} • {entry.stripe.status}
                             </p>
-                          )}
+                            {entry.stripe.external_reference && (
+                              <p className="text-xs text-muted font-mono truncate max-w-xs">
+                                {entry.stripe.external_reference.substring(0, 16)}...
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-semibold text-emerald-400">
+                            +${entry.stripe.amount.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-muted">
+                            {new Date(entry.stripe.created_at).toLocaleDateString()}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-emerald-400">
-                          +${transaction.amount.toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted">
-                          {new Date(transaction.created_at).toLocaleDateString()}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
+                    ) : null
+                  )}
                 </div>
               )}
             </div>
