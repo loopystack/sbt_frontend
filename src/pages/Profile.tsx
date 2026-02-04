@@ -1793,7 +1793,7 @@ export default function Profile() {
                 
                 <div className="flex gap-2 justify-center">
                   <button 
-                    onClick={() => setShowAddFundModal(true)}
+                    onClick={() => navigate('/deposit')}
                     className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1952,7 +1952,7 @@ export default function Profile() {
               <h3 className="text-lg font-semibold text-text mb-4">Quick Actions</h3>
               <div className="space-y-3">
                 <button 
-                  onClick={() => setShowAddFundModal(true)}
+                  onClick={() => navigate('/deposit')}
                   className="w-full flex items-center gap-3 p-3 bg-green-500/20 border border-green-500/30 rounded-lg hover:bg-green-500/30 transition-colors text-left"
                 >
                   <div className="w-8 h-8 bg-green-500/20 rounded-lg flex items-center justify-center">

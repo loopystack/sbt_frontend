@@ -66,7 +66,7 @@ class DepositService {
    * Create a new deposit intent
    */
   async initiateDeposit(data: DepositIntentCreate): Promise<DepositIntentResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const response = await fetch(`${this.baseUrl}/api/deposits/initiate`, {
       method: 'POST',
       headers: {
@@ -88,7 +88,7 @@ class DepositService {
    * Get deposit status by ID
    */
   async getDepositStatus(depositId: number): Promise<DepositStatusResponse> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const response = await fetch(`${this.baseUrl}/api/deposits/${depositId}`, {
       method: 'GET',
       headers: {
@@ -108,7 +108,7 @@ class DepositService {
    * Get deposit history
    */
   async getDepositHistory(limit: number = 50, offset: number = 0): Promise<DepositHistoryItem[]> {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     const response = await fetch(`${this.baseUrl}/api/deposits/history?limit=${limit}&offset=${offset}`, {
       method: 'GET',
       headers: {

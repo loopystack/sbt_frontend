@@ -88,7 +88,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const { bettingService } = await import('../services/bettingService');
       
       // Get recent betting records to check for newly settled bets
-      const response = await bettingService.getBettingRecords(1, 100); // Get recent 100 records
+      const response = await bettingService.getBettingRecords(1, 100) // API allows up to 100 per page; // Get recent 100 records
       
       
       // Track current user's bets
@@ -286,7 +286,7 @@ export const NotificationProvider: React.FC<NotificationProviderProps> = ({ chil
       const refreshUserBets = async () => {
         try {
           const { bettingService } = await import('../services/bettingService');
-          const response = await bettingService.getBettingRecords(1, 100);
+          const response = await bettingService.getBettingRecords(1, 100) // API allows up to 100 per page;
           
           const currentBets = new Set(response.records.map((record: any) => record.id));
           setUserBets(currentBets);

@@ -52,6 +52,7 @@ const Deposit: React.FC = () => {
   // UI states
   const [history, setHistory] = useState<DepositHistoryItem[]>([]);
   const [paymentHistory, setPaymentHistory] = useState<Transaction[]>([]);
+  const [historyRefreshLoading, setHistoryRefreshLoading] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
@@ -98,15 +99,18 @@ const Deposit: React.FC = () => {
 
   const fetchHistory = async () => {
     try {
-      // Fetch crypto deposits
-      const deposits = await depositService.getDepositHistory(50, 0);
+      setHistoryRefreshLoading(true);
+      const [deposits, transactions] = await Promise.all([
+        depositService.getDepositHistory(50, 0),
+        transactionService.getTransactions(1, 50, 'deposit'),
+      ]);
       setHistory(deposits);
-      
-      // Fetch payment transactions (Stripe, PayPal, Bank Transfer) - all statuses
-      const transactions = await transactionService.getTransactions(1, 50, 'deposit');
       setPaymentHistory(transactions.transactions);
     } catch (err) {
       console.error('Failed to fetch deposit history:', err);
+      setError('Failed to refresh deposit history. Please try again.');
+    } finally {
+      setHistoryRefreshLoading(false);
     }
   };
 
@@ -1023,10 +1027,12 @@ const Deposit: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold">Deposit History</h2>
             <button
-              onClick={fetchHistory}
-              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-medium transition-colors text-sm"
+              type="button"
+              onClick={() => fetchHistory()}
+              disabled={historyRefreshLoading}
+              className="px-4 py-2 bg-gray-600 hover:bg-gray-700 disabled:opacity-60 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors text-sm"
             >
-              Refresh
+              {historyRefreshLoading ? 'Refreshing...' : 'Refresh'}
             </button>
           </div>
 
