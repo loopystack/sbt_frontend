@@ -1999,15 +1999,15 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-hidden">
 
-          <div className="grid grid-cols-12 gap-1 px-2 py-2 text-sm font-medium text-muted bg-surface/50 border-b border-border/50">
+          <div className="grid grid-cols-12 gap-x-4 gap-y-2 px-4 sm:px-5 py-3 text-sm font-medium text-muted bg-surface/50 border-b border-border/50">
             <div className="col-span-2 text-center">Date</div>
             <div className="col-span-1 text-center">Time</div>
-            <div className="col-span-4">Match</div>
-            <div className="col-span-2 text-center">Result</div>
-            <div className="col-span-3 flex justify-center gap-1">
-              <div className="min-w-[40px] text-center">1</div>
-              <div className="min-w-[40px] text-center">X</div>
-              <div className="min-w-[40px] text-center">2</div>
+            <div className="col-span-4 pr-4">Match</div>
+            <div className="col-span-2 text-center px-4">Result</div>
+            <div className="col-span-3 flex justify-center gap-2 pl-2">
+              <div className="min-w-[44px] text-center">1</div>
+              <div className="min-w-[44px] text-center">X</div>
+              <div className="min-w-[44px] text-center">2</div>
             </div>
           </div>
           
@@ -2018,7 +2018,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                 return (
                 <div 
                   key={match.id} 
-                  className={`relative grid grid-cols-12 gap-1 px-2 py-2 transition-all duration-500 text-sm border-b ${
+                  className={`relative grid grid-cols-12 gap-x-4 gap-y-2 px-4 sm:px-5 py-3 transition-all duration-500 text-sm border-b ${
                     isMatchHighlighted(match)
                       ? 'bg-gradient-to-r from-yellow-400/15 via-orange-400/10 to-red-400/15 border-l-4 border-l-yellow-400 shadow-lg shadow-yellow-400/20 transform scale-[1.02]'
                       : 'hover:bg-surface/30'
@@ -2057,8 +2057,8 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                     <span className="text-sm text-muted">{formatTime(match.time)}</span>
                   </div>
                   
-                  <div className="col-span-4 flex items-center">
-                    <div className="flex items-center gap-1 w-full min-w-0">
+                  <div className="col-span-4 flex items-center pr-4">
+                    <div className="flex items-center gap-2 w-full min-w-0">
                       {getTeamLogo(match.teams.split(' vs ')[0], selectedCountry?.name || getCountryNameFromLeague(match.league)) && (
                         <img 
                           src={getTeamLogo(match.teams.split(' vs ')[0], selectedCountry?.name || getCountryNameFromLeague(match.league))!}
@@ -2085,19 +2085,19 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                     </div>
                   </div>
                   
-                  <div className="col-span-2 flex items-center justify-center">
-                                         {match.isHistorical ? (
-                       <div className="text-sm font-semibold text-green-400">
-                         {match.result && match.result !== "" ? formatScore(match.result) : "-"}
-                       </div>
-                     ) : (
+                  <div className="col-span-2 flex items-center justify-center px-4">
+                    {match.isHistorical ? (
+                      <div className="text-sm font-semibold text-green-400">
+                        {match.result && match.result !== "" ? formatScore(match.result) : "-"}
+                      </div>
+                    ) : (
                       <div className="text-sm text-muted">
                         {match.status === "Live" ? "LIVE" : "Upcoming"}
                       </div>
                     )}
                   </div>
-                  
-                  <div className="col-span-3 flex items-center justify-center">
+
+                  <div className="col-span-3 flex items-center justify-center pl-2 gap-2">
                     {match.isHistorical ? (
                       <div className="flex items-center gap-1">
                         {(() => {
@@ -2118,7 +2118,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                           };
                           
                           return odds.map((odd, index) => (
-                            <div key={index} className="text-center min-w-[40px]">
+                            <div key={index} className="text-center min-w-[44px]">
                               <div className={`text-sm font-semibold ${getOddColor(odd.value)}`}>
                                 {odd.text}
                               </div>
