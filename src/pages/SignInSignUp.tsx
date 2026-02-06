@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
-import { authService, tokenManager } from "../services/authService";
+import { authService, tokenManager, isAdminUser } from "../services/authService";
 import ReCaptchaComponent, { ReCaptchaRef } from "../components/ReCaptcha";
 import RecaptchaDebug from "../components/RecaptchaDebug";
 import { recaptchaService } from "../services/recaptchaService";
@@ -32,9 +32,11 @@ export default function SignInSignUp() {
   const [hasAgreed, setHasAgreed] = useState(false);
   
   const { theme } = useTheme();
-  const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, user, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
-  
+
+  const isAdmin = isAdminUser(user);
+
   // Check if user has already agreed to compliance terms
   useEffect(() => {
     const complianceAgreed = localStorage.getItem('compliance_agreed');
@@ -51,13 +53,12 @@ export default function SignInSignUp() {
   };
 
   useEffect(() => {
-    // Redirect authenticated users away from login page
-    if (!authLoading && isAuthenticated) {
-      navigate('/dashboard');
+    // Redirect authenticated users away from login page. Only admins go to /admin; regular users go to /dashboard.
+    if (!authLoading && isAuthenticated && user) {
+      navigate(isAdmin ? "/admin" : "/dashboard");
       return;
     }
-    
-  }, [isAuthenticated, authLoading, navigate]);
+  }, [isAuthenticated, authLoading, user, isAdmin, navigate]);
 
   useEffect(() => {
     const message = searchParams.get('message');
@@ -78,12 +79,11 @@ export default function SignInSignUp() {
     
     // Handle Google OAuth success
     if (googleAuth === 'success' && accessToken && refreshToken) {
-      // Store tokens
       tokenManager.setTokens(accessToken, refreshToken);
       setSuccess('Successfully signed in with Google!');
-      
-      // Redirect to dashboard immediately - no delay!
-      navigate('/dashboard');
+      authService.getCurrentUser().then((userData) => {
+        navigate(isAdminUser(userData) ? "/admin" : "/dashboard");
+      }).catch(() => navigate("/dashboard"));
     }
     
     // Handle Google OAuth error
@@ -220,13 +220,9 @@ export default function SignInSignUp() {
 
     try {
       if (isSignIn) {
-        // Sign in using AuthContext
+        // Sign in using AuthContext (redirect to /admin or /dashboard is handled by useEffect when user is set)
         await login(email, password);
         setSuccess("Successfully signed in!");
-        
-        setTimeout(() => {
-          navigate("/");
-        }, 1000);
       } else {
         // Sign up - Frontend validation with specific error messages
         if (!username.trim()) {

@@ -70,5 +70,9 @@ export const routes: RouteObject[] = [
   {
     path: "/admin",
     element: <AdminPanel />
+  },
+  {
+    path: "/admin/:section",
+    element: <AdminPanel />
   }
 ];

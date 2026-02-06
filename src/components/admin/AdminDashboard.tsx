@@ -11,7 +11,12 @@ interface AdminStats {
   total_transaction_volume: number;
 }
 
-export default function AdminDashboard() {
+interface AdminDashboardProps {
+  /** When provided, dashboard cards and quick actions navigate to admin section URLs */
+  onNavigate?: (path: string) => void;
+}
+
+export default function AdminDashboard({ onNavigate }: AdminDashboardProps = {}) {
   const [stats, setStats] = useState<AdminStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -122,6 +127,7 @@ export default function AdminDashboard() {
     {
       title: "Total Users",
       value: animatedStats?.total_users || 0,
+      path: "/admin/users",
       icon: "👥",
       color: "from-blue-500 via-cyan-500 to-teal-500",
       bgColor: "bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-teal-500/20",
@@ -134,6 +140,7 @@ export default function AdminDashboard() {
     {
       title: "Active Users",
       value: animatedStats?.active_users || 0,
+      path: "/admin/users",
       icon: "🟢",
       color: "from-emerald-500 via-green-500 to-lime-500",
       bgColor: "bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-lime-500/20",
@@ -146,6 +153,7 @@ export default function AdminDashboard() {
     {
       title: "Total Bets",
       value: animatedStats?.total_bets || 0,
+      path: "/admin/betting",
       icon: "🎯",
       color: "from-purple-500 via-violet-500 to-fuchsia-500",
       bgColor: "bg-gradient-to-br from-purple-500/20 via-violet-500/10 to-fuchsia-500/20",
@@ -158,6 +166,7 @@ export default function AdminDashboard() {
     {
       title: "Bet Amount",
       value: `$${(animatedStats?.total_bet_amount || 0).toLocaleString()}`,
+      path: "/admin/revenue-report",
       icon: "💰",
       color: "from-amber-500 via-yellow-500 to-orange-500",
       bgColor: "bg-gradient-to-br from-amber-500/20 via-yellow-500/10 to-orange-500/20",
@@ -170,6 +179,7 @@ export default function AdminDashboard() {
     {
       title: "Transactions",
       value: animatedStats?.total_transactions || 0,
+      path: "/admin/transactions",
       icon: "📊",
       color: "from-indigo-500 via-blue-500 to-purple-500",
       bgColor: "bg-gradient-to-br from-indigo-500/20 via-blue-500/10 to-purple-500/20",
@@ -182,6 +192,7 @@ export default function AdminDashboard() {
     {
       title: "Transaction Volume",
       value: `$${(animatedStats?.total_transaction_volume || 0).toLocaleString()}`,
+      path: "/admin/transactions",
       icon: "💳",
       color: "from-pink-500 via-rose-500 to-red-500",
       bgColor: "bg-gradient-to-br from-pink-500/20 via-rose-500/10 to-red-500/20",
@@ -195,40 +206,40 @@ export default function AdminDashboard() {
 
   const quickActions = [
     {
-      title: "Add User",
-      description: "Create new user account",
+      title: "User Management",
+      description: "Manage users and accounts",
       icon: "👤",
+      path: "/admin/users",
       color: "from-blue-500 to-cyan-500",
       bgColor: "bg-gradient-to-br from-blue-500/20 via-cyan-500/10 to-blue-500/30",
-      borderColor: "border-blue-500/30",
-      action: () => console.log("Add User")
+      borderColor: "border-blue-500/30"
     },
     {
-      title: "Adjust Funds",
-      description: "Manage user balances",
+      title: "Transactions",
+      description: "View and manage transactions",
       icon: "💰",
+      path: "/admin/transactions",
       color: "from-emerald-500 to-green-500",
       bgColor: "bg-gradient-to-br from-emerald-500/20 via-green-500/10 to-emerald-500/30",
-      borderColor: "border-emerald-500/30",
-      action: () => console.log("Adjust Funds")
+      borderColor: "border-emerald-500/30"
     },
     {
       title: "View Reports",
-      description: "Generate analytics",
+      description: "GGR/NGR & cashflow analytics",
       icon: "📊",
+      path: "/admin/revenue-report",
       color: "from-purple-500 to-violet-500",
       bgColor: "bg-gradient-to-br from-purple-500/20 via-violet-500/10 to-purple-500/30",
-      borderColor: "border-purple-500/30",
-      action: () => console.log("View Reports")
+      borderColor: "border-purple-500/30"
     },
     {
-      title: "Settings",
-      description: "System configuration",
+      title: "System Health",
+      description: "System status & configuration",
       icon: "⚙️",
+      path: "/admin/system-health",
       color: "from-red-500 to-pink-500",
       bgColor: "bg-gradient-to-br from-red-500/20 via-pink-500/10 to-red-500/30",
-      borderColor: "border-red-500/30",
-      action: () => console.log("Settings")
+      borderColor: "border-red-500/30"
     }
   ];
 
@@ -297,10 +308,16 @@ export default function AdminDashboard() {
 
       {/* Enhanced Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-        {statCards.map((card, index) => (
+        {statCards.map((card, index) => {
+          const isClickable = card.path && onNavigate;
+          return (
           <div
             key={index}
-            className={`group relative overflow-hidden ${card.bgColor} ${card.borderColor} ${card.shadowColor} border-2 rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:border-opacity-50`}
+            role={isClickable ? "button" : undefined}
+            tabIndex={isClickable ? 0 : undefined}
+            onClick={isClickable ? () => onNavigate(card.path!) : undefined}
+            onKeyDown={isClickable ? (e) => { if (e.key === "Enter" || e.key === " ") onNavigate?.(card.path!); } : undefined}
+            className={`group relative overflow-hidden ${card.bgColor} ${card.borderColor} ${card.shadowColor} border-2 rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-all duration-500 hover:scale-105 hover:shadow-2xl hover:border-opacity-50 ${isClickable ? "cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-2 focus:ring-offset-slate-900" : ""}`}
           >
             {/* Animated background glow */}
             <div className={`absolute inset-0 bg-gradient-to-r ${card.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500 rounded-2xl`}></div>
@@ -335,8 +352,14 @@ export default function AdminDashboard() {
                 </div>
               </div>
             </div>
+            {isClickable && (
+              <div className="absolute bottom-4 right-4 text-xs font-medium text-blue-300 opacity-0 group-hover:opacity-100 transition-opacity">
+                View →
+              </div>
+            )}
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Premium Quick Actions */}
@@ -352,7 +375,8 @@ export default function AdminDashboard() {
           {quickActions.map((action, index) => (
             <button
               key={index}
-              onClick={action.action}
+              type="button"
+              onClick={() => action.path && onNavigate?.(action.path)}
               className={`group relative overflow-hidden ${action.bgColor} ${action.borderColor} border-2 rounded-xl sm:rounded-2xl p-4 sm:p-6 transition-all duration-500 hover:scale-110 hover:shadow-2xl hover:border-opacity-50`}
             >
               {/* Animated background */}

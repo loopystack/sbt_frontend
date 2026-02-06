@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import { isAdminUser } from "../services/authService";
 import AdminDashboard from "../components/admin/AdminDashboard";
 import UserManagement from "../components/admin/UserManagement";
 import BettingManagement from "../components/admin/BettingManagement";
@@ -15,27 +16,35 @@ import ComplianceTesting from "../components/admin/ComplianceTesting";
 import SystemHealthDashboard from "../components/admin/SystemHealthDashboard";
 import SystemAlertsManagement from "../components/admin/SystemAlertsManagement";
 import ReconciliationReports from "../components/admin/ReconciliationReports";
+import RevenueReportDashboard from "../components/admin/RevenueReportDashboard";
+
+const VALID_SECTIONS = new Set([
+  "dashboard", "revenue-report", "ctr-revenue", "roi", "affiliates", "heatmap",
+  "compliance", "compliance-test", "system-health", "system-alerts", "reconciliation",
+  "users", "betting", "transactions", "withdrawals"
+]);
 
 export default function AdminPanel() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const { section } = useParams<{ section?: string }>();
+  const activeTab = (section && VALID_SECTIONS.has(section)) ? section : "dashboard";
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     // Wait for authentication check to complete before making decisions
     if (isLoading) {
-      return; // Still loading, don't redirect yet
+      return;
     }
 
-    // Check if user is authenticated and is admin
     if (!isAuthenticated) {
       navigate("/signin");
       return;
     }
 
-    if (user?.email !== "hitech.proton@gmail.com" && !user?.is_superuser) {
-      navigate("/");
+    // Only admin users may access /admin routes; redirect regular users to dashboard
+    if (!isAdminUser(user)) {
+      navigate("/dashboard");
       return;
     }
   }, [isAuthenticated, user, navigate, isLoading]);
@@ -53,6 +62,7 @@ export default function AdminPanel() {
 
   const tabs = [
     { id: "dashboard", name: "Dashboard", icon: "📊" },
+    { id: "revenue-report", name: "GGR/NGR & Cashflow", icon: "💰" },
     { id: "ctr-revenue", name: "CTR & Revenue", icon: "📈" },
     { id: "roi", name: "ROI", icon: "💰" },
     { id: "affiliates", name: "Affiliates", icon: "🤝" },
@@ -69,141 +79,137 @@ export default function AdminPanel() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      {/* Header */}
-      <div className="bg-black/50 backdrop-blur-xl border-b border-purple-500/20 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg sm:rounded-xl flex items-center justify-center">
-                  <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <h1 className="text-lg sm:text-xl font-bold text-white">Admin Panel</h1>
-                  <p className="text-xs sm:text-sm text-gray-400 hidden sm:block">Sports Betting Management</p>
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex">
+      {/* Mobile overlay when sidebar open */}
+      {isMobileMenuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+        />
+      )}
+
+      {/* Left Sidebar - Desktop fixed, Mobile slide-out drawer */}
+      <aside
+        className={`
+          fixed lg:sticky top-0 left-0 z-50 h-screen w-64 flex-shrink-0
+          bg-slate-900/95 backdrop-blur-xl border-r border-slate-700/50
+          transform transition-transform duration-200 ease-out
+          lg:translate-x-0
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}
+      >
+        <div className="flex flex-col h-full">
+          {/* Sidebar brand */}
+          <div className="flex items-center gap-3 px-4 py-5 border-b border-slate-700/50">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
             </div>
-            
-            <div className="flex items-center space-x-2 sm:space-x-4">
-              {/* Mobile menu button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 text-gray-400 hover:text-white transition-colors"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-              
-              {/* Desktop user info */}
-              <div className="hidden lg:flex items-center space-x-4">
-                <div className="text-right">
-                  <p className="text-sm font-medium text-white">{user?.username}</p>
-                  <p className="text-xs text-gray-400">{user?.email}</p>
-                </div>
-                <button
-                  onClick={() => navigate("/")}
-                  className="px-4 py-2 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded-lg transition-colors"
-                >
-                  Back to Main Site
-                </button>
-              </div>
-              
-              {/* Mobile user info */}
-              <div className="lg:hidden">
-                <div className="text-right">
-                  <p className="text-xs font-medium text-white truncate max-w-20">{user?.username}</p>
-                </div>
-              </div>
+            <div className="min-w-0">
+              <h1 className="text-base font-bold text-white truncate">Admin</h1>
+              <p className="text-xs text-slate-400 truncate">Sports Betting</p>
             </div>
           </div>
-        </div>
-      </div>
 
-      {/* Navigation Tabs - Desktop */}
-      <div className="hidden lg:block bg-black/30 backdrop-blur-xl border-b border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+          {/* Nav links */}
+          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                  activeTab === tab.id
-                    ? "border-purple-500 text-purple-400"
-                    : "border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-300"
-                }`}
+                onClick={() => {
+                  if (tab.id === "dashboard") {
+                    navigate("/admin");
+                  } else {
+                    navigate(`/admin/${tab.id}`);
+                  }
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`
+                  w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors
+                  ${activeTab === tab.id
+                    ? "bg-purple-500/20 text-purple-300 border border-purple-500/30 shadow-sm"
+                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent"
+                  }
+                `}
               >
-                <span className="mr-2">{tab.icon}</span>
-                {tab.name}
+                <span className="text-lg w-6 text-center flex-shrink-0" aria-hidden>{tab.icon}</span>
+                <span className="truncate">{tab.name}</span>
               </button>
             ))}
           </nav>
-        </div>
-      </div>
 
-      {/* Mobile Navigation Menu */}
-      {isMobileMenuOpen && (
-        <div className="lg:hidden bg-black/50 backdrop-blur-xl border-b border-gray-800">
-          <div className="px-4 py-2">
-            <div className="flex flex-col space-y-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className={`flex items-center px-3 py-3 rounded-lg font-medium text-sm transition-colors ${
-                    activeTab === tab.id
-                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                      : "text-gray-400 hover:text-gray-300 hover:bg-gray-500/10"
-                  }`}
-                >
-                  <span className="mr-3 text-lg">{tab.icon}</span>
-                  {tab.name}
-                </button>
-              ))}
-              
-              {/* Mobile user actions */}
-              <div className="pt-2 mt-2 border-t border-gray-700">
-                <div className="px-3 py-2">
-                  <p className="text-xs text-gray-400">Logged in as</p>
-                  <p className="text-sm font-medium text-white">{user?.username}</p>
-                  <p className="text-xs text-gray-400 truncate">{user?.email}</p>
-                </div>
-                <button
-                  onClick={() => navigate("/")}
-                  className="w-full mt-2 px-3 py-2 bg-gray-500/20 hover:bg-gray-500/30 text-gray-400 rounded-lg transition-colors text-sm"
-                >
-                  Back to Main Site
-                </button>
-              </div>
+          {/* Sidebar footer - user & back */}
+          <div className="p-3 border-t border-slate-700/50 space-y-2">
+            <div className="px-3 py-2 rounded-lg bg-slate-800/50">
+              <p className="text-xs text-slate-400">Logged in as</p>
+              <p className="text-sm font-medium text-white truncate">{user?.username}</p>
+              <p className="text-xs text-slate-500 truncate">{user?.email}</p>
             </div>
+            <button
+              onClick={() => navigate("/")}
+              className="w-full px-3 py-2 rounded-lg bg-slate-700/50 hover:bg-slate-600/50 text-slate-300 hover:text-white text-sm font-medium transition-colors"
+            >
+              Back to Main Site
+            </button>
           </div>
         </div>
-      )}
+      </aside>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
-        {activeTab === "dashboard" && <AdminDashboard />}
-        {activeTab === "ctr-revenue" && <CTRRevenueDashboard />}
-        {activeTab === "roi" && <ROIDashboard />}
-        {activeTab === "affiliates" && <AffiliateDashboard />}
-        {activeTab === "heatmap" && <ConversionHeatmap />}
-        {activeTab === "compliance" && <ComplianceDashboard />}
-        {activeTab === "compliance-test" && <ComplianceTesting />}
-        {activeTab === "system-health" && <SystemHealthDashboard />}
-        {activeTab === "system-alerts" && <SystemAlertsManagement />}
-        {activeTab === "reconciliation" && <ReconciliationReports />}
-        {activeTab === "users" && <UserManagement />}
-        {activeTab === "betting" && <BettingManagement />}
-        {activeTab === "transactions" && <TransactionManagement />}
-        {activeTab === "withdrawals" && <WithdrawalManagement />}
+      {/* Main area: header + content */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 flex items-center justify-between h-14 sm:h-16 px-4 sm:px-6 bg-black/40 backdrop-blur-xl border-b border-slate-700/50">
+          <button
+            type="button"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="lg:hidden p-2 -ml-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
+            aria-label="Toggle menu"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <div className="hidden lg:block">
+            <h2 className="text-lg font-semibold text-white">Admin Panel</h2>
+            <p className="text-xs text-slate-400">Sports Betting Management</p>
+          </div>
+          <div className="flex items-center gap-3 ml-auto">
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-medium text-white">{user?.username}</p>
+              <p className="text-xs text-slate-400 truncate max-w-[180px]">{user?.email}</p>
+            </div>
+            <button
+              onClick={() => navigate("/")}
+              className="px-3 py-2 rounded-lg bg-slate-600/30 hover:bg-slate-500/40 text-slate-300 hover:text-white text-sm transition-colors"
+            >
+              Back to Site
+            </button>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-auto">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
+            {activeTab === "dashboard" && <AdminDashboard onNavigate={(path) => navigate(path)} />}
+            {activeTab === "ctr-revenue" && <CTRRevenueDashboard />}
+            {activeTab === "roi" && <ROIDashboard />}
+            {activeTab === "affiliates" && <AffiliateDashboard />}
+            {activeTab === "heatmap" && <ConversionHeatmap />}
+            {activeTab === "compliance" && <ComplianceDashboard />}
+            {activeTab === "compliance-test" && <ComplianceTesting />}
+            {activeTab === "system-health" && <SystemHealthDashboard />}
+            {activeTab === "system-alerts" && <SystemAlertsManagement />}
+            {activeTab === "revenue-report" && <RevenueReportDashboard />}
+            {activeTab === "reconciliation" && <ReconciliationReports />}
+            {activeTab === "users" && <UserManagement />}
+            {activeTab === "betting" && <BettingManagement />}
+            {activeTab === "transactions" && <TransactionManagement />}
+            {activeTab === "withdrawals" && <WithdrawalManagement />}
+          </div>
+        </main>
       </div>
     </div>
   );

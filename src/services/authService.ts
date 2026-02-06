@@ -19,6 +19,12 @@ export interface User {
   last_login?: string;
 }
 
+/** Only users with is_superuser from the backend may access /admin routes. */
+export function isAdminUser(user: User | null | undefined): boolean {
+  if (!user) return false;
+  return user.is_superuser === true;
+}
+
 export interface LoginRequest {
   email: string;
   password: string;

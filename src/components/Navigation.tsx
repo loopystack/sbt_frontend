@@ -5,7 +5,7 @@ import { useTheme } from "../contexts/ThemeContext";
 import { useCountry } from "../contexts/CountryContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotifications } from "../contexts/NotificationContext";
-import { authService, tokenManager } from "../services/authService";
+import { authService, tokenManager, isAdminUser } from "../services/authService";
 import OddsFormatSelector from "./OddsFormatSelector";
 
 // Hook to determine which sports should be visible and if text should be shown
@@ -449,7 +449,7 @@ export default function Navigation() {
                       </button>
                       
                       {/* Admin Panel Link - Only show for admin users */}
-                      {(user?.email === "hitech.proton@gmail.com" || user?.is_superuser) && (
+                      {isAdminUser(user) && (
                         <button
                           onClick={() => {
                             setShowUserDropdown(false);

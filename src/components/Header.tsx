@@ -7,6 +7,7 @@ import OddsFormatSelector from "./OddsFormatSelector";
 import { useCountry } from "../contexts/CountryContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useNotifications } from "../contexts/NotificationContext";
+import { isAdminUser } from "../services/authService";
 
 interface HeaderProps {
   onMobileMenuToggle: () => void;
@@ -206,8 +207,8 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
                             </div>
                           </button>
                           
-                          {/* Admin Panel - Only show for superusers */}
-                          {user?.is_superuser && (
+                          {/* Admin Panel - Only show for admin users */}
+                          {isAdminUser(user) && (
                             <button
                               onClick={() => {
                                 setShowUserDropdown(false);
