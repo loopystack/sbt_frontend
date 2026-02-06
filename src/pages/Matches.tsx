@@ -142,6 +142,23 @@ export default function Matches() {
     setSelectedLeague(league);
   }, [params.country, params.league, countries, setSelectedCountry, setSelectedLeague]);
 
+  // On refresh of /football/:country/:league/results/ or /football/:country/:league/, wait for context to sync
+  // so we don't flash the "Next Football Matches" fallback — show loading until league matches URL.
+  const isLeagueUrl = Boolean(params.country && params.league);
+  const leagueSynced =
+    selectedLeague &&
+    selectedCountry &&
+    toSlug(selectedCountry.name) === params.country &&
+    toSlug(selectedLeague.name) === params.league;
+
+  if (isLeagueUrl && !leagueSynced) {
+    return (
+      <div className="flex items-center justify-center min-h-[200px] text-slate-400">
+        <span className="animate-pulse">Loading…</span>
+      </div>
+    );
+  }
+
   // If a league is selected, show the OddsTable (same as Home page)
   if (selectedLeague) {
     return (

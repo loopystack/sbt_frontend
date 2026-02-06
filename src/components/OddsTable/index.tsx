@@ -819,6 +819,17 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     return '';
   };
 
+  /** Only treat as a real match score (e.g. 1-0, 2-1). Rejects scraper garbage like 19-523 (time/IDs). */
+  const isValidFootballScore = (result: string | null | undefined): boolean => {
+    const s = result == null ? "" : String(result).trim();
+    if (!s) return false;
+    const m = s.match(/^(\d+)-(\d+)$/);
+    if (!m) return false;
+    const a = parseInt(m[1], 10);
+    const b = parseInt(m[2], 10);
+    return a >= 0 && a <= 25 && b >= 0 && b <= 25;
+  };
+
   const formatScore = (score: string): string => {
     if (!score || score === "" || score === "-") return "-";
     
@@ -846,7 +857,12 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       // - Country/league filtering
       // - Date filtering (Next Matches vs Results)
       // - Pagination
-      return transformMatchingInfoToMatch(matchingInfo);
+      const transformed = transformMatchingInfoToMatch(matchingInfo);
+      // On Results tab, only show matches with a valid score (reject scraper garbage like 19-523)
+      if (selectedMarket === "Results") {
+        return transformed.filter((m) => isValidFootballScore(m.result));
+      }
+      return transformed;
     }
     
     if (selectedLeague && selectedLeague.matches.length > 0) {
@@ -1782,9 +1798,9 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
 
                      {/* Score */}
                      <div className="flex flex-col items-center mx-4">
-                       {match.isHistorical && match.result && match.result !== "" ? (
+                       {isValidFootballScore(match.result) ? (
                          <div className="text-2xl font-bold text-green-500">
-                           {formatScore(match.result)}
+                           {formatScore(match.result!)}
                          </div>
                        ) : (
                          <div className="text-lg font-bold text-muted">VS</div>
@@ -2086,9 +2102,9 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   </div>
                   
                   <div className="col-span-2 flex items-center justify-center px-4">
-                    {match.isHistorical ? (
+                    {isValidFootballScore(match.result) ? (
                       <div className="text-sm font-semibold text-green-400">
-                        {match.result && match.result !== "" ? formatScore(match.result) : "-"}
+                        {formatScore(match.result!)}
                       </div>
                     ) : (
                       <div className="text-sm text-muted">
