@@ -1373,6 +1373,22 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     }
   }, [showBetSlip]);
 
+  // When navigating from Next Matches with addToSlip in state, add that selection to the slip and show betslip
+  useEffect(() => {
+    const state = location.state as { addToSlip?: { matchId: string; type: 'home' | 'draw' | 'away'; odds: string; teams: string; league: string; stake: string; matchDate?: string; matchTime?: string } } | undefined;
+    const add = state?.addToSlip;
+    if (!add) return;
+    setSelectedOdds(prev => {
+      const already = prev.some(o => o.matchId === add.matchId && o.type === add.type);
+      if (already) return prev;
+      return [...prev, { ...add, matchDate: add.matchDate }];
+    });
+    setShowBetSlip(true);
+    setIsBetSlipCollapsed(false);
+    setSelectedBetAmount(add.stake || "10");
+    navigate(location.pathname + location.search, { replace: true, state: {} });
+  }, [location.state]);
+
   // Cleanup timeout on unmount
   useEffect(() => {
     return () => {

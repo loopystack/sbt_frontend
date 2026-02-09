@@ -16,12 +16,15 @@ function toSlug(name: string): string {
 
 const PAGE_SIZE = 20;
 
-/** Build date tab id and label from a Date (for id use "yesterday"|"today"|"tomorrow" or YYYY-MM-DD) */
+/** Build date tab id from a Date (use local YYYY-MM-DD so timezone doesn't shift the day) */
 function getDateTabId(d: Date, rel: "yesterday" | "today" | "tomorrow" | null): string {
   if (rel === "yesterday") return "yesterday";
   if (rel === "today") return "today";
   if (rel === "tomorrow") return "tomorrow";
-  return d.toISOString().slice(0, 10);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function getDateTabLabel(d: Date, rel: "yesterday" | "today" | "tomorrow" | null): string {
@@ -31,6 +34,13 @@ function getDateTabLabel(d: Date, rel: "yesterday" | "today" | "tomorrow" | null
   const day = d.getDate();
   const mon = d.toLocaleString("en-GB", { month: "short" });
   return `${day} ${mon}`;
+}
+
+/** Parse YYYY-MM-DD as local calendar date (avoids UTC off-by-one; strips time if present) */
+function parseLocalDate(ymd: string): Date {
+  const datePart = ymd.trim().split("T")[0].slice(0, 10);
+  const [y, m, d] = datePart.split("-").map(Number);
+  return new Date(y, (m || 1) - 1, d || 1);
 }
 
 /** Resolve selectedDate (tab id) to date_from and date_to (YYYY-MM-DD) for the API */
@@ -47,7 +57,7 @@ function getDateRangeForSelected(selectedDateId: string): { date_from: string; d
     target = new Date(today);
     target.setDate(target.getDate() + 1);
   } else {
-    target = new Date(selectedDateId + "T00:00:00");
+    target = parseLocalDate(selectedDateId);
   }
   const y = target.getFullYear();
   const m = String(target.getMonth() + 1).padStart(2, "0");
@@ -74,7 +84,7 @@ function getTitleForSelectedDate(selectedDateId: string): string {
     target.setDate(target.getDate() + 1);
     rel = "tomorrow";
   } else {
-    target = new Date(selectedDateId + "T00:00:00");
+    target = parseLocalDate(selectedDateId);
   }
   const day = target.getDate();
   const mon = target.toLocaleString("en-GB", { month: "short" });
@@ -86,19 +96,9 @@ function getTitleForSelectedDate(selectedDateId: string): string {
   return dateStr;
 }
 
-/** Format match date for display in a row (e.g. "Today", "4 Feb") */
+/** Format match date for display in the table (parse as local date so tab and column match, e.g. "14 Feb") */
 function formatMatchDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const tomorrow = new Date(today);
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-  const t = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-  if (t.getTime() === today.getTime()) return "Today";
-  if (t.getTime() === tomorrow.getTime()) return "Tomorrow";
-  if (t.getTime() === yesterday.getTime()) return "Yesterday";
+  const d = parseLocalDate(dateStr);
   return `${d.getDate()} ${d.toLocaleString("en-GB", { month: "short" })}`;
 }
 
@@ -115,13 +115,22 @@ function formatTimeHHMM(time: string | null | undefined): string {
   return t;
 }
 
-/** Parse result "H-A" to winning outcome: home win -> '1', draw -> 'X', away win -> '2'. Returns null if invalid. */
-function getWinningOutcomeFromResult(result: string | null | undefined): "1" | "X" | "2" | null {
-  if (!result || !/^\d+-\d+$/.test(String(result).trim())) return null;
-  const [h, a] = String(result).trim().split("-").map(Number);
-  if (h > a) return "1";
-  if (h < a) return "2";
-  return "X";
+/** Return Tailwind class for odds by value: highest=green, middle=red, lowest=blue (text + subtle bg for visibility). */
+function getOddsColorClass(
+  o1: number,
+  oX: number,
+  o2: number,
+  which: "1" | "X" | "2"
+): string {
+  const sorted = [
+    { v: o1, k: "1" as const },
+    { v: oX, k: "X" as const },
+    { v: o2, k: "2" as const },
+  ].sort((a, b) => b.v - a.v);
+  const rank = sorted.findIndex((x) => x.k === which);
+  if (rank === 0) return "text-green-400 bg-green-500/20 px-2 py-0.5 rounded";
+  if (rank === 1) return "text-red-400 bg-red-500/20 px-2 py-0.5 rounded";
+  return "text-blue-400 bg-blue-500/20 px-2 py-0.5 rounded";
 }
 
 export default function Matches() {
@@ -149,15 +158,15 @@ export default function Matches() {
 
   const [selectedView, setSelectedView] = useState("kickoff");
 
-  // Dynamic date tabs: Yesterday, Today, Tomorrow, then next 5 days
+  // Dynamic date tabs: Today, Tomorrow, then next 5 days (no Yesterday for Next Matches)
   const dates = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const out: { id: string; label: string }[] = [];
-    for (let i = -1; i <= 6; i++) {
+    for (let i = 0; i <= 6; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() + i);
-      const rel = i === -1 ? "yesterday" : i === 0 ? "today" : i === 1 ? "tomorrow" : null;
+      const rel = i === 0 ? "today" : i === 1 ? "tomorrow" : null;
       out.push({ id: getDateTabId(d, rel), label: getDateTabLabel(d, rel) });
     }
     return out;
@@ -182,6 +191,7 @@ export default function Matches() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [totalMatches, setTotalMatches] = useState(0);
+
 
   const fetchAllLeaguesMatches = useCallback(async (page: number) => {
     setLoading(true);
@@ -341,7 +351,7 @@ export default function Matches() {
         </h1>
         <p className="text-muted text-sm max-w-4xl">
           Betting odds displayed are average/highest across all bookmakers (premium + preferred). 
-          Click on matches to see all betting odds available. Add your chosen pick to My Coupon by clicking the odds.
+          Add your chosen pick to the betslip by clicking the odds (opens league page with selection added).
         </p>
       </div>
 
@@ -422,56 +432,91 @@ export default function Matches() {
         <>
           <div className="block lg:hidden space-y-3 px-2">
             {allMatches.map((m) => {
-              const winning = getWinningOutcomeFromResult(m.result);
               const o1 = m.odd_1 ?? 0; const oX = m.odd_X ?? 0; const o2 = m.odd_2 ?? 0;
-              const best = winning !== null
-                ? (winning === "1" ? "odds1" : winning === "X" ? "oddsX" : "odds2")
-                : (o1 >= oX && o1 >= o2 ? "odds1" : oX >= o2 ? "oddsX" : "odds2");
+              const leaguePath = `/football/${toSlug(m.country)}/${toSlug(m.league)}/`;
+              const addToSlip = (type: "home" | "draw" | "away", oddsVal: number) => (e: React.MouseEvent) => {
+                e.stopPropagation();
+                navigate(leaguePath, {
+                  state: {
+                    addToSlip: {
+                      matchId: String(m.id),
+                      type,
+                      odds: String(oddsVal),
+                      teams: `${m.home_team} vs ${m.away_team}`,
+                      league: m.league,
+                      stake: "10",
+                      matchDate: m.date,
+                      matchTime: m.time ?? undefined,
+                    },
+                  },
+                });
+              };
               return (
                 <div
                   key={m.id}
-                  className="bg-surface border border-border rounded-lg p-3 sm:p-4 hover:bg-bg/50 transition-colors cursor-pointer"
-                  onClick={() => navigate(`/football/${toSlug(m.country)}/${toSlug(m.league)}/`)}
+                  className="bg-surface border border-border rounded-lg p-3 sm:p-4 hover:bg-bg/50 transition-colors"
                 >
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
-                      <div className="flex-1 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => navigate(leaguePath)}
+                        className="flex-1 min-w-0 text-left hover:opacity-90"
+                      >
                         <h3 className="font-semibold text-text text-sm sm:text-base leading-tight line-clamp-2">
                           {m.home_team} vs {m.away_team}
                         </h3>
                         <p className="text-xs sm:text-sm text-muted mt-1">Football / {m.country} / {m.league}</p>
-                      </div>
+                      </button>
                       <div className="flex flex-col items-end gap-2 ml-3">
                         <span className="text-xs sm:text-sm font-semibold text-text">{formatTimeHHMM(m.time)}</span>
                         <span className="text-xs text-muted">{formatMatchDate(m.date)}</span>
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2 mb-3">
-                      <div className="text-center">
+                      <button
+                        type="button"
+                        onClick={addToSlip("home", Number(m.odd_1) || 0)}
+                        className="text-center py-1 rounded hover:bg-bg/80 transition-colors cursor-pointer"
+                      >
                         <div className="text-xs text-muted mb-1">1</div>
-                        <div className={`text-xs sm:text-sm font-semibold ${best === 'odds1' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'}`}>
+                        <div className={`text-xs sm:text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "1")}`}>
                           {formatOdds(m.odd_1 ?? 0)}
                         </div>
-                      </div>
-                      <div className="text-center">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={addToSlip("draw", Number(m.odd_X) || 0)}
+                        className="text-center py-1 rounded hover:bg-bg/80 transition-colors cursor-pointer"
+                      >
                         <div className="text-xs text-muted mb-1">X</div>
-                        <div className={`text-xs sm:text-sm font-semibold ${best === 'oddsX' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'}`}>
+                        <div className={`text-xs sm:text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "X")}`}>
                           {formatOdds(m.odd_X ?? 0)}
                         </div>
-                      </div>
-                      <div className="text-center">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={addToSlip("away", Number(m.odd_2) || 0)}
+                        className="text-center py-1 rounded hover:bg-bg/80 transition-colors cursor-pointer"
+                      >
                         <div className="text-xs text-muted mb-1">2</div>
-                        <div className={`text-xs sm:text-sm font-semibold ${best === 'odds2' ? 'text-green-500 bg-green-500/20 px-2 py-1 rounded' : 'text-text'}`}>
+                        <div className={`text-xs sm:text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "2")}`}>
                           {formatOdds(m.odd_2 ?? 0)}
                         </div>
-                      </div>
+                      </button>
                     </div>
                     <div className="flex items-center justify-between pt-3 border-t border-border/50">
                       <div className="text-center">
                         <div className="text-xs text-muted">Bookmakers</div>
                         <div className="text-sm font-bold text-accent">{m.bets ?? 0}</div>
                       </div>
-                      <span className="text-xs text-muted">Tap to open league</span>
+                      <button
+                        type="button"
+                        onClick={() => navigate(leaguePath)}
+                        className="text-xs text-accent hover:underline"
+                      >
+                        View league
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -491,38 +536,69 @@ export default function Matches() {
             </div>
             <div className="space-y-0">
               {allMatches.map((m) => {
-                const winning = getWinningOutcomeFromResult(m.result);
                 const o1 = m.odd_1 ?? 0; const oX = m.odd_X ?? 0; const o2 = m.odd_2 ?? 0;
-                const best = winning !== null
-                  ? (winning === "1" ? "odds1" : winning === "X" ? "oddsX" : "odds2")
-                  : (o1 >= oX && o1 >= o2 ? "odds1" : oX >= o2 ? "oddsX" : "odds2");
+                const leaguePath = `/football/${toSlug(m.country)}/${toSlug(m.league)}/`;
+                const addToSlip = (type: "home" | "draw" | "away", oddsVal: number) => (e: React.MouseEvent) => {
+                  e.stopPropagation();
+                  navigate(leaguePath, {
+                    state: {
+                      addToSlip: {
+                        matchId: String(m.id),
+                        type,
+                        odds: String(oddsVal),
+                        teams: `${m.home_team} vs ${m.away_team}`,
+                        league: m.league,
+                        stake: "10",
+                        matchDate: m.date,
+                        matchTime: m.time ?? undefined,
+                      },
+                    },
+                  });
+                };
                 return (
                   <div
                     key={m.id}
-                    className="grid grid-cols-12 gap-4 items-center px-4 py-3 bg-surface border-b border-border last:border-b-0 hover:bg-bg/50 transition-colors cursor-pointer"
-                    onClick={() => navigate(`/football/${toSlug(m.country)}/${toSlug(m.league)}/`)}
+                    className="grid grid-cols-12 gap-4 items-center px-4 py-3 bg-surface border-b border-border last:border-b-0 hover:bg-bg/50 transition-colors"
                   >
                     <div className="col-span-2 text-sm text-muted">{formatMatchDate(m.date)}</div>
                     <div className="col-span-2 text-sm text-muted">{formatTimeHHMM(m.time)}</div>
                     <div className="col-span-4">
-                      <div className="font-medium text-text">{m.home_team} vs {m.away_team}</div>
-                      <div className="text-xs text-muted">Football / {m.country} / {m.league}</div>
+                      <button
+                        type="button"
+                        onClick={() => navigate(leaguePath)}
+                        className="text-left hover:opacity-90"
+                      >
+                        <div className="font-medium text-text">{m.home_team} vs {m.away_team}</div>
+                        <div className="text-xs text-muted">Football / {m.country} / {m.league}</div>
+                      </button>
                     </div>
-                    <div className="col-span-1 text-center">
-                      <span className={`px-2 py-1 rounded text-sm font-medium ${best === 'odds1' ? 'bg-green-500/20 text-green-400' : 'text-muted'}`}>
+                    <button
+                      type="button"
+                      onClick={addToSlip("home", Number(m.odd_1) || 0)}
+                      className="col-span-1 text-center py-1 rounded hover:bg-bg/80 cursor-pointer"
+                    >
+                      <span className={`text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "1")}`}>
                         {formatOdds(m.odd_1 ?? 0)}
                       </span>
-                    </div>
-                    <div className="col-span-1 text-center">
-                      <span className={`px-2 py-1 rounded text-sm font-medium ${best === 'oddsX' ? 'bg-green-500/20 text-green-400' : 'text-muted'}`}>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addToSlip("draw", Number(m.odd_X) || 0)}
+                      className="col-span-1 text-center py-1 rounded hover:bg-bg/80 cursor-pointer"
+                    >
+                      <span className={`text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "X")}`}>
                         {formatOdds(m.odd_X ?? 0)}
                       </span>
-                    </div>
-                    <div className="col-span-1 text-center">
-                      <span className={`px-2 py-1 rounded text-sm font-medium ${best === 'odds2' ? 'bg-green-500/20 text-green-400' : 'text-muted'}`}>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addToSlip("away", Number(m.odd_2) || 0)}
+                      className="col-span-1 text-center py-1 rounded hover:bg-bg/80 cursor-pointer"
+                    >
+                      <span className={`text-sm font-semibold inline-block ${getOddsColorClass(o1, oX, o2, "2")}`}>
                         {formatOdds(m.odd_2 ?? 0)}
                       </span>
-                    </div>
+                    </button>
                     <div className="col-span-1 text-center text-muted">{m.bets ?? 0}</div>
                   </div>
                 );
@@ -578,6 +654,7 @@ export default function Matches() {
           )}
         </>
       )}
-    </section>
+
+      </section>
   );
 }

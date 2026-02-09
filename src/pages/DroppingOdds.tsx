@@ -1,14 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { openBettingSiteByName } from "../config/bettingSites";
 import { useCountry } from "../contexts/CountryContext";
 import OddsTable from "../components/OddsTable";
+import { getBaseUrl } from "../config/api";
+import { useOddsFormat } from "../hooks/useOddsFormat";
+
+export interface DroppingOddsMatch {
+  id: string;
+  sport: string;
+  country: string;
+  league: string;
+  betType: string;
+  date: string;
+  teams: string;
+  currentOdds: string;
+  previousOdds: string;
+  dropPercentage: number;
+  bestCurrentOdds: string;
+  bookmaker: string;
+}
 
 export default function DroppingOdds() {
   const { selectedLeague } = useCountry();
+  const { getOddsInFormat } = useOddsFormat();
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("12-hours");
   const [selectedDroppingFilter, setSelectedDroppingFilter] = useState("20-percent");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState("all-types");
   const [selectedSport, setSelectedSport] = useState("Football");
+  const [matches, setMatches] = useState<DroppingOddsMatch[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+  const fetchInFlight = useRef(false);
 
   const timeFilters = [
     { id: "12-hours", label: "Last 12 hours" },
@@ -37,80 +61,81 @@ export default function DroppingOdds() {
     { name: "Baseball", icon: "⚾" }
   ];
 
-  const matches = [
-    {
-      id: "1",
-      sport: "Football",
-      country: "Bulgaria",
-      league: "Vtora liga",
-      betType: "HT/FT",
-      date: "17 Aug, 02:00",
-      teams: "Pirin Blagoevgrad - Lok. Gorna",
-      currentOdds: "79/1",
-      previousOdds: "49/1",
-      dropPercentage: -38,
-      bestCurrentOdds: "59/1",
-      bookmaker: "bets.io"
-    },
-    {
-      id: "2",
-      sport: "Football",
-      country: "Belarus",
-      league: "Vysshaya Liga",
-      betType: "1X2",
-      date: "16 Aug, 23:00",
-      teams: "Zhodino - Slutsk",
-      currentOdds: "11/1",
-      previousOdds: "133/20",
-      dropPercentage: -36,
-      bestCurrentOdds: "6/1",
-      bookmaker: "bet-at-home"
-    },
-    {
-      id: "3",
-      sport: "Football",
-      country: "England",
-      league: "NPL Premier Division",
-      betType: "1X2",
-      date: "16 Aug, 14:30",
-      teams: "Hednesford - Workington",
-      currentOdds: "137/10",
-      previousOdds: "429/50",
-      dropPercentage: -35,
-      bestCurrentOdds: "9/1",
-      bookmaker: "PINNACLE"
-    },
-    {
-      id: "4",
-      sport: "Hockey",
-      country: "Australia",
-      league: "AIHL",
-      betType: "Home/Away",
-      date: "16 Aug, 14:30",
-      teams: "Central Coast Rhinos - Brisbane Lightning",
-      currentOdds: "17/2",
-      previousOdds: "21/4",
-      dropPercentage: -34,
-      bestCurrentOdds: "11/2",
-      bookmaker: "bet-at-home"
-    },
-    {
-      id: "5",
-      sport: "Football",
-      country: "Turkey",
-      league: "1. Lig",
-      betType: "1X2",
-      date: "17 Aug, 03:30",
-      teams: "Adana Demirspor - Corum",
-      currentOdds: "37/50",
-      previousOdds: "4/25",
-      dropPercentage: -33,
-      bestCurrentOdds: "6/25",
-      bookmaker: "PINNACLE"
-    }
-  ];
+  const minDropFromFilter = (id: string) => {
+    if (id === "30-percent") return 30;
+    if (id === "50-percent") return 50;
+    return 20;
+  };
 
-  type Match = typeof matches[0];
+  const formatDateDisplay = (dateStr: string, timeStr: string) => {
+    try {
+      const d = new Date(dateStr + "T" + (timeStr || "00:00"));
+      const day = d.getDate();
+      const mon = d.toLocaleString("en-GB", { month: "short" });
+      const t = (timeStr || "00:00").trim().split(":").slice(0, 2).join(":");
+      return `${day} ${mon}, ${t}`;
+    } catch {
+      return dateStr + ", " + (timeStr || "");
+    }
+  };
+
+  const fetchDroppingOdds = useCallback(async (signal?: AbortSignal) => {
+    if (!selectedLeague) return;
+    if (fetchInFlight.current) return;
+    fetchInFlight.current = true;
+    setLoading(true);
+    try {
+      const minDrop = minDropFromFilter(selectedDroppingFilter);
+      const betType = selectedTypeFilter === "all-types" || selectedTypeFilter === "1x2" ? undefined : selectedTypeFilter === "ht-ft" ? undefined : selectedTypeFilter;
+      const params = new URLSearchParams({
+        page: String(page),
+        size: "50",
+        min_drop_percent: String(minDrop),
+      });
+      if (betType) params.set("bet_type", betType);
+      const res = await fetch(`${getBaseUrl()}/api/odds/dropping-odds?${params}`, { signal });
+      if (!res.ok) throw new Error("Failed to fetch dropping odds");
+      const data = await res.json();
+      const items = (data.items || []).map((item: any) => ({
+        id: item.id,
+        sport: item.sport || "Football",
+        country: item.country || "",
+        league: item.league || "",
+        betType: `1X2 (${item.bet_type})`,
+        date: formatDateDisplay(item.date || "", item.time || ""),
+        teams: item.teams || "",
+        currentOdds: getOddsInFormat(item.current_odds),
+        previousOdds: getOddsInFormat(item.previous_odds),
+        dropPercentage: item.drop_percent ?? 0,
+        bestCurrentOdds: getOddsInFormat(item.best_current_odds),
+        bookmaker: item.bookmaker || "Platform",
+      }));
+      setMatches(items);
+      setTotal(data.total ?? 0);
+      setTotalPages(data.pages ?? 0);
+    } catch (e) {
+      if ((e as Error).name === "AbortError") return;
+      setMatches([]);
+      setTotal(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+      fetchInFlight.current = false;
+    }
+  }, [page, selectedDroppingFilter, selectedTypeFilter, selectedLeague]);
+
+  useEffect(() => {
+    if (!selectedLeague) return;
+    const ac = new AbortController();
+    fetchDroppingOdds(ac.signal);
+    return () => ac.abort();
+  }, [selectedLeague, page, selectedDroppingFilter, selectedTypeFilter]);
+
+  useEffect(() => {
+    if (!selectedLeague) setPage(1);
+  }, [selectedDroppingFilter, selectedTypeFilter, selectedLeague]);
+
+  type Match = DroppingOddsMatch;
 
   // If a league is selected, show the OddsTable (same as Home page)
   if (selectedLeague) {
@@ -274,6 +299,56 @@ export default function DroppingOdds() {
         </button>
       </div>
 
+      {loading ? (
+        <div className="space-y-3 px-2">
+          <div className="flex items-center gap-2 text-muted text-sm">
+            <svg className="animate-spin h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span>Loading dropping odds…</span>
+          </div>
+          {/* Skeleton: mobile cards */}
+          <div className="block lg:hidden space-y-3">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-surface border border-border rounded-lg p-3 sm:p-4 animate-pulse">
+                <div className="h-4 bg-bg rounded w-3/4 mb-2" />
+                <div className="h-3 bg-bg rounded w-1/2 mb-3" />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="h-12 bg-bg rounded" />
+                  <div className="h-12 bg-bg rounded" />
+                </div>
+                <div className="h-8 bg-bg rounded w-1/3 mt-3" />
+              </div>
+            ))}
+          </div>
+          {/* Skeleton: desktop table */}
+          <div className="hidden lg:block">
+            <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg border border-border rounded-lg">
+              <div className="col-span-3 h-4 bg-surface rounded animate-pulse" />
+              <div className="col-span-2 h-4 bg-surface rounded animate-pulse" />
+              <div className="col-span-2 h-4 bg-surface rounded animate-pulse" />
+              <div className="col-span-2 h-4 bg-surface rounded animate-pulse" />
+              <div className="col-span-3 h-4 bg-surface rounded animate-pulse" />
+            </div>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((r) => (
+              <div key={r} className="grid grid-cols-12 gap-4 px-4 py-3 border-b border-border items-center">
+                <div className="col-span-3 h-4 bg-bg rounded animate-pulse" />
+                <div className="col-span-2 h-4 bg-bg rounded animate-pulse" />
+                <div className="col-span-2 h-4 bg-bg rounded animate-pulse" />
+                <div className="col-span-2 h-4 bg-bg rounded animate-pulse" />
+                <div className="col-span-3 h-4 bg-bg rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : matches.length === 0 ? (
+        <div className="text-center py-12 px-2 text-muted">
+          <p className="font-medium">No dropping odds found.</p>
+          <p className="text-sm mt-1">Try a lower minimum drop % or check back later when odds have moved.</p>
+        </div>
+      ) : (
+        <>
       {/* Mobile Matches View */}
       <div className="block lg:hidden space-y-3 px-2">
         {Object.entries(matches.reduce((groups, match) => {
@@ -419,6 +494,8 @@ export default function DroppingOdds() {
           ))}
         </div>
       </div>
+        </>
+      )}
     </section>
   );
 }
