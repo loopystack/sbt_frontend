@@ -476,15 +476,15 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
                   {/* Value betting information */}
                   <div className="bg-green-900/20 rounded-lg p-2 mb-3 border border-green-700/30">
                     <div className="flex justify-between items-center mb-1">
-                      <span className="text-xs text-green-300 font-medium">Expected Value</span>
-                      <span className="text-xs font-bold text-green-400">+{bet.expected_value_percent}%</span>
+                      <span className="text-xs font-medium text-green-800 dark:text-green-100">Expected Value</span>
+                      <span className="text-xs font-bold text-green-800 dark:text-green-200">+{bet.expected_value_percent}%</span>
                     </div>
-                    <div className="flex justify-between items-center text-xs text-muted">
+                    <div className="flex justify-between items-center text-xs text-green-900 dark:text-green-100">
                       <span>True Prob: {(bet.true_probability * 100).toFixed(1)}%</span>
                       <span>Book Prob: {(bet.implied_probability * 100).toFixed(1)}%</span>
                     </div>
                     <div className="text-center mt-1">
-                      <span className="text-xs bg-green-800/50 px-2 py-0.5 rounded text-green-300">
+                      <span className="text-xs bg-green-800/50 px-2 py-0.5 rounded text-white font-medium">
                         {bet.best_bet_type} • Edge: +{bet.value_edge}%
                       </span>
                     </div>
