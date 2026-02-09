@@ -151,10 +151,8 @@ export default function SignInSignUp() {
     setError("");
 
     try {
-      // Use backend's Google OAuth URL so client_id and redirect_uri match the callback
-      const backendUrl = isLocalOrigin()
-        ? getBaseUrl()
-        : "https://sportsbetting-seiw.onrender.com";
+      // Use the current app's backend base URL (works for local + production)
+      const backendUrl = getBaseUrl();
       const res = await fetch(`${backendUrl}/api/auth/google`);
       if (!res.ok) {
         setError("Could not start Google sign-in. Please try again.");
