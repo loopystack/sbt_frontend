@@ -306,14 +306,17 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     return formatSeasonLabelFromConfig(year, isSameYearSeason);
   };
   
-  // Format time to remove seconds (HH:MM:SS -> HH:MM)
+  // Format time to HH:MM (strip seconds from HH:MM:SS or any longer form)
   const formatTime = (time: string): string => {
     if (!time || time === "LIVE") return time;
-    // If time includes seconds (HH:MM:SS), remove them
-    if (time.includes(':') && time.split(':').length === 3) {
-      return time.substring(0, 5); // Take first 5 characters (HH:MM)
+    const t = time.trim();
+    const parts = t.split(':');
+    if (parts.length >= 2) {
+      const h = parts[0].replace(/\D/g, '') || '0';
+      const m = parts[1].replace(/\D/g, '') || '0';
+      return `${h.padStart(2, '0')}:${m.padStart(2, '0')}`;
     }
-    return time; // Already in HH:MM format or other format
+    return t;
   };
   const [currentPage, setCurrentPage] = useState(1);
   const matchesPerPage = 20;
@@ -817,6 +820,15 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       }
     }
     return '';
+  };
+
+  /** Parse result "H-A" to winning outcome: home win -> '1', draw -> 'X', away win -> '2'. Returns null if invalid. */
+  const getWinningOutcomeFromResult = (result: string | null | undefined): '1' | 'X' | '2' | null => {
+    if (!result || !/^\d+-\d+$/.test(String(result).trim())) return null;
+    const [h, a] = String(result).trim().split('-').map(Number);
+    if (h > a) return '1';
+    if (h < a) return '2';
+    return 'X';
   };
 
   /** Only treat as a real match score (e.g. 1-0, 2-1). Rejects scraper garbage like 19-523 or impossible scores like 18-17. */
@@ -1842,18 +1854,16 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                         const drawOdd = OddsConverter.stringToDecimal(match.bookmakers[0]?.draw || '0');
                         const awayOdd = OddsConverter.stringToDecimal(match.bookmakers[0]?.away || '0');
                         const odds = [
-                          { value: homeOdd, label: '1', text: formatOdds(match.bookmakers[0]?.home || '-') },
-                          { value: drawOdd, label: 'X', text: formatOdds(match.bookmakers[0]?.draw || '-') },
-                          { value: awayOdd, label: '2', text: formatOdds(match.bookmakers[0]?.away || '-') }
+                          { value: homeOdd, label: '1' as const, text: formatOdds(match.bookmakers[0]?.home || '-') },
+                          { value: drawOdd, label: 'X' as const, text: formatOdds(match.bookmakers[0]?.draw || '-') },
+                          { value: awayOdd, label: '2' as const, text: formatOdds(match.bookmakers[0]?.away || '-') }
                         ];
                         const sortedOdds = [...odds].sort((a, b) => b.value - a.value);
-                        
                         const getOddColor = (oddValue: number) => {
-                          if (oddValue === sortedOdds[0].value) return 'text-green-500'; 
-                          if (oddValue === sortedOdds[1].value) return 'text-red-500';   
+                          if (oddValue === sortedOdds[0].value) return 'text-green-500';
+                          if (oddValue === sortedOdds[1].value) return 'text-red-500';
                           return 'text-blue-500';
                         };
-                        
                         return odds.map((odd, index) => (
                           <div key={index} className="text-center">
                             <div className="text-xs text-muted mb-1">{odd.label}</div>
@@ -2122,18 +2132,16 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                           const drawOdd = OddsConverter.stringToDecimal(match.bookmakers[0]?.draw || '0');
                           const awayOdd = OddsConverter.stringToDecimal(match.bookmakers[0]?.away || '0');
                           const odds = [
-                            { value: homeOdd, label: '1', text: formatOdds(match.bookmakers[0]?.home || '-') },
-                            { value: drawOdd, label: 'X', text: formatOdds(match.bookmakers[0]?.draw || '-') },
-                            { value: awayOdd, label: '2', text: formatOdds(match.bookmakers[0]?.away || '-') }
+                            { value: homeOdd, label: '1' as const, text: formatOdds(match.bookmakers[0]?.home || '-') },
+                            { value: drawOdd, label: 'X' as const, text: formatOdds(match.bookmakers[0]?.draw || '-') },
+                            { value: awayOdd, label: '2' as const, text: formatOdds(match.bookmakers[0]?.away || '-') }
                           ];
                           const sortedOdds = [...odds].sort((a, b) => b.value - a.value);
-                          
                           const getOddColor = (oddValue: number) => {
-                            if (oddValue === sortedOdds[0].value) return 'text-green-500'; // Highest
-                            if (oddValue === sortedOdds[1].value) return 'text-red-500';   // Middle
-                            return 'text-blue-500'; // Lowest
+                            if (oddValue === sortedOdds[0].value) return 'text-green-500';
+                            if (oddValue === sortedOdds[1].value) return 'text-red-500';
+                            return 'text-blue-500';
                           };
-                          
                           return odds.map((odd, index) => (
                             <div key={index} className="text-center min-w-[44px]">
                               <div className={`text-sm font-semibold ${getOddColor(odd.value)}`}>
