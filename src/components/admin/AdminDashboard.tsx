@@ -11,6 +11,50 @@ interface AdminStats {
   total_transaction_volume: number;
 }
 
+interface ActivityItem {
+  type: string;
+  title: string;
+  subtitle: string;
+  created_at: string;
+}
+
+function formatTimeAgo(isoDate: string): string {
+  try {
+    const date = new Date(isoDate);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return "Just now";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+    return date.toLocaleDateString();
+  } catch {
+    return "";
+  }
+}
+
+function activityToDisplay(item: ActivityItem): {
+  title: string;
+  subtitle: string;
+  time: string;
+  icon: string;
+  color: string;
+  bgColor: string;
+} {
+  const time = formatTimeAgo(item.created_at);
+  const base = { title: item.title, subtitle: item.subtitle, time, icon: "", color: "", bgColor: "" };
+  switch (item.type) {
+    case "user":
+      return { ...base, icon: "✓", color: "from-emerald-500 to-green-500", bgColor: "bg-gradient-to-r from-emerald-500/20 to-green-500/20" };
+    case "bet":
+      return { ...base, icon: "💰", color: "from-blue-500 to-cyan-500", bgColor: "bg-gradient-to-r from-blue-500/20 to-cyan-500/20" };
+    case "transaction":
+      return { ...base, icon: "💳", color: "from-purple-500 to-violet-500", bgColor: "bg-gradient-to-r from-purple-500/20 to-violet-500/20" };
+    default:
+      return { ...base, icon: "•", color: "from-slate-500 to-slate-600", bgColor: "bg-gradient-to-r from-slate-500/20 to-slate-600/20" };
+  }
+}
+
 interface AdminDashboardProps {
   /** When provided, dashboard cards and quick actions navigate to admin section URLs */
   onNavigate?: (path: string) => void;
@@ -22,9 +66,32 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps = {})
   const [error, setError] = useState<string | null>(null);
   const [showProgressBars, setShowProgressBars] = useState(false);
   const [animatedStats, setAnimatedStats] = useState<AdminStats | null>(null);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [activityLoading, setActivityLoading] = useState(true);
+  const [activityError, setActivityError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStats();
+  }, []);
+
+  const fetchActivity = async () => {
+    try {
+      setActivityError(null);
+      const list = await apiMethods.get<ActivityItem[]>("/api/admin/activity?limit=20");
+      setActivities(Array.isArray(list) ? list : []);
+    } catch (err: unknown) {
+      const message = err && typeof err === "object" && "message" in err ? String((err as Error).message) : "Failed to load activity";
+      setActivityError(message);
+      setActivities([]);
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchActivity();
+    const interval = setInterval(fetchActivity, 60 * 1000); // Poll every 60 seconds for live updates
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -243,44 +310,7 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps = {})
     }
   ];
 
-  const recentActivities = [
-    {
-      type: "user",
-      title: "New user registered",
-      subtitle: "john_doe@gmail.com",
-      time: "2 minutes ago",
-      icon: "✓",
-      color: "from-emerald-500 to-green-500",
-      bgColor: "bg-gradient-to-r from-emerald-500/20 to-green-500/20"
-    },
-    {
-      type: "bet",
-      title: "High-value bet placed",
-      subtitle: "$500 on Premier League",
-      time: "5 minutes ago",
-      icon: "💰",
-      color: "from-blue-500 to-cyan-500",
-      bgColor: "bg-gradient-to-r from-blue-500/20 to-cyan-500/20"
-    },
-    {
-      type: "transaction",
-      title: "Payment processed",
-      subtitle: "Stripe transaction #1234",
-      time: "8 minutes ago",
-      icon: "💳",
-      color: "from-purple-500 to-violet-500",
-      bgColor: "bg-gradient-to-r from-purple-500/20 to-violet-500/20"
-    },
-    {
-      type: "system",
-      title: "System backup completed",
-      subtitle: "Database snapshot saved",
-      time: "12 minutes ago",
-      icon: "🛠️",
-      color: "from-amber-500 to-orange-500",
-      bgColor: "bg-gradient-to-r from-amber-500/20 to-orange-500/20"
-    }
-  ];
+  const recentActivities = activities.map(activityToDisplay);
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -416,39 +446,63 @@ export default function AdminDashboard({ onNavigate }: AdminDashboardProps = {})
         </div>
         
         <div className="space-y-3 sm:space-y-4">
-          {recentActivities.map((activity, index) => (
-            <div
-              key={index}
-              className={`group flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${activity.bgColor} border border-white/10 rounded-lg sm:rounded-xl hover:bg-white/5 transition-all duration-300`}
-            >
-              {/* Timeline connector */}
-              {index < recentActivities.length - 1 && (
-                <div className="absolute left-5 sm:left-6 mt-10 sm:mt-12 w-0.5 h-6 sm:h-8 bg-gradient-to-b from-white/20 to-transparent"></div>
-              )}
-              
-              <div className={`relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r ${activity.color} rounded-full flex items-center justify-center shadow-lg`}>
-                <span className="text-white text-sm sm:text-lg">{activity.icon}</span>
-              </div>
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="text-white font-semibold truncate text-sm sm:text-base">{activity.title}</p>
-                  <span className="text-gray-400 text-xs flex-shrink-0 ml-2">{activity.time}</span>
-                </div>
-                <p className="text-gray-300/80 text-xs sm:text-sm truncate">{activity.subtitle}</p>
-              </div>
-              
-              {/* Hover indicator */}
-              <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-emerald-400 transition-colors duration-300"></div>
+          {activityLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-500 border-t-transparent"></div>
+              <span className="ml-3 text-gray-400 text-sm">Loading activity...</span>
             </div>
-          ))}
+          ) : activityError ? (
+            <div className="text-center py-8">
+              <p className="text-amber-400 text-sm mb-2">Unable to load activity</p>
+              <p className="text-gray-400 text-xs mb-3">{activityError}</p>
+              <button
+                type="button"
+                onClick={() => { setActivityLoading(true); fetchActivity(); }}
+                className="text-purple-400 hover:text-purple-300 text-sm font-medium"
+              >
+                Retry
+              </button>
+            </div>
+          ) : recentActivities.length === 0 ? (
+            <div className="text-center py-8 text-gray-400 text-sm">
+              No recent activity yet. New registrations, bets, and transactions will appear here.
+            </div>
+          ) : (
+            recentActivities.map((activity, index) => (
+              <div
+                key={`${activity.title}-${activity.time}-${index}`}
+                className={`group flex items-center space-x-3 sm:space-x-4 p-3 sm:p-4 ${activity.bgColor} border border-white/10 rounded-lg sm:rounded-xl hover:bg-white/5 transition-all duration-300`}
+              >
+                {index < recentActivities.length - 1 && (
+                  <div className="absolute left-5 sm:left-6 mt-10 sm:mt-12 w-0.5 h-6 sm:h-8 bg-gradient-to-b from-white/20 to-transparent"></div>
+                )}
+                <div className={`relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-r ${activity.color} rounded-full flex items-center justify-center shadow-lg`}>
+                  <span className="text-white text-sm sm:text-lg">{activity.icon}</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <p className="text-white font-semibold truncate text-sm sm:text-base">{activity.title}</p>
+                    <span className="text-gray-400 text-xs flex-shrink-0 ml-2">{activity.time}</span>
+                  </div>
+                  <p className="text-gray-300/80 text-xs sm:text-sm truncate">{activity.subtitle}</p>
+                </div>
+                <div className="w-1 h-1 bg-gray-400 rounded-full group-hover:bg-emerald-400 transition-colors duration-300"></div>
+              </div>
+            ))
+          )}
         </div>
         
-        <div className="mt-4 sm:mt-6 text-center">
-          <button className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 hover:border-purple-500/50 text-purple-300 hover:text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base">
-            View All Activities
-          </button>
-        </div>
+        {!activityLoading && recentActivities.length > 0 && (
+          <div className="mt-4 sm:mt-6 text-center">
+            <button
+              type="button"
+              onClick={() => onNavigate?.("/admin/transactions")}
+              className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-500/30 hover:border-purple-500/50 text-purple-300 hover:text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl font-medium transition-all duration-300 hover:scale-105 text-sm sm:text-base"
+            >
+              View All Activities
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

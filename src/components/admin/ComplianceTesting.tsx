@@ -37,10 +37,13 @@ export default function ComplianceTesting() {
     }
   };
 
-  const testGeoBlocking = async () => {
+  const testGeoBlocking = async (countryCode?: string) => {
+    const code = countryCode ?? testCountry;
+    if (!code) return;
     try {
       setIsTesting(true);
-      const result = await apiMethods.get(`/api/analytics/check-country?test_country=${testCountry}`);
+      setTestCountry(code);
+      const result = await apiMethods.get(`/api/analytics/check-country?test_country=${code}`);
       setTestResult(result);
     } catch (err: any) {
       console.error("Failed to test geo-blocking:", err);
@@ -200,10 +203,7 @@ export default function ComplianceTesting() {
             <h4 className="font-semibold text-white mb-2">Test Allowed Country</h4>
             <p className="text-sm text-gray-400 mb-2">Test access from an allowed country</p>
             <button
-              onClick={() => {
-                setTestCountry("US");
-                testGeoBlocking();
-              }}
+              onClick={() => testGeoBlocking("US")}
               className="text-sm px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded"
             >
               Test US
@@ -213,10 +213,7 @@ export default function ComplianceTesting() {
             <h4 className="font-semibold text-white mb-2">Test Restricted Country</h4>
             <p className="text-sm text-gray-400 mb-2">Test blocking from restricted country</p>
             <button
-              onClick={() => {
-                setTestCountry("PH");
-                testGeoBlocking();
-              }}
+              onClick={() => testGeoBlocking("PH")}
               className="text-sm px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded"
             >
               Test Restricted

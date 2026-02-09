@@ -1,5 +1,7 @@
 import React from "react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./index.css";
 import "./styles/theme.css";
 import { routes } from "./app/routes";
@@ -116,6 +118,7 @@ const App: React.FC = () => {
   return (
     <CountryRestrictionProvider>
       <AppContent />
+      <ToastContainer position="top-center" autoClose={5000} theme="dark" />
       <CookieConsent 
         onAccept={handleCookieAccept}
         onDecline={handleCookieDecline}

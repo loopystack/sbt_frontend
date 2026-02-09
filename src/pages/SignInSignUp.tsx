@@ -7,6 +7,7 @@ import ReCaptchaComponent, { ReCaptchaRef } from "../components/ReCaptcha";
 import RecaptchaDebug from "../components/RecaptchaDebug";
 import { recaptchaService } from "../services/recaptchaService";
 import { getBaseUrl, isLocalOrigin } from "../config/api";
+import { toast } from "react-toastify";
 export default function SignInSignUp() {
   const [searchParams] = useSearchParams();
   const [isSignIn, setIsSignIn] = useState(true);
@@ -285,11 +286,16 @@ export default function SignInSignUp() {
         }
 
         await authService.register({ email, username, password, full_name: fullName });
-        setSuccess("Account created successfully! Please check your email for verification.");
+        setError(""); // Clear any previous error so success is visible
+        const message = "Account created successfully! Please check your email for verification.";
+        setSuccess(message);
+        toast.success("Account created successfully! Please check your email for verification.", {
+          position: "top-center",
+          autoClose: 5000,
+        });
         setTimeout(() => {
-          // Navigate to home page instead of reloading
           navigate("/");
-        }, 2000);
+        }, 2500);
       }
     } catch (error: any) {
       // Handle backend validation errors with specific messages
@@ -387,8 +393,8 @@ export default function SignInSignUp() {
             </div>
           )}
           {success && (
-            <div className="mb-4 p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
-              <p className="text-green-400 text-xs font-medium">{success}</p>
+            <div className="mb-4 p-4 bg-green-500/20 border border-green-500/40 rounded-lg" role="alert">
+              <p className="text-green-300 text-sm font-semibold">{success}</p>
             </div>
           )}
 
