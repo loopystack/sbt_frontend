@@ -145,7 +145,7 @@ export default function AdminPanel() {
           <div className="p-3 border-t border-slate-700/50 space-y-2">
             <div className="px-3 py-2 rounded-lg bg-slate-800/50">
               <p className="text-xs text-slate-400">Logged in as</p>
-              <p className="text-sm font-medium text-white truncate">{user?.username}</p>
+              <p className="text-sm font-medium text-white truncate">{user?.full_name || user?.username}</p>
               <p className="text-xs text-slate-500 truncate">{user?.email}</p>
             </div>
             <button
@@ -178,7 +178,7 @@ export default function AdminPanel() {
           </div>
           <div className="flex items-center gap-3 ml-auto">
             <div className="hidden sm:block text-right">
-              <p className="text-sm font-medium text-white">{user?.username}</p>
+              <p className="text-sm font-medium text-white">{user?.full_name || user?.username}</p>
               <p className="text-xs text-slate-400 truncate max-w-[180px]">{user?.email}</p>
             </div>
             <button

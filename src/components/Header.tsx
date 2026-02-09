@@ -138,7 +138,7 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
                               </svg>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="font-semibold text-text text-lg">{user?.username || 'User'}</p>
+                              <p className="font-semibold text-text text-lg">{user?.full_name || user?.username || 'User'}</p>
                               <p className="text-sm text-muted truncate">{user?.email}</p>
                             </div>
                           </div>

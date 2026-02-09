@@ -349,7 +349,7 @@ export default function Dashboard() {
             <div className="relative flex-shrink-0">
               <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
                 <span className="text-2xl sm:text-3xl font-bold text-white">
-                  {user?.username?.charAt(0).toUpperCase() || 'U'}
+                  {(user?.full_name || user?.username)?.charAt(0).toUpperCase() || 'U'}
                 </span>
               </div>
               <div className="absolute -top-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 bg-green-400 rounded-full flex items-center justify-center shadow-lg">
@@ -359,7 +359,7 @@ export default function Dashboard() {
             
             <div className="text-center sm:text-left flex-1">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 bg-gradient-to-r from-white to-yellow-200 bg-clip-text text-transparent">
-                Welcome back, {user?.username}! 👋
+                Welcome back, {user?.full_name || user?.username}! 👋
               </h1>
               <p className="text-sm sm:text-base lg:text-lg text-white/90 font-medium">Ready to make some winning bets today?</p>
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-2">

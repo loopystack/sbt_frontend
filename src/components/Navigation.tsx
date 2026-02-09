@@ -370,7 +370,7 @@ export default function Navigation() {
                       </div>
                     )}
                   </div>
-                  <span className="text-sm font-medium text-black dark:text-white hidden sm:block">{user?.username || 'User'}</span>
+                  <span className="text-sm font-medium text-black dark:text-white hidden sm:block">{user?.full_name || user?.username || 'User'}</span>
                   <svg 
                     className={`w-4 h-4 text-muted transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} 
                     fill="none" 
@@ -392,7 +392,7 @@ export default function Navigation() {
                           </svg>
                         </div>
                         <div>
-                          <p className="font-semibold text-text">{user?.username || 'User'}</p>
+                          <p className="font-semibold text-text">{user?.full_name || user?.username || 'User'}</p>
                           <p className="text-sm text-muted">{user?.email}</p>
                         </div>
                       </div>
