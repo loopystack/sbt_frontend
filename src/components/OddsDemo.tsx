@@ -4,12 +4,14 @@ import { OddsFormat } from '../contexts/PreferencesContext';
 
 export default function OddsDemo() {
   const { oddsFormat, getOddsInFormat } = useOddsFormat();
-  const [inputOdds, setInputOdds] = useState(1.50);
+  const [inputOdds, setInputOdds] = useState(2.10);
 
+  // Test odds drives Home Win; Draw and Away Win derived so all three update together
+  const homeDecimal = Math.max(1.01, inputOdds);
   const exampleOdds = [
-    { name: 'Home Win', decimal: 2.10 },
-    { name: 'Draw', decimal: 3.40 },
-    { name: 'Away Win', decimal: 3.20 }
+    { name: 'Home Win', decimal: homeDecimal },
+    { name: 'Draw', decimal: Math.round((homeDecimal * 1.62) * 100) / 100 },
+    { name: 'Away Win', decimal: Math.round((homeDecimal * 1.52) * 100) / 100 }
   ];
 
   return (
