@@ -146,37 +146,31 @@ export default function SignInSignUp() {
   };
 
 
-  const handleGoogleLogin = () => {
-    
+  const handleGoogleLogin = async () => {
     setIsLoading(true);
     setError("");
-    
-    // Get current domain dynamically
-    const currentOrigin = window.location.origin;
-    
-    // Determine backend URL based on current domain
-    let backendUrl;
-    if (isLocalOrigin()) {
-      backendUrl = getBaseUrl();
-    } else {
-      // For production and any other domain, use production backend
-      backendUrl = 'https://sportsbetting-seiw.onrender.com';
+
+    try {
+      // Use backend's Google OAuth URL so client_id and redirect_uri match the callback
+      const backendUrl = isLocalOrigin()
+        ? getBaseUrl()
+        : "https://sportsbetting-seiw.onrender.com";
+      const res = await fetch(`${backendUrl}/api/auth/google`);
+      if (!res.ok) {
+        setError("Could not start Google sign-in. Please try again.");
+        return;
+      }
+      const data = await res.json();
+      if (data.authorization_url) {
+        window.location.href = data.authorization_url;
+        return;
+      }
+      setError("Could not start Google sign-in. Please try again.");
+    } catch {
+      setError("Could not start Google sign-in. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
-    
-    // TEMPORARY WORKAROUND: Force production backend for testing
-    // Uncomment the line below to test with production backend
-    // backendUrl = 'https://sportsbetting-seiw.onrender.com';
-    
-    // Direct redirect to Google OAuth - dynamic redirect URI
-    const googleOAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
-      `client_id=700550723594-eepho7l9d04n0im6qs04jb03gpqivk97.apps.googleusercontent.com&` +
-      `redirect_uri=${encodeURIComponent(`${backendUrl}/api/auth/google/callback`)}&` +
-      `response_type=code&` +
-      `scope=${encodeURIComponent('openid email profile')}&` +
-      `access_type=offline&` +
-      `prompt=select_account`; // This allows users to select email
-    
-    window.location.href = googleOAuthUrl;
   };
 
   const handleModeChange = (signIn: boolean) => {
