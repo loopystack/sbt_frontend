@@ -80,7 +80,7 @@ export default function ComplianceTesting() {
           </div>
           <div className="flex items-end">
             <button
-              onClick={testGeoBlocking}
+              onClick={() => testGeoBlocking()}
               disabled={isTesting || !testCountry}
               className="w-full px-4 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg transition-colors disabled:opacity-50"
             >
