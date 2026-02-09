@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCountry } from "../contexts/CountryContext";
 import { useAppDispatch } from "../store/hooks";
@@ -18,7 +18,8 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
   const navigate = useNavigate();
   const [matchingInfo, setMatchingInfo] = useState<MatchingInfo[]>([]);
   const [leagueMatchCounts, setLeagueMatchCounts] = useState<Record<string, number>>({});
-  
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const fetchMatchingInfo = useCallback(async () => {
     try {
       const params = { 
@@ -52,6 +53,11 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
   useEffect(() => {
     fetchMatchingInfo();
   }, [fetchMatchingInfo]);
+
+  // Reset scroll to top when sidebar loads
+  useEffect(() => {
+    if (!loading) scrollRef.current?.scrollTo(0, 0);
+  }, [loading]);
 
   const getFlagUrl = (flagCode: string) => {
     try {
@@ -118,8 +124,12 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
 
   if (loading) {
     return (
-      <aside className="w-64 xl:w-72 bg-surface px-2 py-4 space-y-4 h-full">
-        {/* Football Section Skeleton */}
+      <aside className="w-64 xl:w-72 h-full flex flex-col min-h-0 bg-surface">
+        <div className="flex-shrink-0 px-2 pt-4 pb-2 bg-surface border-b border-border/50">
+          <div className="h-9 bg-muted/20 rounded w-full animate-pulse" title="FOOTBALL"></div>
+        </div>
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 py-4 space-y-4">
+        {/* Countries Skeleton */}
         <div>
           <div className="h-4 bg-muted/20 rounded w-20 mb-3 animate-pulse"></div>
           
@@ -152,18 +162,18 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
             </div>
           ))}
         </div>
+      </div>
       </aside>
     );
   }
 
   return (
-    <aside className="w-64 xl:w-72 bg-surface px-2 py-4 space-y-4">
-      
-      {/* Football Section */}
-      <div>
+    <aside className="w-64 xl:w-72 h-full flex flex-col min-h-0 bg-surface">
+      {/* Football title fixed at top of sidebar so it's always visible */}
+      <div className="flex-shrink-0 px-2 pt-4 pb-2 bg-surface border-b border-border/50">
         <button
           onClick={() => handleSportClick("Football")}
-          className="w-full text-left px-2 py-2 rounded-lg text-sm transition-colors flex items-center justify-between hover:bg-white/5 text-text hover:text-text mb-3 pr-1"
+          className="w-full text-left px-2 py-2 rounded-lg text-sm transition-colors flex items-center justify-between hover:bg-white/5 text-text hover:text-text pr-1"
         >
           <div className="flex items-center gap-3">
             <span className="text-lg">⚽</span>
@@ -177,9 +187,10 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
             ▶
           </span>
         </button>
-        
+      </div>
+      <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto scrollbar-hide px-2 py-2 space-y-4">
         {expandedSports.includes("Football") && (
-          <div className="space-y-1 max-h-100 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+          <div className="space-y-1">
             {countries.map((country) => (
               <div key={country.name} className="space-y-1">
                 <button
@@ -231,7 +242,6 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
             ))}
           </div>
         )}
-      </div>
 
       {/* Other Sports Sections */}
       <div className="space-y-2">
@@ -273,6 +283,7 @@ export default function LeftSidebar({ onClose }: LeftSidebarProps) {
             )}
           </div>
         ))}
+      </div>
       </div>
     </aside>
   );

@@ -365,7 +365,8 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
   };
 
   return (
-    <aside className="w-full lg:w-64 xl:w-72 bg-surface border-l border-border p-3 sm:p-4 space-y-4 sm:space-y-6">
+    <aside className="w-full lg:w-64 xl:w-72 h-full flex flex-col min-h-0 bg-surface border-l border-border">
+      <div className="flex-1 min-h-0 overflow-y-auto scrollbar-hide p-3 sm:p-4 space-y-4 sm:space-y-6">
       <div>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-sm font-semibold text-muted">💎 VALUE BETS</h3>
@@ -567,7 +568,7 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
 
       <div>
         <h3 className="text-sm font-semibold text-muted mb-2 sm:mb-3">ALERTS</h3>
-        <div className="space-y-2 sm:space-y-3 overflow-y-auto scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent">
+        <div className="space-y-2 sm:space-y-3 overflow-y-auto scrollbar-hide">
           {alerts.map((alert) => (
             <div key={alert.id} className="bg-gradient-to-br from-surface to-bg rounded-xl p-2.5 sm:p-3 xl:p-4 border border-border hover:shadow-lg hover:shadow-black/20 transition-all duration-300 group hover:border-accent/30">
               
@@ -671,6 +672,7 @@ export default function RightSidebar({ onClose }: RightSidebarProps) {
             </div>
           )}
         </div>
+      </div>
       </div>
     </aside>
   );

@@ -18,7 +18,7 @@ export default function Footer() {
               </svg>
             </div>
             <div>
-              <div className="text-white font-semibold text-sm">Best Sports Betting 2024</div>
+              <div className="text-white font-semibold text-sm">Best Sports Betting 2026</div>
               <div className="text-yellow-400 text-xs">SPORTSBET AWARDS</div>
             </div>
           </div>
@@ -40,7 +40,7 @@ export default function Footer() {
               </svg>
             </div>
             <div>
-              <div className="text-white font-semibold text-sm">Members CHOICE 2024</div>
+              <div className="text-white font-semibold text-sm">Members CHOICE 2026</div>
               <div className="text-green-400 text-xs">BETTING AWARDS</div>
             </div>
           </div>

@@ -40,16 +40,16 @@ export default function AppShell() {
         isMobileMenuOpen={isMobileMenuOpen}
       />
 
-      {/* Left Sidebar - Hidden on profile and deposit pages */}
+      {/* Left Sidebar - Shown from lg up (1024px); top offset so content is not cut by header; full height so scroll works. */}
       {!shouldHideSidebars && (
-        <div className="fixed top-0 left-0 h-full z-40 hidden xl:block">
+        <div className="fixed left-0 bottom-0 top-[var(--header-height,7rem)] z-40 hidden lg:block w-64 xl:w-72 flex flex-col overflow-hidden">
           <LeftSidebar onClose={() => setIsLeftSidebarOpen(false)} />
         </div>
       )}
 
-      {/* Right Sidebar - Hidden on profile and deposit pages */}
+      {/* Right Sidebar - Shown from lg up (1024px); top offset so content is not cut by header; h-full + overflow so it scrolls. */}
       {!shouldHideSidebars && (
-        <div className="fixed top-0 right-0 h-full z-40 hidden xl:block">
+        <div className="fixed right-0 bottom-0 top-[var(--header-height,7rem)] left-[auto] w-auto z-40 hidden lg:block flex flex-col overflow-hidden">
           <RightSidebar />
         </div>
       )}
@@ -60,7 +60,7 @@ export default function AppShell() {
           location.pathname === '/profile' || location.pathname === '/deposit'
             ? ''
             : isLeftSidebarOpen || (isRightSidebarOpen && location.pathname !== '/profile' && location.pathname !== '/deposit')
-            ? 'xl:ml-0'
+            ? 'lg:ml-0'
             : ''
         }`}
       >

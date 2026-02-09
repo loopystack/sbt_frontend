@@ -34,6 +34,9 @@
 :root { 
   color-scheme: dark; 
   
+  /* Header height so fixed sidebars start below it (nav row + sports bar row on desktop) */
+  --header-height: 10rem;
+  
   /* Custom CSS Variables for OddsPortal-like design */
   --bg: 0 0% 7%;
   --surface: 0 0% 10%;
@@ -52,7 +55,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Custom scrollbar hiding */
+/* Hide scrollbar but keep scroll functionality (sidebars) */
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;

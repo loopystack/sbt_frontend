@@ -115,34 +115,38 @@ export default function Dashboard() {
     }
   });
 
-  // Fetch betting records and stats
+  // Fetch betting records and stats (fetch independently so one failure doesn't clear the other)
   const fetchBettingData = async () => {
     if (!isAuthenticated) return;
     
+    setRecordsLoading(true);
+    setStatsLoading(true);
+    
     try {
-      setRecordsLoading(true);
-      setStatsLoading(true);
-      
-      // First, fix any missing match dates
-      try {
-        await bettingService.fixMissingMatchDates();
-      } catch (error) {
-      }
-      
-      const [recordsResponse, statsResponse] = await Promise.all([
-        bettingService.getBettingRecords(currentPage, 10), // 10 records per page for dashboard
-        bettingService.getBettingStats()
-      ]);
-      
+      await bettingService.fixMissingMatchDates();
+    } catch {
+      // Non-critical
+    }
+    
+    try {
+      const recordsResponse = await bettingService.getBettingRecords(currentPage, 10);
       setBettingRecords(recordsResponse.records);
       setTotalPages(recordsResponse.total_pages);
-      setBettingStats(statsResponse);
     } catch (error) {
-      console.error('Error fetching betting data:', error);
+      console.error('Error fetching betting records:', error);
       setBettingRecords([]);
-      setBettingStats(null);
     } finally {
       setRecordsLoading(false);
+    }
+    
+    try {
+      const statsResponse = await bettingService.getBettingStats();
+      setBettingStats(statsResponse);
+    } catch (error) {
+      console.error('Error fetching betting stats:', error);
+      // Keep previous stats if any; only clear if we never had data
+      setBettingStats((prev) => prev ?? null);
+    } finally {
       setStatsLoading(false);
     }
   };
@@ -421,13 +425,17 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Stats Overview */}
+      {/* Stats Overview - each card links to its detail page */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
         {/* Total Bets Card */}
-        <div className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full"></div>
-          
+        <button
+          type="button"
+          aria-label="View Total Bets Placed details"
+          onClick={() => navigate("/dashboard/stats/total-bets")}
+          className="group relative overflow-hidden bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[hsl(var(--bg))]"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full" />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
@@ -439,20 +447,24 @@ export default function Dashboard() {
             </div>
             {statsLoading ? (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">
-                <div className="bg-white/20 h-6 sm:h-8 w-12 sm:w-16 rounded-lg shimmer"></div>
+                <div className="bg-white/20 h-6 sm:h-8 w-12 sm:w-16 rounded-lg shimmer" />
               </div>
             ) : (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">{bettingStats?.total_bets || 0}</div>
             )}
             <div className="text-blue-100 font-medium text-xs sm:text-sm">Total Bets Placed</div>
           </div>
-        </div>
+        </button>
 
-        {/* Win Rate Card */}
-        <div className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-          
+        {/* Success Rate Card */}
+        <button
+          type="button"
+          aria-label="View Success Rate details"
+          onClick={() => navigate("/dashboard/stats/success-rate")}
+          className="group relative overflow-hidden bg-gradient-to-br from-emerald-500 via-green-600 to-teal-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[hsl(var(--bg))]"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{ animationDelay: "0.5s" }} />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
@@ -464,20 +476,24 @@ export default function Dashboard() {
             </div>
             {statsLoading ? (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">
-                <div className="bg-white/20 h-6 sm:h-8 w-10 sm:w-12 rounded-lg shimmer"></div>
+                <div className="bg-white/20 h-6 sm:h-8 w-10 sm:w-12 rounded-lg shimmer" />
               </div>
             ) : (
-              <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">{bettingStats?.win_rate || 0}%</div>
+              <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">{Number(bettingStats?.win_rate ?? 0).toFixed(1)}%</div>
             )}
             <div className="text-emerald-100 font-medium text-xs sm:text-sm">Success Rate</div>
           </div>
-        </div>
+        </button>
 
-        {/* Total Profit Card */}
-        <div className={`group relative overflow-hidden ${(bettingStats?.total_profit || 0) >= 0 ? 'bg-gradient-to-br from-green-500 via-emerald-600 to-teal-700' : 'bg-gradient-to-br from-red-500 via-rose-600 to-pink-700'} rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105`}>
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-          
+        {/* Total Profit / Loss Card */}
+        <button
+          type="button"
+          aria-label="View Total Profit and Loss details"
+          onClick={() => navigate("/dashboard/stats/total-loss")}
+          className={`group relative overflow-hidden ${(bettingStats?.total_profit || 0) >= 0 ? "bg-gradient-to-br from-green-500 via-emerald-600 to-teal-700" : "bg-gradient-to-br from-red-500 via-rose-600 to-pink-700"} rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[hsl(var(--bg))]`}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{ animationDelay: "1s" }} />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
@@ -485,28 +501,32 @@ export default function Dashboard() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <span className="text-xl sm:text-2xl lg:text-3xl">{(bettingStats?.total_profit || 0) >= 0 ? '💰' : '📉'}</span>
+              <span className="text-xl sm:text-2xl lg:text-3xl">{(bettingStats?.total_profit || 0) >= 0 ? "💰" : "📉"}</span>
             </div>
             {statsLoading ? (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">
-                <div className="bg-white/20 h-6 sm:h-8 w-16 sm:w-20 rounded-lg shimmer"></div>
+                <div className="bg-white/20 h-6 sm:h-8 w-16 sm:w-20 rounded-lg shimmer" />
               </div>
             ) : (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">
-                {(bettingStats?.total_profit || 0) >= 0 ? '+' : '-'}${formatCurrency(Math.abs(bettingStats?.total_profit || 0))}
+                {(bettingStats?.total_profit ?? 0) >= 0 ? "+" : "-"}${formatCurrency(Math.abs(bettingStats?.total_profit ?? 0))}
               </div>
             )}
-            <div className={`font-medium text-xs sm:text-sm ${(bettingStats?.total_profit || 0) >= 0 ? 'text-green-100' : 'text-red-100'}`}>
-              {(bettingStats?.total_profit || 0) >= 0 ? 'Total Profit' : 'Total Loss'}
+            <div className={`font-medium text-xs sm:text-sm ${(bettingStats?.total_profit || 0) >= 0 ? "text-green-100" : "text-red-100"}`}>
+              {(bettingStats?.total_profit || 0) >= 0 ? "Total Profit" : "Total Loss"}
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Active Bets Card */}
-        <div className="group relative overflow-hidden bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105">
-          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{animationDelay: '1.5s'}}></div>
-          
+        <button
+          type="button"
+          aria-label="View Active Bets details"
+          onClick={() => navigate("/dashboard/stats/active-bets")}
+          className="group relative overflow-hidden bg-gradient-to-br from-purple-500 via-violet-600 to-indigo-700 rounded-2xl p-3 sm:p-4 lg:p-6 text-white shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-[hsl(var(--bg))]"
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+          <div className="absolute top-2 right-2 w-6 h-6 sm:w-8 sm:h-8 bg-white/10 rounded-full animate-pulse" style={{ animationDelay: "1.5s" }} />
           <div className="relative z-10">
             <div className="flex items-center justify-between mb-2 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 bg-white/20 backdrop-blur-sm rounded-xl sm:rounded-2xl flex items-center justify-center shadow-lg">
@@ -518,14 +538,14 @@ export default function Dashboard() {
             </div>
             {statsLoading ? (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2">
-                <div className="bg-white/20 h-6 sm:h-8 w-10 sm:w-12 rounded-lg shimmer"></div>
+                <div className="bg-white/20 h-6 sm:h-8 w-10 sm:w-12 rounded-lg shimmer" />
               </div>
             ) : (
               <div className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 drop-shadow-lg">{bettingStats?.pending_bets || 0}</div>
             )}
             <div className="text-purple-100 font-medium text-xs sm:text-sm">Active Bets</div>
           </div>
-        </div>
+        </button>
       </div>
 
       {/* Betting Records */}

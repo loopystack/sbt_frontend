@@ -10,6 +10,7 @@ import Betting from "../pages/Betting";
 import Bookmakers from "../pages/Bookmakers";
 import Bonuses from "../pages/Bonuses";
 import Dashboard from "../pages/Dashboard";
+import DashboardStatPage from "../pages/DashboardStatPage";
 import SignInSignUp from "../pages/SignInSignUp";
 import ForgotPassword from "../pages/ForgotPassword";
 import ResetPassword from "../pages/ResetPassword";
@@ -42,6 +43,7 @@ export const routes: RouteObject[] = [
       { path: "bookmakers", element: <Bookmakers /> },
       { path: "bonuses", element: <Bonuses /> },
       { path: "dashboard", element: <Dashboard /> },
+      { path: "dashboard/stats/:statType", element: <DashboardStatPage /> },
       { path: "profile", element: <Profile /> },
       { path: "deposit", element: <Deposit /> },
       { path: "withdraw", element: <Withdraw /> },

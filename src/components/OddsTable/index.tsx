@@ -819,7 +819,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     return '';
   };
 
-  /** Only treat as a real match score (e.g. 1-0, 2-1). Rejects scraper garbage like 19-523 (time/IDs). */
+  /** Only treat as a real match score (e.g. 1-0, 2-1). Rejects scraper garbage like 19-523 or impossible scores like 18-17. */
   const isValidFootballScore = (result: string | null | undefined): boolean => {
     const s = result == null ? "" : String(result).trim();
     if (!s) return false;
@@ -827,7 +827,8 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     if (!m) return false;
     const a = parseInt(m[1], 10);
     const b = parseInt(m[2], 10);
-    return a >= 0 && a <= 25 && b >= 0 && b <= 25;
+    // Realistic football: each side rarely above 10; cap at 15 to reject time/ID garbage (e.g. 18-17)
+    return a >= 0 && a <= 15 && b >= 0 && b <= 15;
   };
 
   const formatScore = (score: string): string => {
@@ -1796,9 +1797,9 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                        </div>
                      </div>
 
-                     {/* Score */}
+                     {/* Score - only show result on Results tab; Next Matches always show VS/Upcoming */}
                      <div className="flex flex-col items-center mx-4">
-                       {isValidFootballScore(match.result) ? (
+                       {selectedMarket === "Results" && isValidFootballScore(match.result) ? (
                          <div className="text-2xl font-bold text-green-500">
                            {formatScore(match.result!)}
                          </div>
@@ -2102,7 +2103,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                   </div>
                   
                   <div className="col-span-2 flex items-center justify-center px-4">
-                    {isValidFootballScore(match.result) ? (
+                    {selectedMarket === "Results" && isValidFootballScore(match.result) ? (
                       <div className="text-sm font-semibold text-green-400">
                         {formatScore(match.result!)}
                       </div>
