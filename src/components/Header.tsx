@@ -70,12 +70,12 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
   };
 
   return (
-    <header className="sticky top-0 z-[9999] bg-black border-b border-gray-800">
+    <header className="sticky top-0 z-[9999] bg-bg border-b border-border">
       <div className="w-full">
         {/* Mobile Header - FortuneJack Style */}
         <div className="lg:hidden">
           {/* Top Navigation Bar */}
-          <div className="flex items-center justify-between px-4 py-3 bg-black">
+          <div className="flex items-center justify-between px-4 py-3 bg-bg">
             {/* Left - Logo */}
             <button
               onClick={handleLogoClick}
@@ -262,7 +262,7 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
           </div>
           
           {/* Secondary Navigation Bar - 8 Icons Only */}
-          <div className="flex items-center justify-between px-1 sm:px-2 py-3 bg-gray-900 border-b border-gray-800">
+          <div className="flex items-center justify-between px-1 sm:px-2 py-3 bg-surface border-b border-border">
             <div className="flex items-center gap-0.5 sm:gap-1 flex-1 justify-between">
               {/* Home */}
               <button

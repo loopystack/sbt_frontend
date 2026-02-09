@@ -11,20 +11,23 @@
   --button-text: 0 0% 0%;
 }
 
-/* Light theme */
+/* Light theme – green color scheme */
 [data-theme="light"] {
+  color-scheme: light;
   --bg: 0 0% 98%;
   --surface: 0 0% 96%;
   --border: 0 0% 85%;
-  --text: 0 0% 15%;
-  --muted: 0 0% 45%;
-  --accent: 215 14% 34%;
-  --accent-50: 215 14% 34%;
-  --button-text: 0 0% 0%;
+  --text: 0 0% 12%;
+  --muted: 0 0% 40%;
+  --accent: 142 71% 45%;
+  --accent-2: 142 71% 38%;
+  --accent-50: 142 71% 50%;
+  --button-text: 0 0% 100%;
 }
 
 /* Dark theme */
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: 220 15% 5%;
   --surface: 220 15% 10%;
   --border: 220 15% 20%;
@@ -480,81 +483,29 @@
   filter: brightness(0) saturate(100%) invert(83%) sepia(67%) saturate(748%) hue-rotate(359deg) brightness(105%) contrast(102%);
 }
 
- /* Theme-specific color overrides for better contrast */
- [data-theme="light"] {
-   /* Card borders: pure black for maximum visibility */
-   .border-white,
-   .border-gray-100,
-   .border-gray-200,
-   .border-gray-300,
-   .border-gray-400,
-   .border-gray-500,
-   .border-gray-600 {
-     border-color: #000000 !important;
-   }
-   
-  /* Override any remaining yellow backgrounds to black */
-  .bg-yellow-400,
-  .bg-yellow-500,
-  .bg-yellow-600,
-  .from-yellow-400,
-  .to-yellow-400,
-  .hover:from-yellow-400,
-  .hover:to-yellow-400 {
-    background-color: hsl(0 0% 15%) !important;
-    background-image: none !important;
-  }
-  
-  /* Override yellow text to black */
-  .text-yellow-400,
-  .text-yellow-500,
-  .text-yellow-600 {
-    color: hsl(0 0% 15%) !important;
-  }
-  
-  /* Override yellow borders to black */
-  .border-yellow-400,
-  .border-yellow-500,
-  .border-yellow-600,
-  .hover:border-yellow-400 {
-    border-color: hsl(0 0% 15%) !important;
-  }
-  
-  /* Override gradient backgrounds that contain yellow */
-  .from-yellow-400\/20,
-  .to-yellow-400\/20,
-  .hover:from-yellow-400\/20,
-  .hover:to-yellow-400\/20 {
-    background: hsl(0 0% 15% / 0.2) !important;
-  }
-  
-  /* Specific overrides for the three circled elements */
-  /* 1. United States country selection - override any yellow background */
-  [data-theme="light"] .bg-yellow-400,
-  [data-theme="light"] .bg-yellow-500,
-  [data-theme="light"] .bg-yellow-600 {
-    background-color: hsl(0 0% 15%) !important;
-  }
-  
-  /* 2. Search button - override yellow background */
-  [data-theme="light"] button:has(.bg-yellow-400),
-  [data-theme="light"] button:has(.bg-yellow-500),
-  [data-theme="light"] button:has(.bg-yellow-600) {
-    background-color: hsl(0 0% 15%) !important;
-  }
-  
-  /* 3. View Matches button - override yellow background */
-  [data-theme="light"] .bg-gradient-to-r.from-yellow-400.to-orange-400,
-  [data-theme="light"] .bg-gradient-to-r.from-yellow-500.to-orange-500 {
-    background: linear-gradient(to right, hsl(0 0% 15%), hsl(0 0% 15%)) !important;
-  }
-  
-  /* Override any remaining yellow elements with a catch-all rule */
-  [data-theme="light"] *[class*="yellow"] {
-    color: hsl(0 0% 15%) !important;
-    background-color: hsl(0 0% 15%) !important;
-    border-color: hsl(0 0% 15%) !important;
-  }
+/* Light theme: ensure readable contrast; avoid forcing everything to same color */
+[data-theme="light"] .border-gray-800,
+[data-theme="light"] .border-gray-700 {
+  border-color: hsl(var(--border)) !important;
+}
+[data-theme="light"] .bg-yellow-400,
+[data-theme="light"] .bg-yellow-500,
+[data-theme="light"] .from-yellow-400,
+[data-theme="light"] .to-yellow-400 {
+  background-color: hsl(var(--accent)) !important;
+  background-image: none !important;
+}
+[data-theme="light"] .from-yellow-400.to-orange-400,
+[data-theme="light"] .from-yellow-500.to-orange-500 {
+  background: linear-gradient(to right, hsl(var(--accent)), hsl(var(--accent-2))) !important;
+}
+[data-theme="light"] .text-yellow-400,
+[data-theme="light"] .text-yellow-500 {
+  color: hsl(var(--accent)) !important;
+}
+[data-theme="light"] .border-yellow-400,
+[data-theme="light"] .border-yellow-500 {
+  border-color: hsl(var(--accent)) !important;
 }
 
 /* Dark theme maintains yellow colors */

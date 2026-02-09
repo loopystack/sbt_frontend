@@ -68,6 +68,7 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
     'portugal': 'pt',
     'russia': 'ru',
     'spain': 'es',
+    'switzerland': 'ch',
     'turkey': 'tr',
     'ukraine': 'ua',
     'usa': 'us'
@@ -216,6 +217,14 @@ export const CountryProvider: React.FC<CountryProviderProps> = ({ children }) =>
                 { name: 'La Liga', matchCount: 0, matches: [] },
                 { name: 'Segunda División', matchCount: 0, matches: [] },
                 { name: 'Primera División RFEF', matchCount: 0, matches: [] }
+              ]
+            },
+            {
+              name: 'Switzerland',
+              flag: 'ch',
+              leagues: [
+                { name: 'Super League', matchCount: 0, matches: [] },
+                { name: 'Challenge League', matchCount: 0, matches: [] }
               ]
             },
             {

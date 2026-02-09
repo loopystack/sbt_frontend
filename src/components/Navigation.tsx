@@ -307,8 +307,8 @@ export default function Navigation() {
                   onClick={() => handleTabClick(tab.id)}
                   title={tab.name}
                   className={`flex items-center gap-1 md:gap-2 lg:gap-3 px-2 md:px-3 lg:px-5 py-2 md:py-3 lg:py-3.5 rounded-xl transition-all duration-300 font-medium text-sm relative overflow-hidden group ${activeTab === tab.id
-                      ? `bg-gradient-to-r ${tab.gradient} text-white shadow-lg transform scale-105`
-                      : "text-muted hover:text-text hover:bg-white/10"
+                      ? `bg-gradient-to-r ${theme === 'light' ? 'from-green-500 to-emerald-500' : tab.gradient} text-white shadow-lg transform scale-105`
+                      : "text-muted hover:text-text hover:bg-white/10 dark:hover:bg-white/10"
                     }`}
                 >
                   {activeTab === tab.id && (
