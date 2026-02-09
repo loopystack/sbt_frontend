@@ -170,7 +170,7 @@ export default function UserManagement() {
       );
 
       toast.success(
-        `${user.username} is now ${newPermission ? 'Admin' : 'User'}`
+        `${user.full_name || user.username} is now ${newPermission ? 'Admin' : 'User'}`
       );
     } catch (err: any) {
       toast.error("Failed to update permission");
@@ -197,7 +197,7 @@ export default function UserManagement() {
     setIsDeleting(true);
     try {
       await apiMethods.delete(`/api/admin/users/${userToDelete.id}`);
-      toast.success(`User ${userToDelete.username} has been deleted successfully`);
+      toast.success(`User ${userToDelete.full_name || userToDelete.username} has been deleted successfully`);
       fetchUsers(); // Refresh the user list
       setShowDeleteModal(false);
       setUserToDelete(null);
@@ -366,15 +366,15 @@ export default function UserManagement() {
                     <div className="flex items-center">
                       <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center shadow-lg">
                         <span className="text-white font-bold text-lg">
-                          {user.username.charAt(0).toUpperCase()}
+                          {(user.full_name || user.username).charAt(0).toUpperCase()}
                         </span>
                       </div>
                       <div className="ml-4">
-                        <div className="text-sm font-bold text-white">{highlightSearchTerm(user.username, searchTerm)}</div>
+                        <div className="text-sm font-bold text-white">{highlightSearchTerm(user.full_name || user.username, searchTerm)}</div>
                         <div className="text-sm text-gray-300">{highlightSearchTerm(user.email, searchTerm)}</div>
                         <div className="text-xs text-gray-500">ID: {highlightSearchTerm(user.id.toString(), searchTerm)}</div>
                         {user.full_name && (
-                          <div className="text-xs text-gray-400">{highlightSearchTerm(user.full_name, searchTerm)}</div>
+                          <div className="text-xs text-gray-400">@{highlightSearchTerm(user.username, searchTerm)}</div>
                         )}
                       </div>
                     </div>
@@ -468,7 +468,7 @@ export default function UserManagement() {
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-white mb-4">Edit User: {selectedUser.username}</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Edit User: {selectedUser.full_name || selectedUser.username}</h3>
             
             <div className="space-y-4">
               <div>
@@ -555,13 +555,13 @@ export default function UserManagement() {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">
-                    {selectedUser.username.charAt(0).toUpperCase()}
+                    {(selectedUser.full_name || selectedUser.username).charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">{selectedUser.username}</div>
+                  <div className="text-sm font-medium text-white">{selectedUser.full_name || selectedUser.username}</div>
                   <div className="text-xs text-gray-400">{selectedUser.email}</div>
-                  <div className="text-xs text-gray-500">ID: {selectedUser.id}</div>
+                  <div className="text-xs text-gray-500">ID: {selectedUser.id} {selectedUser.full_name ? `· @${selectedUser.username}` : ''}</div>
                 </div>
               </div>
             </div>
@@ -674,11 +674,11 @@ export default function UserManagement() {
               <div className="flex items-center space-x-3">
                 <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-red-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">
-                    {userToDelete.username.charAt(0).toUpperCase()}
+                    {(userToDelete.full_name || userToDelete.username).charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div>
-                  <div className="text-sm font-medium text-white">{userToDelete.username}</div>
+                  <div className="text-sm font-medium text-white">{userToDelete.full_name || userToDelete.username}</div>
                   <div className="text-xs text-gray-400">{userToDelete.email}</div>
                   <div className="text-xs text-gray-500">ID: {userToDelete.id}</div>
                 </div>
@@ -691,7 +691,7 @@ export default function UserManagement() {
                 <div className="text-sm font-medium text-red-300">Warning: This action cannot be undone</div>
               </div>
               <div className="text-sm text-gray-300">
-                Are you sure you want to permanently delete <strong>{userToDelete.username}</strong>? 
+                Are you sure you want to permanently delete <strong>{userToDelete.full_name || userToDelete.username}</strong>? 
                 This will remove all user data including:
               </div>
               <ul className="text-sm text-gray-400 mt-2 ml-4 list-disc">
