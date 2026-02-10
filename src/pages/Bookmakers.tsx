@@ -1,143 +1,26 @@
-
 import React, { useState } from "react";
-import { openBettingSiteByName } from "../config/bettingSites";
+import { bettingSites, openBettingSite, openBettingSiteByName } from "../config/bettingSites";
+
+const LOGO_COLORS = [
+  "bg-slate-600 text-white",
+  "bg-green-600 text-white",
+  "bg-slate-600 text-amber-200",
+  "bg-indigo-600 text-white",
+  "bg-emerald-600 text-white",
+  "bg-blue-600 text-white",
+  "bg-amber-600 text-white",
+  "bg-rose-600 text-white",
+  "bg-teal-600 text-white",
+  "bg-violet-600 text-white",
+];
+
 export default function Bookmakers() {
   const [selectedTab, setSelectedTab] = useState("BOOKIE INFO");
   const subNavigationTabs = [
     "BOOKIE INFO",
-    "BONUS OFFERS", 
+    "BONUS OFFERS",
     "ODDS QUALITY",
     "BETTING APPS"
-  ];
-  const bookmakers = [
-    {
-      id: "1",
-      name: "888 sport",
-      logo: "888 sport",
-      logoColor: "bg-black text-white",
-      rating: "5/5",
-      reviewLink: "888sport Review",
-      features: [
-        "30,000+ Events Monthly",
-        "More than 40 Sports",
-        "Highly rated betting app"
-      ],
-      payout: "92.1%",
-      inPlayPayout: null,
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "2",
-      name: "bet365",
-      logo: "bet365",
-      logoColor: "bg-green-600 text-white",
-      rating: "5/5",
-      reviewLink: "bet365.us Review",
-      features: [
-        "Extensive live betting options",
-        "More markets than other online bookmaker",
-        "One of the best betting apps"
-      ],
-      payout: null,
-      inPlayPayout: null,
-      payoutLabel: null
-    },
-    {
-      id: "3",
-      name: "BET MGM",
-      logo: "BET MGM",
-      logoColor: "bg-black text-yellow-400",
-      rating: "5/5",
-      reviewLink: "BetMGM.us Review",
-      features: [
-        'Exclusive "Bonus Wheel" feature for rewarding active bettors',
-        "Virtual sports section with a wide range of simulated events",
-        "Access to VIP rewards program with personalized offers and promotions"
-      ],
-      payout: "92.94%",
-      inPlayPayout: "89.80%",
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "4",
-      name: "PINNA CLE",
-      logo: "PINNA CLE",
-      logoColor: "bg-black text-white",
-      rating: "5/5",
-      reviewLink: "Pinnacle Review",
-      features: [
-        "Best odds in the industry",
-        "High betting limits",
-        "Professional betting platform"
-      ],
-      payout: "93.26%",
-      inPlayPayout: "92.68%",
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "5",
-      name: "William Hill",
-      logo: "William Hill",
-      logoColor: "bg-blue-600 text-white",
-      rating: "4.8/5",
-      reviewLink: "William Hill Review",
-      features: [
-        "Established brand with long history",
-        "Comprehensive sports coverage",
-        "Excellent customer service"
-      ],
-      payout: "91.5%",
-      inPlayPayout: "89.2%",
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "6",
-      name: "Lad brokes",
-      logo: "Lad brokes",
-      logoColor: "bg-red-600 text-white",
-      rating: "4.7/5",
-      reviewLink: "Ladbrokes Review",
-      features: [
-        "High street presence",
-        "Competitive odds",
-        "User-friendly interface"
-      ],
-      payout: "90.8%",
-      inPlayPayout: "88.5%",
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "7",
-      name: "Coral",
-      logo: "Coral",
-      logoColor: "bg-orange-500 text-white",
-      rating: "4.6/5",
-      reviewLink: "Coral Review",
-      features: [
-        "Great mobile experience",
-        "Regular promotions",
-        "Fast payouts"
-      ],
-      payout: "90.2%",
-      inPlayPayout: "87.9%",
-      payoutLabel: "Average payout"
-    },
-    {
-      id: "8",
-      name: "Betfair",
-      logo: "Betfair",
-      logoColor: "bg-green-500 text-white",
-      rating: "4.5/5",
-      reviewLink: "Betfair Review",
-      features: [
-        "Exchange betting platform",
-        "Best odds guaranteed",
-        "Advanced trading tools"
-      ],
-      payout: "89.7%",
-      inPlayPayout: "86.4%",
-      payoutLabel: "Average payout"
-    }
   ];
   return (
     <section className="space-y-4 sm:space-y-8 max-w-full overflow-hidden">
@@ -236,57 +119,55 @@ export default function Bookmakers() {
       </div>
       <div className="space-y-6">
         <h2 className="text-2xl font-bold text-text">
-          Bookmakers ({bookmakers.length})
+          Bookmakers ({bettingSites.length})
         </h2>
         <div className="space-y-6">
-          {bookmakers.map((bookmaker) => (
-            <div key={bookmaker.id} className="bg-surface border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300">
-              {bookmaker.payout && (
-                <div className="mb-4 p-3 bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg">
-                  <div className="text-sm text-gray-800 dark:text-gray-200">
-                    <span className="font-semibold">{bookmaker.payout}</span> {bookmaker.payoutLabel}
-                    {bookmaker.inPlayPayout && (
-                      <span className="ml-4">
-                        <span className="font-semibold">{bookmaker.inPlayPayout}</span> Avg. In-play Odds Payout
-                      </span>
-                    )}
-                  </div>
+          {bettingSites.map((site, index) => (
+            <div key={site.id} className="bg-surface border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300">
+              <div className="mb-4 p-3 bg-bg border border-border rounded-lg">
+                <div className="text-sm text-text">
+                  <span className="font-semibold">{site.rating}/5</span> Rating
+                  <span className="ml-4 font-semibold text-accent">{site.type}</span>
                 </div>
-              )}
+              </div>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="space-y-4">
                   <div className="flex items-center gap-4">
-                    <div className={`w-16 h-16 ${bookmaker.logoColor} rounded-lg flex items-center justify-center font-bold text-lg text-center`}>
-                      {bookmaker.logo}
+                    <div className={`w-16 h-16 ${LOGO_COLORS[index % LOGO_COLORS.length]} rounded-lg flex items-center justify-center font-bold text-sm text-center px-1`}>
+                      {site.name}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-yellow-500 text-lg">★</span>
-                      <span className="font-semibold text-text">{bookmaker.rating}</span>
+                      <span className="font-semibold text-text">{site.rating}/5</span>
                     </div>
                   </div>
                   <div>
-                    <a href="#" className="text-blue-600 hover:text-blue-700 font-medium text-sm underline">
-                      {bookmaker.reviewLink}
-                    </a>
+                    <span className="text-accent font-medium text-sm">
+                      {site.name} Review
+                    </span>
                   </div>
                   <div className="space-y-2">
-                    {bookmaker.features.map((feature, index) => (
-                      <div key={index} className="flex items-center gap-2">
-                        <span className="text-black dark:text-white text-sm">✓</span>
-                        <span className="text-sm text-text">{feature}</span>
-                      </div>
-                    ))}
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-sm">✓</span>
+                      <span className="text-sm text-text">{site.description}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500 text-sm">✓</span>
+                      <span className="text-sm text-text">{site.type}: {site.bonus}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="lg:col-span-2 flex items-center justify-center">
                   <div className="text-center space-y-3">
-                    <button className="bg-gray-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-gray-600 transition-colors hover:scale-105">
+                    <button
+                      type="button"
+                      onClick={() => openBettingSite(site.id)}
+                      className="bg-accent hover:bg-accent/90 text-white px-8 py-3 rounded-lg font-semibold transition-colors hover:scale-105"
+                    >
                       Visit Bookmaker
                     </button>
                     <div>
-                      <a href="#" className="text-xs text-muted hover:text-accent transition-colors underline">
-                        Terms and Conditions
-                      </a>
+                      <span className="text-xs text-muted">Terms and Conditions apply</span>
                     </div>
                   </div>
                 </div>

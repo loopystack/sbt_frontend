@@ -1,5 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { bettingSites, openBettingSite } from "../config/bettingSites";
+
+const closeAllModals = (
+  setSites: (v: boolean) => void,
+  setBonuses: (v: boolean) => void,
+  setGuides: (v: boolean) => void,
+  setApps: (v: boolean) => void,
+  setSweepstakes: (v: boolean) => void,
+  setPromoCodes: (v: boolean) => void
+) => {
+  setSites(false);
+  setBonuses(false);
+  setGuides(false);
+  setApps(false);
+  setSweepstakes(false);
+  setPromoCodes(false);
+};
+
 export default function Betting() {
   const [selectedCategory, setSelectedCategory] = useState("Best Social Casinos");
   const [showLess, setShowLess] = useState<Record<string, boolean>>({});
@@ -11,7 +28,7 @@ export default function Betting() {
   const [showSweepstakesPromoCodesModal, setShowSweepstakesPromoCodesModal] = useState(false);
   const categories = [
     "Best Social Casinos",
-    "New Social Casinos", 
+    "New Social Casinos",
     "Highest Bonus",
     "Number of Slots"
   ];
@@ -23,69 +40,30 @@ export default function Betting() {
     { name: "Sweepstakes Casinos", icon: "⭐", description: "Sweepstakes gaming sites" },
     { name: "Sweepstakes Casinos Promo Codes", icon: "🎫", description: "Exclusive promo codes" }
   ];
-  const localBettingSites = [
-    {
-      id: "1",
-      name: "Real Prize",
-      rating: "4.8/5",
-      reviewer: "James Leeland",
-      logo: "REAL PRIZE",
-      features: [
-        "300+ games available.",
-        "New games added every week.",
-        "Regular tournaments and contests."
-      ],
-      offer: "625K Golden Coins + Up to 125 SC FREE + 1250 VIP Points",
-      paymentMethods: ["VISA", "Mastercard", "Maestro", "+1"],
-      gamingLicense: "n/a",
-      withdrawalTime: "",
-      supportTypes: ["Live Chat", "Email Support"],
-      ageRequirement: "18+"
-    },
-    {
-      id: "2", 
-      name: "Stake.us",
-      rating: "4.6/5",
-      reviewer: "James Leeland",
-      logo: "Stake.us",
-      features: [
-        "Welcome bonus of 560,000 GC and 56 SC + 5% Rakeback",
-        "1,500+ games from 30+ providers",
-        "25 Stake.us original games"
-      ],
-      bonusCode: "STAKEOP",
-      offer: "56 Stake Cash + 560K Gold Coins + 5% Rakeback",
-      paymentMethods: ["Bitcoin", "Ethereum", "Litecoin", "Dogecoin", "+5"],
-      gamingLicense: "n/a",
-      withdrawalTime: "",
-      supportTypes: ["Live Chat", "Email Support"],
-      ageRequirement: "18+"
-    },
-    {
-      id: "3",
-      name: "High5Casino", 
-      rating: "4.5/5",
-      reviewer: "James Leeland",
-      logo: "HIGH 5 CASINO",
-      features: [
-        "Bonus Harvest every four hours",
-        "Coin Store packages in all price ranges", 
-        "Free SC with most purchased packages"
-      ],
-      offer: "245% Extra up to 60 SC FREE + 700 Gold Coins and 400 Diamonds!",
-      paymentMethods: ["Visa", "Skrill", "+4"],
-      gamingLicense: "n/a",
-      withdrawalTime: "",
-      supportTypes: ["Live Chat", "Phone", "Email Support"],
-      ageRequirement: "21+"
-    }
-  ];
   const toggleShowLess = (id: string) => {
     setShowLess(prev => ({
       ...prev,
       [id]: !prev[id]
     }));
   };
+
+  useEffect(() => {
+    const onEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        closeAllModals(
+          setShowBettingSitesModal,
+          setShowBettingBonusesModal,
+          setShowBettingGuidesModal,
+          setShowBestBettingAppsModal,
+          setShowSweepstakesCasinosModal,
+          setShowSweepstakesPromoCodesModal
+        );
+      }
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, []);
+
   return (
     <section className="space-y-4 sm:space-y-8 max-w-full overflow-hidden">
       <div className="text-center space-y-4">
@@ -98,31 +76,25 @@ export default function Betting() {
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {guideCategories.map((category) => (
-          <div 
-            key={category.name} 
-            className="bg-surface border border-border rounded-lg p-4 text-center hover:shadow-lg transition-all duration-300 cursor-pointer group"
-                         onClick={() => {
-               if (category.name === "Betting Sites") {
-                 setShowBettingSitesModal(true);
-               } else if (category.name === "Betting Bonuses") {
-                 setShowBettingBonusesModal(true);
-               } else if (category.name === "Betting Guides") {
-                 setShowBettingGuidesModal(true);
-               } else if (category.name === "Best Betting Apps") {
-                 setShowBestBettingAppsModal(true);
-               } else if (category.name === "Sweepstakes Casinos") {
-                 setShowSweepstakesCasinosModal(true);
-               } else if (category.name === "Sweepstakes Casinos Promo Codes") {
-                 setShowSweepstakesPromoCodesModal(true);
-               }
-             }}
+          <button
+            type="button"
+            key={category.name}
+            className="bg-surface border border-border rounded-lg p-4 text-center hover:shadow-lg transition-all duration-300 cursor-pointer group focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-bg"
+            onClick={() => {
+              if (category.name === "Betting Sites") setShowBettingSitesModal(true);
+              else if (category.name === "Betting Bonuses") setShowBettingBonusesModal(true);
+              else if (category.name === "Betting Guides") setShowBettingGuidesModal(true);
+              else if (category.name === "Best Betting Apps") setShowBestBettingAppsModal(true);
+              else if (category.name === "Sweepstakes Casinos") setShowSweepstakesCasinosModal(true);
+              else if (category.name === "Sweepstakes Casinos Promo Codes") setShowSweepstakesPromoCodesModal(true);
+            }}
           >
             <div className="w-16 h-16 mx-auto mb-3 text-4xl flex items-center justify-center text-accent group-hover:scale-110 transition-transform">
               {category.icon}
             </div>
             <h3 className="font-semibold text-text text-sm mb-1">{category.name}</h3>
             <p className="text-xs text-muted">{category.description}</p>
-          </div>
+          </button>
         ))}
       </div>
       <div className="space-y-4">
@@ -151,7 +123,7 @@ export default function Betting() {
         ))}
       </div>
       <div className="space-y-6">
-        {localBettingSites.map((site) => (
+        {bettingSites.map((site, index) => (
           <div key={site.id} className="bg-surface border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300">
             <div className="flex">
               <div className="w-2 bg-yellow-400"></div>
@@ -161,69 +133,55 @@ export default function Betting() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-orange-500 text-white text-sm font-bold rounded flex items-center justify-center">
-                          {site.id}.
+                          {index + 1}.
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="text-yellow-500 text-lg">⭐</span>
-                          <span className="font-semibold text-text">{site.rating}</span>
+                          <span className="font-semibold text-text">{site.rating}/5</span>
                         </div>
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <a href="#" className="text-blue-600 hover:text-blue-700 font-medium text-sm">
+                      <span className="text-accent hover:underline font-medium text-sm cursor-pointer">
                         {site.name} Review
-                      </a>
-                      <div className="text-xs text-muted">by {site.reviewer}</div>
+                      </span>
+                      <div className="text-xs text-muted">Featured partner</div>
                     </div>
-                    <div className="text-xl font-bold text-text">{site.logo}</div>
+                    <div className="text-xl font-bold text-text">{site.name}</div>
                     <div className="space-y-2">
-                      {site.features.map((feature, index) => (
-                        <div key={index} className="flex items-center gap-2">
-                          <span className="text-green-500 text-sm">✓</span>
-                          <span className="text-sm text-text">{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {site.bonusCode && (
                       <div className="flex items-center gap-2">
-                        <button className="bg-gray-100 text-gray-700 px-3 py-1 rounded text-sm font-medium hover:bg-gray-200 transition-colors">
-                          BONUS CODE
-                        </button>
-                        <span className="text-sm font-medium text-text">{site.bonusCode}</span>
-                        <button className="text-gray-500 hover:text-gray-700">
-                          📋
-                        </button>
+                        <span className="text-green-500 text-sm">✓</span>
+                        <span className="text-sm text-text">{site.description}</span>
                       </div>
-                    )}
-                    <div className=" rounded-lg p-3 space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted">Gaming Licence:</span>
-                        <span className="text-text">{site.gamingLicense}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-500 text-sm">✓</span>
+                        <span className="text-sm text-text">{site.type}: {site.bonus}</span>
                       </div>
+                    </div>
+                    <div className="rounded-lg p-3 space-y-2 bg-bg/50">
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted">Withdrawal Time:</span>
-                        <span className="text-text">{site.withdrawalTime || "-"}</span>
+                        <span className="text-muted">Bonus type:</span>
+                        <span className="text-text">{site.type}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-muted">Support Types:</span>
-                        <span className="text-text">{site.supportTypes.join(", ")}</span>
+                        <span className="text-muted">Offer:</span>
+                        <span className="text-text">{site.bonus}</span>
                       </div>
                     </div>
                   </div>
                   <div className="lg:col-span-2 space-y-4">
                     <div className="text-center">
                       <div className="text-lg font-bold text-text mb-4">
-                        {site.offer}
+                        {site.bonus}
                       </div>
-                      <button className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors hover:scale-105 mb-4">
+                      <button
+                        onClick={() => openBettingSite(site.id)}
+                        className="bg-orange-500 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors hover:scale-105 mb-4"
+                      >
                         Play Now
                       </button>
                       <div className="flex items-center justify-center gap-2 mb-4">
-                        {site.paymentMethods.map((method, index) => (
-                          <div key={index} className=" text-gray-700 border-t border-border px-2 py-1 rounded text-xs font-medium">
-                            {method}
-                          </div>
-                        ))}
+                        <span className="text-muted text-xs">Secure & licensed • T&Cs apply</span>
                       </div>
                       <button
                         onClick={() => toggleShowLess(site.id)}
@@ -235,7 +193,7 @@ export default function Betting() {
                   </div>
                 </div>
                 <div className="mt-6 pt-4 border-t border-border text-center">
-                  <span className="text-xs text-muted">T&Cs apply, {site.ageRequirement}</span>
+                  <span className="text-xs text-muted">T&Cs apply, 18+</span>
                 </div>
               </div>
             </div>
@@ -290,17 +248,20 @@ export default function Betting() {
         </div>
       </div>
       {showBettingSitesModal && (
-        <div 
-          className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
           onClick={() => setShowBettingSitesModal(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="betting-sites-modal-title"
         >
-          <div 
-            className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+          <div
+            className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
+            <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-2xl font-bold text-text">Top Betting Sites</h2>
+                <h2 id="betting-sites-modal-title" className="text-2xl font-bold text-text">Top Betting Sites</h2>
                 <p className="text-muted text-sm mt-1">Discover the best betting platforms with exclusive bonuses</p>
               </div>
               <button
@@ -314,19 +275,16 @@ export default function Betting() {
             </div>
             <div className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {bettingSites.map((site) => (
+                {bettingSites.map((site, index) => (
                   <div key={site.id} className="bg-surface border border-border rounded-lg p-6 hover:shadow-lg transition-all duration-300 group">
                      <div className="text-center mb-4">
-                                               <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold text-white ${
-                          site.id === "1" ? "bg-gradient-to-r from-yellow-400 to-orange-500" :
-                          site.id === "2" ? "bg-gradient-to-r from-pink-400 to-rose-500" :
-                          site.id === "3" ? "bg-gradient-to-r from-purple-400 to-indigo-500" :
-                          site.id === "4" ? "bg-gradient-to-r from-green-400 to-emerald-500" :
-                          site.id === "5" ? "bg-gradient-to-r from-blue-400 to-cyan-500" :
-                          site.id === "6" ? "bg-gradient-to-r from-red-400 to-pink-500" :
-                          site.id === "7" ? "bg-gradient-to-r from-indigo-400 to-purple-500" :
-                          site.id === "8" ? "bg-gradient-to-r from-emerald-400 to-teal-500" :
-                          "bg-gradient-to-r from-orange-400 to-red-500"
+                      <div className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3 text-xl font-bold text-white ${
+                          index % 6 === 0 ? "bg-gradient-to-r from-yellow-400 to-orange-500" :
+                          index % 6 === 1 ? "bg-gradient-to-r from-pink-400 to-rose-500" :
+                          index % 6 === 2 ? "bg-gradient-to-r from-purple-400 to-indigo-500" :
+                          index % 6 === 3 ? "bg-gradient-to-r from-green-400 to-emerald-500" :
+                          index % 6 === 4 ? "bg-gradient-to-r from-blue-400 to-cyan-500" :
+                          "bg-gradient-to-r from-red-400 to-pink-500"
                         }`}>
                          {site.name.charAt(0)}
                        </div>
@@ -377,12 +335,14 @@ export default function Betting() {
         </div>
       )}
       {showBettingBonusesModal && (
-        <div 
-          className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
           onClick={() => setShowBettingBonusesModal(false)}
+          role="dialog"
+          aria-modal="true"
         >
-          <div 
-            className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+          <div
+            className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
@@ -493,12 +453,14 @@ export default function Betting() {
         </div>
       )}
       {showBettingGuidesModal && (
-        <div 
-          className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
           onClick={() => setShowBettingGuidesModal(false)}
+          role="dialog"
+          aria-modal="true"
         >
-          <div 
-            className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+          <div
+            className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
@@ -704,12 +666,14 @@ export default function Betting() {
         </div>
              )}
        {showBestBettingAppsModal && (
-         <div 
-           className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+         <div
+           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
            onClick={() => setShowBestBettingAppsModal(false)}
+           role="dialog"
+           aria-modal="true"
          >
-           <div 
-             className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+           <div
+             className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
              onClick={(e) => e.stopPropagation()}
            >
              <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
@@ -966,12 +930,14 @@ export default function Betting() {
          </div>
                )}
         {showSweepstakesCasinosModal && (
-          <div 
-            className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
             onClick={() => setShowSweepstakesCasinosModal(false)}
+            role="dialog"
+            aria-modal="true"
           >
-            <div 
-              className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+            <div
+              className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
               onClick={(e) => e.stopPropagation()}
             >
               <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
@@ -1160,12 +1126,14 @@ export default function Betting() {
           </div>
                  )}
          {showSweepstakesPromoCodesModal && (
-           <div 
-             className="fixed top-32 left-0 right-0 bottom-0 bg-black bg-opacity-50 z-50 flex items-start justify-center p-4"
+           <div
+             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60"
              onClick={() => setShowSweepstakesPromoCodesModal(false)}
+             role="dialog"
+             aria-modal="true"
            >
-             <div 
-               className="bg-surface border border-border rounded-lg max-w-6xl w-full max-h-[calc(100vh-160px)] overflow-y-auto"
+             <div
+               className="bg-surface border border-border rounded-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
                onClick={(e) => e.stopPropagation()}
              >
                <div className="sticky top-0 bg-surface border-b border-border p-6 flex items-center justify-between">
