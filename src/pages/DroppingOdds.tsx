@@ -80,7 +80,6 @@ export default function DroppingOdds() {
   };
 
   const fetchDroppingOdds = useCallback(async (signal?: AbortSignal) => {
-    if (!selectedLeague) return;
     if (fetchInFlight.current) return;
     fetchInFlight.current = true;
     setLoading(true);
@@ -122,14 +121,15 @@ export default function DroppingOdds() {
       setLoading(false);
       fetchInFlight.current = false;
     }
-  }, [page, selectedDroppingFilter, selectedTypeFilter, selectedLeague]);
+  }, [page, selectedDroppingFilter, selectedTypeFilter]);
 
+  // Fetch when showing the list (no league selected from sidebar)
   useEffect(() => {
-    if (!selectedLeague) return;
+    if (selectedLeague) return;
     const ac = new AbortController();
     fetchDroppingOdds(ac.signal);
     return () => ac.abort();
-  }, [selectedLeague, page, selectedDroppingFilter, selectedTypeFilter]);
+  }, [selectedLeague, page, selectedDroppingFilter, selectedTypeFilter, fetchDroppingOdds]);
 
   useEffect(() => {
     if (!selectedLeague) setPage(1);

@@ -1,11 +1,38 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { openBettingSiteByName } from "../config/bettingSites";
 import { useCountry } from "../contexts/CountryContext";
 import OddsTable from "../components/OddsTable";
+import { getBaseUrl } from "../config/api";
+
+export interface SureBetRow {
+  id: string;
+  sport: string;
+  country: string;
+  league: string;
+  teams: string;
+  date: string;
+  time: string;
+  best_odd_1: number;
+  best_odd_x: number;
+  best_odd_2: number;
+  profit_percent: number;
+  stake_1: number;
+  stake_x: number;
+  stake_2: number;
+  total_stake: number;
+  guaranteed_return: number;
+}
+
 export default function SureBets() {
   const { selectedLeague } = useCountry();
   const [selectedSport, setSelectedSport] = useState("All sports");
   const [selectedTimeFilter, setSelectedTimeFilter] = useState("today");
+  const [sureBets, setSureBets] = useState<SureBetRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [total, setTotal] = useState(0);
+
   const sports = [
     { name: "All sports", icon: "🏆" },
     { name: "Football", icon: "⚽" },
@@ -19,33 +46,68 @@ export default function SureBets() {
     { id: "tomorrow", label: "Tomorrow" },
     { id: "week", label: "This Week" }
   ];
-  const sampleSureBets = [
-    {
-      id: "1",
-      sport: "Football",
-      league: "Premier League",
-      teams: "Arsenal vs Chelsea",
-      date: "Today, 20:00",
-      bet1: { outcome: "Arsenal Win", odds: "2.10", bookmaker: "Bet365" },
-      bet2: { outcome: "Chelsea Win", odds: "2.05", bookmaker: "William Hill" },
-      profit: "2.5%",
-      stake: "£100",
-      return: "£102.50"
-    },
-    {
-      id: "2",
-      sport: "Tennis",
-      league: "Wimbledon",
-      teams: "Djokovic vs Medvedev",
-      date: "Tomorrow, 15:30",
-      bet1: { outcome: "Djokovic Win", odds: "1.85", bookmaker: "Betway" },
-      bet2: { outcome: "Medvedev Win", odds: "2.15", bookmaker: "Ladbrokes" },
-      profit: "3.2%",
-      stake: "£100",
-      return: "£103.20"
+
+  const getDateRange = useCallback(() => {
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, "0");
+    const d = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${y}-${m}-${d}`;
+    if (selectedTimeFilter === "tomorrow") {
+      const t2 = new Date(today);
+      t2.setDate(t2.getDate() + 1);
+      const d2 = String(t2.getDate()).padStart(2, "0");
+      const m2 = String(t2.getMonth() + 1).padStart(2, "0");
+      const tomorrowStr = `${t2.getFullYear()}-${m2}-${d2}`;
+      return { date_from: tomorrowStr, date_to: tomorrowStr };
     }
-  ];
-  const hasSureBets = false;
+    if (selectedTimeFilter === "week") {
+      const tEnd = new Date(today);
+      tEnd.setDate(tEnd.getDate() + 6);
+      const de = String(tEnd.getDate()).padStart(2, "0");
+      const me = String(tEnd.getMonth() + 1).padStart(2, "0");
+      const endStr = `${tEnd.getFullYear()}-${me}-${de}`;
+      return { date_from: todayStr, date_to: endStr };
+    }
+    return { date_from: todayStr, date_to: todayStr };
+  }, [selectedTimeFilter]);
+
+  const fetchSureBets = useCallback(async () => {
+    if (selectedLeague) return;
+    setLoading(true);
+    try {
+      const { date_from, date_to } = getDateRange();
+      const params = new URLSearchParams({
+        page: String(page),
+        size: "20",
+        date_from,
+        date_to,
+      });
+      const res = await fetch(`${getBaseUrl()}/api/odds/sure-bets?${params}`);
+      if (!res.ok) throw new Error("Failed to fetch sure bets");
+      const data = await res.json();
+      setSureBets(data.items || []);
+      setTotal(data.total ?? 0);
+      setTotalPages(data.pages ?? 0);
+    } catch {
+      setSureBets([]);
+      setTotal(0);
+      setTotalPages(0);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedLeague, page, selectedTimeFilter, getDateRange]);
+
+  useEffect(() => {
+    if (selectedLeague) return;
+    fetchSureBets();
+  }, [selectedLeague, fetchSureBets]);
+
+  useEffect(() => {
+    if (!selectedLeague) setPage(1);
+  }, [selectedTimeFilter, selectedSport, selectedLeague]);
+
+  const hasSureBets = sureBets.length > 0;
 
   // If a league is selected, show the OddsTable (same as Home page)
   if (selectedLeague) {
@@ -178,34 +240,47 @@ export default function SureBets() {
           <span className="text-base sm:text-lg">⌄</span>
         </button>
       </div>
-      {hasSureBets ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12 px-2">
+          <div className="animate-pulse text-muted flex items-center gap-2">
+            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span>Loading sure bets…</span>
+          </div>
+        </div>
+      ) : hasSureBets ? (
         <div className="space-y-4 sm:space-y-6">
           <div className="block lg:hidden space-y-3 px-2">
-            {sampleSureBets.map((bet) => (
-              <div key={bet.id} className="bg-surface border border-border rounded-lg p-3 sm:p-4 hover:bg-bg/50 transition-colors cursor-pointer">
+            {sureBets.map((bet) => (
+              <div key={bet.id} className="bg-surface border border-border rounded-lg p-3 sm:p-4 hover:bg-bg/50 transition-colors">
                 <div className="space-y-3">
                   <div className="space-y-1">
                     <div className="font-medium text-text text-sm sm:text-base">{bet.teams}</div>
                     <div className="text-xs sm:text-sm text-muted">{bet.sport} • {bet.league}</div>
-                    <div className="text-xs text-muted">{bet.date}</div>
+                    <div className="text-xs text-muted">{bet.date}, {bet.time}</div>
                   </div>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
                     <div className="text-center p-2 bg-bg rounded-lg">
-                      <div className="text-xs text-muted mb-1">Bet 1</div>
-                      <div className="text-sm font-medium text-text">{bet.bet1.outcome}</div>
-                      <div className="text-xs text-muted">{bet.bet1.odds}</div>
-                      <div className="text-xs text-accent">{bet.bet1.bookmaker}</div>
+                      <div className="text-xs text-muted mb-1">1</div>
+                      <div className="text-sm font-medium text-text">{bet.best_odd_1}</div>
+                      <div className="text-xs text-muted">Stake: ${bet.stake_1.toFixed(2)}</div>
                     </div>
                     <div className="text-center p-2 bg-bg rounded-lg">
-                      <div className="text-xs text-muted mb-1">Bet 2</div>
-                      <div className="text-sm font-medium text-text">{bet.bet2.outcome}</div>
-                      <div className="text-xs text-muted">{bet.bet2.odds}</div>
-                      <div className="text-xs text-accent">{bet.bet2.bookmaker}</div>
+                      <div className="text-xs text-muted mb-1">X</div>
+                      <div className="text-sm font-medium text-text">{bet.best_odd_x}</div>
+                      <div className="text-xs text-muted">Stake: ${bet.stake_x.toFixed(2)}</div>
+                    </div>
+                    <div className="text-center p-2 bg-bg rounded-lg">
+                      <div className="text-xs text-muted mb-1">2</div>
+                      <div className="text-sm font-medium text-text">{bet.best_odd_2}</div>
+                      <div className="text-xs text-muted">Stake: ${bet.stake_2.toFixed(2)}</div>
                     </div>
                   </div>
                   <div className="text-center pt-2 border-t border-border/50">
-                    <div className="text-sm font-bold text-green-400 mb-1">{bet.profit} Profit</div>
-                    <div className="text-xs text-muted">Stake: {bet.stake} | Return: {bet.return}</div>
+                    <div className="text-sm font-bold text-green-400 mb-1">{bet.profit_percent.toFixed(2)}% Profit</div>
+                    <div className="text-xs text-muted">Total: ${bet.total_stake.toFixed(2)} → Return: ${bet.guaranteed_return.toFixed(2)}</div>
                   </div>
                 </div>
               </div>
@@ -215,47 +290,61 @@ export default function SureBets() {
             <div className="grid grid-cols-12 gap-4 px-4 py-3 bg-bg border border-border rounded-lg">
               <div className="col-span-3 text-sm font-medium text-muted">Match</div>
               <div className="col-span-2 text-sm font-medium text-muted">Date/Time</div>
-              <div className="col-span-2 text-sm font-medium text-muted text-center">Bet 1</div>
-              <div className="col-span-2 text-sm font-medium text-muted text-center">Bet 2</div>
-              <div className="col-span-3 text-sm font-medium text-muted text-center">Profit & Stakes</div>
+              <div className="col-span-2 text-sm font-medium text-muted text-center">1 (Stake)</div>
+              <div className="col-span-2 text-sm font-medium text-muted text-center">X (Stake)</div>
+              <div className="col-span-2 text-sm font-medium text-muted text-center">2 (Stake)</div>
+              <div className="col-span-1 text-sm font-medium text-muted text-center">Profit</div>
             </div>
-            <div className="space-y-4">
-              {sampleSureBets.map((bet) => (
-                <div key={bet.id} className="bg-surface border border-border rounded-lg p-4 hover:bg-bg/50 transition-colors cursor-pointer">
-                  <div className="grid grid-cols-12 gap-4 items-center">
-                    <div className="col-span-3">
-                      <div className="font-medium text-text">{bet.teams}</div>
-                      <div className="text-sm text-muted">{bet.sport} • {bet.league}</div>
-                    </div>
-                    <div className="col-span-2 text-sm text-muted">
-                      {bet.date}
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-text">{bet.bet1.outcome}</div>
-                        <div className="text-xs text-muted">{bet.bet1.odds}</div>
-                        <div className="text-xs text-accent">{bet.bet1.bookmaker}</div>
-                      </div>
-                    </div>
-                    <div className="col-span-2 text-center">
-                      <div className="space-y-1">
-                        <div className="text-sm font-medium text-text">{bet.bet2.outcome}</div>
-                        <div className="text-xs text-muted">{bet.bet2.odds}</div>
-                        <div className="text-xs text-accent">{bet.bet2.bookmaker}</div>
-                      </div>
-                    </div>
-                    <div className="col-span-3 text-center">
-                      <div className="space-y-1">
-                        <div className="text-sm font-bold text-green-400">{bet.profit} Profit</div>
-                        <div className="text-xs text-muted">Stake: {bet.stake}</div>
-                        <div className="text-xs text-muted">Return: {bet.return}</div>
-                      </div>
-                    </div>
+            <div className="space-y-0">
+              {sureBets.map((bet) => (
+                <div key={bet.id} className="grid grid-cols-12 gap-4 items-center px-4 py-3 bg-surface border-b border-border last:border-b-0 hover:bg-bg/50">
+                  <div className="col-span-3">
+                    <div className="font-medium text-text">{bet.teams}</div>
+                    <div className="text-sm text-muted">{bet.sport} • {bet.league}</div>
+                  </div>
+                  <div className="col-span-2 text-sm text-muted">{bet.date}, {bet.time}</div>
+                  <div className="col-span-2 text-center text-sm">
+                    <span className="font-medium text-text">{bet.best_odd_1}</span>
+                    <span className="text-muted ml-1">(${bet.stake_1.toFixed(2)})</span>
+                  </div>
+                  <div className="col-span-2 text-center text-sm">
+                    <span className="font-medium text-text">{bet.best_odd_x}</span>
+                    <span className="text-muted ml-1">(${bet.stake_x.toFixed(2)})</span>
+                  </div>
+                  <div className="col-span-2 text-center text-sm">
+                    <span className="font-medium text-text">{bet.best_odd_2}</span>
+                    <span className="text-muted ml-1">(${bet.stake_2.toFixed(2)})</span>
+                  </div>
+                  <div className="col-span-1 text-center">
+                    <span className="text-sm font-bold text-green-400">{bet.profit_percent.toFixed(2)}%</span>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+          {totalPages > 1 && (
+            <div className="flex flex-wrap items-center justify-center gap-2 px-2 py-4">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page <= 1}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-surface border border-border text-text hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Previous
+              </button>
+              <span className="text-sm text-muted px-2">
+                Page {page} of {totalPages} ({total} total)
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium bg-surface border border-border text-text hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg p-4 sm:p-6 mx-2">

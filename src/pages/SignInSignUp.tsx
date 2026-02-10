@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -33,8 +33,10 @@ export default function SignInSignUp() {
   const [hasAgreed, setHasAgreed] = useState(false);
   
   const { theme } = useTheme();
-  const { login, user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { login, user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const [isCompletingGoogleSignIn, setIsCompletingGoogleSignIn] = useState(false);
+  const hasHandledGoogleCallbackRef = useRef(false);
 
   const isAdmin = isAdminUser(user);
 
@@ -78,13 +80,23 @@ export default function SignInSignUp() {
       setIsSignIn(true); // Switch to sign in mode
     }
     
-    // Handle Google OAuth success
-    if (googleAuth === 'success' && accessToken && refreshToken) {
+    // Handle Google OAuth success: log in directly without showing Sign In form or success text
+    if (googleAuth === 'success' && accessToken && refreshToken && !hasHandledGoogleCallbackRef.current) {
+      hasHandledGoogleCallbackRef.current = true;
+      setIsCompletingGoogleSignIn(true);
       tokenManager.setTokens(accessToken, refreshToken);
-      setSuccess('Successfully signed in with Google!');
-      authService.getCurrentUser().then((userData) => {
-        navigate(isAdminUser(userData) ? "/admin" : "/dashboard");
-      }).catch(() => navigate("/dashboard"));
+      refreshUser()
+        .then(() => authService.getCurrentUser())
+        .then((userData) => {
+          const target = isAdminUser(userData) ? "/admin" : "/dashboard";
+          navigate(target, { replace: true });
+          window.history.replaceState({}, '', target);
+        })
+        .catch(() => {
+          navigate("/dashboard", { replace: true });
+          window.history.replaceState({}, '', "/dashboard");
+        })
+        .finally(() => setIsCompletingGoogleSignIn(false));
     }
     
     // Handle Google OAuth error
@@ -317,6 +329,18 @@ export default function SignInSignUp() {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
           <p className="text-white text-sm">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // After Google OAuth success: show only "Signing you in..." then redirect (no Sign In form)
+  if (isCompletingGoogleSignIn) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500 mx-auto mb-4"></div>
+          <p className="text-white text-sm">Signing you in...</p>
         </div>
       </div>
     );

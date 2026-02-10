@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { authService, tokenManager, User } from '../services/authService';
 import { useDispatch } from 'react-redux';
 import { logoutAction } from '../store/user/actions';
@@ -33,6 +33,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [justLoggedOut, setJustLoggedOut] = useState(false);
+  const isAuthenticatedRef = useRef(isAuthenticated);
+  isAuthenticatedRef.current = isAuthenticated;
 
   const checkAuth = async () => {
     // Check if user just logged out (persistent across page reloads)
@@ -180,13 +182,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Run checkAuth once on mount and set up listeners. Do NOT depend on isAuthenticated
+  // or the effect re-runs when checkAuth sets it true, causing repeated /api/auth/me calls.
   useEffect(() => {
     checkAuth();
 
     // Listen for storage changes
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'access_token' || e.key === 'refresh_token' || e.key === 'token') {
-        // Don't check auth if user just logged out
         const userJustLoggedOut = localStorage.getItem('userJustLoggedOut') === 'true';
         if (!userJustLoggedOut && !justLoggedOut) {
           checkAuth();
@@ -197,7 +200,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     // Listen for custom auth state changes
     const handleAuthStateChange = (event: CustomEvent) => {
       if (event.detail.isAuthenticated) {
-        // Don't check auth if user just logged out
         const userJustLoggedOut = localStorage.getItem('userJustLoggedOut') === 'true';
         if (!userJustLoggedOut && !justLoggedOut) {
           setTimeout(checkAuth, 100);
@@ -208,16 +210,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Periodic token validation (check every 5 minutes)
+    // Periodic token validation (check every 5 minutes); use ref for current isAuthenticated
     const tokenValidationInterval = setInterval(() => {
-      if (isAuthenticated && !tokenManager.isAuthenticated()) {
-
-        // Token is expired, trigger logout
+      if (isAuthenticatedRef.current && !tokenManager.isAuthenticated()) {
         const currentPath = window.location.pathname;
         if (currentPath !== '/signin' && currentPath !== '/') {
           window.location.href = '/signin?message=session_expired';
         } else {
-          // Clear state without redirect if already on signin page
           tokenManager.clearTokens();
           localStorage.removeItem('token');
           setIsAuthenticated(false);
@@ -225,7 +224,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           dispatch(logoutAction());
         }
       }
-    }, 5 * 60 * 1000); // Check every 5 minutes
+    }, 5 * 60 * 1000);
 
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('authStateChanged', handleAuthStateChange as EventListener);
@@ -235,7 +234,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       window.removeEventListener('authStateChanged', handleAuthStateChange as EventListener);
       clearInterval(tokenValidationInterval);
     };
-  }, [isAuthenticated, dispatch]);
+  }, [dispatch]);
 
   const value: AuthContextType = {
     user,
