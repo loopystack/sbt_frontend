@@ -208,7 +208,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Function to fetch user's existing bets and get match_ids
   const fetchUserExistingBets = useCallback(async () => {
     if (!isAuthenticated || !user?.id) {
-      setUserBetMatchIds(new Set());
+      setUserBetMatchOutcomes(new Set());
       return;
     }
 
@@ -222,20 +222,21 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           return isUserRecord;
         });
         
-        // Extract match_ids from user's betting records
-        const matchIds = new Set(
+        // Extract (match_id, outcome) so we allow one bet per outcome per match (e.g. home and draw on same match allowed)
+        const matchOutcomes = new Set(
           userRecords
             .filter(record => {
-              const hasMatchId = record.match_id !== null && record.match_id !== undefined;
-              return hasMatchId;
+              const hasMatchId = record.match_id != null;
+              const hasOutcome = record.selected_outcome != null && record.selected_outcome !== "";
+              return hasMatchId && hasOutcome;
             })
             .map(record => {
-              const matchIdString = record.match_id!.toString();
-              return matchIdString;
+              const key = `${record.match_id}_${(record.selected_outcome || "").toLowerCase()}`;
+              return key;
             })
         );
         
-        setUserBetMatchIds(matchIds);
+        setUserBetMatchOutcomes(matchOutcomes);
       }
     } catch (error: any) {
       // Ignore abort errors (request was cancelled)
@@ -257,37 +258,22 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     };
   }, []);
 
-  // Function to check if user has already bet on a specific match
-  const hasUserBetOnMatch = (matchId: string): boolean => {
-    const result = userBetMatchIds.has(matchId);
-    return result;
+  // Check if user already has a bet on this (match, outcome) — used to block duplicate at place-bet
+  const hasUserBetOnOutcome = (matchId: string, outcome: string): boolean => {
+    const key = `${matchId}_${(outcome || "").toLowerCase()}`;
+    return userBetMatchOutcomes.has(key);
   };
 
-  // Fetch user's existing bets when component loads or user changes
+  // Fetch user's existing bets when component loads or user changes (don't disable odds - fetch in background)
   useEffect(() => {
-    // Disable odds buttons during loading if authenticated
     if (isAuthenticated && user?.id) {
-      setIsOddsDisabled(true);
-      
-      // Set a timeout to ensure isOddsDisabled is reset even if API call fails or hangs
-      const timeoutId = setTimeout(() => {
-        setIsOddsDisabled(false);
-      }, 3000); // 3 second timeout (reduced from 5)
-      
-      // Call fetch function and ensure state is reset
-      fetchUserExistingBets()
-        .then(() => {
-          clearTimeout(timeoutId);
-          setIsOddsDisabled(false);
-        })
-        .catch(() => {
-          clearTimeout(timeoutId);
-          setIsOddsDisabled(false);
-        });
+      fetchUserExistingBets();
     } else {
-      // If not authenticated or no user, ensure odds are enabled
-      setIsOddsDisabled(false);
+      setUserBetMatchOutcomes(new Set());
     }
+    // Never disable odds buttons: allow clicking on upcoming/live events immediately.
+    // Duplicate (match, outcome) check runs when user clicks "Place Bet".
+    setIsOddsDisabled(false);
   }, [fetchUserExistingBets, isAuthenticated, user?.id]);
 
   const [selectedMarket, setSelectedMarket] = useState(() => getMarketFromPath(location.pathname));
@@ -330,8 +316,8 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
     matchDate?: string;
   }[]>([]);
   
-  // State to track matches user has already bet on
-  const [userBetMatchIds, setUserBetMatchIds] = useState<Set<string>>(new Set());
+  // State to track (match_id, outcome) user has already bet on — one bet per outcome per match (e.g. home + draw allowed)
+  const [userBetMatchOutcomes, setUserBetMatchOutcomes] = useState<Set<string>>(new Set());
   
   // State to track if odds buttons should be disabled during data loading
   const [isOddsDisabled, setIsOddsDisabled] = useState(false);
@@ -527,10 +513,10 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
       return;
     }
     
-    // Check for duplicate bets first
-    const duplicateMatches = selectedOdds.filter(odds => hasUserBetOnMatch(odds.matchId));
-    if (duplicateMatches.length > 0) {
-      setDuplicateBetError("Bet Placed Already!");
+    // Check for duplicate (match, outcome) — allow same match with different outcome (e.g. home + draw)
+    const duplicateSelections = selectedOdds.filter(odds => hasUserBetOnOutcome(odds.matchId, odds.type));
+    if (duplicateSelections.length > 0) {
+      setDuplicateBetError("You already have a bet on one of these selections (same match + outcome). Remove it or pick another outcome.");
       return;
     }
     
@@ -680,15 +666,14 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
           }
         }
         
-        // IMMEDIATELY update local state to show "bet placed" effect - FORCE SYNC UPDATE
-        const newBetMatchIds = new Set(userBetMatchIds);
+        // Update local state so we don't allow duplicate (match, outcome) on next place-bet
+        const newBetOutcomes = new Set(userBetMatchOutcomes);
         selectedOdds.forEach(odds => {
-          newBetMatchIds.add(odds.matchId);
+          newBetOutcomes.add(`${odds.matchId}_${(odds.type || "").toLowerCase()}`);
         });
         
-        // Force synchronous state update to ensure immediate UI update
         flushSync(() => {
-          setUserBetMatchIds(newBetMatchIds);
+          setUserBetMatchOutcomes(newBetOutcomes);
         });
         
       } catch (recordError: any) {
@@ -1902,83 +1887,7 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                       </button>
                     </div>
                     
-                    {(() => {
-                      return hasUserBetOnMatch(match.id);
-                    })() ? (
-                      <div className="relative">
-                        {/* Keep the same grid structure but make it invisible */}
-                        <div className="grid grid-cols-3 gap-2 opacity-0">
-                          <div className="text-center">
-                            <div className="text-xs text-muted mb-1">1</div>
-                            <div className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-h-[32px] flex items-center justify-center">
-                              --
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted mb-1">X</div>
-                            <div className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-h-[32px] flex items-center justify-center">
-                              --
-                            </div>
-                          </div>
-                          <div className="text-center">
-                            <div className="text-xs text-muted mb-1">2</div>
-                            <div className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-h-[32px] flex items-center justify-center">
-                              --
-                            </div>
-                          </div>
-                        </div>
-                        
-                        {/* Beautiful bet placed overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="relative w-full h-full flex flex-col items-center justify-center">
-                            {/* Main overlay with glass effect */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 via-teal-500/15 to-cyan-500/10 backdrop-blur-sm rounded-lg border border-emerald-400/30 shadow-xl">
-                              {/* Animated background pattern */}
-                              <div className="absolute inset-0 opacity-20">
-                                <div className="absolute top-2 left-2 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
-                                <div className="absolute top-4 right-3 w-1.5 h-1.5 bg-teal-400 rounded-full animate-pulse"></div>
-                                <div className="absolute bottom-3 left-4 w-1 h-1 bg-cyan-400 rounded-full animate-bounce"></div>
-                                <div className="absolute bottom-2 right-2 w-2 h-2 bg-emerald-300 rounded-full animate-ping"></div>
-                              </div>
-                            </div>
-                            
-                            {/* Success icon with animation - positioned in center */}
-                            <div className="relative z-10 mb-4">
-                              <div className="relative">
-                                {/* Outer ring */}
-                                <div className="w-16 h-16 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center animate-pulse shadow-lg">
-                                  {/* Inner circle */}
-                                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-inner">
-                                    {/* Checkmark */}
-                                    <svg className="w-8 h-8 text-emerald-600 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                                    </svg>
-                                  </div>
-                                </div>
-                                
-                                {/* Floating particles */}
-                                <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-ping"></div>
-                                <div className="absolute -bottom-1 -left-1 w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
-                              </div>
-                            </div>
-                            
-                            {/* Text with beautiful styling - positioned below icon */}
-                            <div className="relative z-10 -top-5">
-                              <div className="text-center">
-                                <p className="text-emerald-700 font-bold text-sm tracking-wide bg-white/80 backdrop-blur-sm px-3 py-1 rounded-full shadow-md">
-                                  ❤️ Bet Placed Already!
-                                </p>
-                               
-                              </div>
-                            </div>
-                            
-                            {/* Subtle glow effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-cyan-400/20 rounded-lg blur-sm -z-10 animate-pulse"></div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                         <div className="text-center">
                           <div className="text-xs text-muted mb-1">1</div>
                           <button 
@@ -2031,7 +1940,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                           </button>
                         </div>
                       </div>
-                    )}
                   </div>
                 )}
                 </div>
@@ -2166,58 +2074,6 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
                             </div>
                           ));
                         })()}
-                      </div>
-                    ) : (() => {
-                      return hasUserBetOnMatch(match.id);
-                    })() ? (
-                      <div className="flex items-center justify-center relative">
-                        {/* Invisible placeholder to maintain space */}
-                        <div className="opacity-0">
-                          <div className="flex items-center gap-1">
-                            <button className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-w-[40px]">
-                              --
-                            </button>
-                            <button className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-w-[40px]">
-                              --
-                            </button>
-                            <button className="bg-muted/20 text-muted border border-muted/30 rounded px-2 py-1 text-xs font-semibold min-w-[40px]">
-                              --
-                            </button>
-                          </div>
-                        </div>
-                        
-                        {/* Beautiful compact bet placed overlay for table */}
-                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                          <div className="relative w-full h-full">
-                            {/* Main overlay with glass effect */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/15 to-teal-500/15 backdrop-blur-sm rounded-md border border-emerald-400/40 shadow-lg">
-                              {/* Animated background dots */}
-                              <div className="absolute inset-0 opacity-30">
-                                <div className="absolute top-1 left-1 w-1 h-1 bg-emerald-400 rounded-full animate-ping"></div>
-                                <div className="absolute bottom-1 right-1 w-1 h-1 bg-teal-400 rounded-full animate-pulse"></div>
-                              </div>
-                              
-                              {/* Success icon */}
-                              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
-                                <div className="w-6 h-6 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full flex items-center justify-center animate-pulse shadow-md">
-                                  <svg className="w-4 h-4 text-white animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                                  </svg>
-                                </div>
-                              </div>
-                              
-                              {/* Text */}
-                              <div className="absolute bottom-0 inset-x-0 flex justify-center">
-                                <div className="bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow-sm">
-                                  <span className="text-emerald-700 font-bold text-xs tracking-wide">💕 Bet Placed</span>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Subtle glow */}
-                            <div className="absolute inset-0 bg-gradient-to-r from-emerald-400/20 to-teal-400/20 rounded-md blur-sm -z-10 animate-pulse"></div>
-                          </div>
-                        </div>
                       </div>
                     ) : (
                       <div className="flex items-center gap-1">
