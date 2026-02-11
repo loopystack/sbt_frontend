@@ -40,6 +40,29 @@ export default function Dashboard() {
     return rounded.toFixed(2);
   };
 
+  /** Format match_date ISO string as date + time without timezone conversion (matches league results page) */
+  const formatMatchDateLiteral = (iso: string | null | undefined): { dateStr: string; timeStr: string } | null => {
+    if (!iso || typeof iso !== "string") return null;
+    const i = iso.indexOf("T");
+    if (i === -1) {
+      const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
+      if (y && m && d) return { dateStr: `${m}/${d}/${y}`, timeStr: "—" };
+      return null;
+    }
+    const datePart = iso.slice(0, i);
+    const timePart = iso.slice(i + 1);
+    const [y, mo, d] = datePart.slice(0, 10).split("-").map(Number);
+    const timeMatch = timePart.match(/^(\d{1,2}):(\d{2})/);
+    const dateStr = y && mo && d ? `${mo}/${d}/${y}` : datePart;
+    let timeStr = "—";
+    if (timeMatch) {
+      const h = parseInt(timeMatch[1], 10);
+      const m = timeMatch[2];
+      if (h >= 0 && h <= 23) timeStr = h < 12 ? `${h === 0 ? 12 : h}:${m} AM` : `${h === 12 ? 12 : h - 12}:${m} PM`;
+    }
+    return { dateStr, timeStr };
+  };
+
   // Helper function to format transaction description with odds conversion
   const formatTransactionDescription = (description: string): string => {
     if (!description || description.trim() === '') {
@@ -794,18 +817,13 @@ export default function Dashboard() {
                       <div className="text-sm text-text">${formatCurrency(record.bet_amount)}</div>
                     </td>
                     
-                    {/* Match Date */}
+                    {/* Match Date (literal date/time to match league results page) */}
                     <td className="py-3 px-2">
-                      {record.match_date ? (
-                        <>
-                          <div className="text-sm text-text">{new Date(record.match_date).toLocaleDateString()}</div>
-                          <div className="text-xs text-muted">{new Date(record.match_date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                        </>
-                      ) : (
-                        <div className="text-sm text-muted">
-                          No match date available
-                        </div>
-                      )}
+                      {(() => {
+                        const fd = formatMatchDateLiteral(record.match_date);
+                        if (fd) return (<><div className="text-sm text-text">{fd.dateStr}</div><div className="text-xs text-muted">{fd.timeStr}</div></>);
+                        return <div className="text-sm text-muted">No match date available</div>;
+                      })()}
                     </td>
                     
                     {/* Bet Date */}
@@ -885,7 +903,7 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <span className="text-muted">Match Date:</span>
-                      <span className="ml-1 text-text">{record.match_date ? new Date(record.match_date).toLocaleDateString() : 'TBD'}</span>
+                      <span className="ml-1 text-text">{formatMatchDateLiteral(record.match_date)?.dateStr ?? 'TBD'}</span>
                     </div>
                     <div>
                       <span className="text-muted">Bet Date:</span>
