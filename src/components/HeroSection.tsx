@@ -5,6 +5,7 @@ import { OddsConverter } from "../utils/oddsConverter";
 import { useAppDispatch } from "../store/hooks";
 import { getMatchingInfoAction } from "../store/matchinginfo/actions";
 import { MatchingInfo } from "../store/matchinginfo/types";
+import { apiMethods } from "../lib/api";
 
 // Custom hook for animated counting
 const useCountUp = (end: number, duration: number = 2000, delay: number = 0) => {
@@ -63,13 +64,69 @@ export default function HeroSection() {
     navigate(targetUrl);
   };
 
-  // Animated counters - all start and finish at the same time
-  const { count: bookmakersCount } = useCountUp(80, 2000, 0);
-  const { count: sportsCount } = useCountUp(50, 2000, 0);
-  const { count: matchesCount } = useCountUp(1000, 2000, 0);
+  // Statistics state - start with null to indicate loading
+  const [statistics, setStatistics] = useState<{
+    bookmakers: number;
+    sports: number;
+    daily_matches: number;
+  } | null>(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(true);
+  const [statisticsError, setStatisticsError] = useState<string | null>(null);
   
   // Odds format conversion
   const { getOddsInFormat, oddsFormat } = useOddsFormat();
+  
+  // Fetch real statistics from API
+  useEffect(() => {
+    const fetchStatistics = async () => {
+      try {
+        setStatisticsLoading(true);
+        setStatisticsError(null);
+        
+        // Log the URL being called for debugging
+        const apiUrl = "/api/odds/statistics";
+        console.log("🔍 Fetching statistics from:", apiUrl);
+        
+        const stats = await apiMethods.get<{
+          bookmakers: number;
+          sports: number;
+          daily_matches: number;
+        }>(apiUrl);
+        
+        console.log("✅ Statistics received:", stats);
+        
+        // Validate response has all required fields
+        if (stats && typeof stats.bookmakers === 'number' && typeof stats.sports === 'number' && typeof stats.daily_matches === 'number') {
+          setStatistics({
+            bookmakers: Math.max(0, stats.bookmakers),
+            sports: Math.max(0, stats.sports),
+            daily_matches: Math.max(0, stats.daily_matches)
+          });
+        } else {
+          throw new Error("Invalid statistics response format");
+        }
+      } catch (error) {
+        console.error("❌ HeroSection: Error fetching statistics:", error);
+        const errorMessage = error instanceof Error ? error.message : "Failed to load statistics";
+        console.error("Error details:", {
+          message: errorMessage,
+          error: error,
+          stack: error instanceof Error ? error.stack : undefined
+        });
+        setStatisticsError(errorMessage);
+        // Don't set fallback values - let the UI handle the loading/error state
+      } finally {
+        setStatisticsLoading(false);
+      }
+    };
+    
+    fetchStatistics();
+  }, []);
+  
+  // Animated counters - only animate when we have real data
+  const { count: bookmakersCount } = useCountUp(statistics?.bookmakers ?? 0, 2000, 0);
+  const { count: sportsCount } = useCountUp(statistics?.sports ?? 0, 2000, 0);
+  const { count: matchesCount } = useCountUp(statistics?.daily_matches ?? 0, 2000, 0);
   
   // Fetch real upcoming matches for Featured Matches
   useEffect(() => {
@@ -320,24 +377,65 @@ export default function HeroSection() {
           </div>
           
           <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 max-w-4xl mx-auto px-2">
-            <div className="text-center">
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
-                {bookmakersCount}+
+            {statisticsLoading ? (
+              // Loading state - show skeleton
+              <>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-muted/30 mb-1 sm:mb-2 animate-pulse">
+                    --
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Bookmakers</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-muted/30 mb-1 sm:mb-2 animate-pulse">
+                    --
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Sports</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-muted/30 mb-1 sm:mb-2 animate-pulse">
+                    --
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Daily Matches</div>
+                </div>
+              </>
+            ) : statisticsError ? (
+              // Error state - show error message
+              <div className="col-span-3 text-center">
+                <div className="text-sm text-muted/70">
+                  Statistics unavailable
+                </div>
               </div>
-              <div className="text-xs sm:text-sm lg:text-base text-muted">Bookmakers</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
-                {sportsCount}+
+            ) : statistics ? (
+              // Success state - show real data
+              <>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
+                    {bookmakersCount > 0 ? `${bookmakersCount}+` : '0'}
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Bookmakers</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
+                    {sportsCount > 0 ? `${sportsCount}+` : '0'}
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Sports</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
+                    {matchesCount > 0 ? `${matchesCount}+` : '0'}
+                  </div>
+                  <div className="text-xs sm:text-sm lg:text-base text-muted">Daily Matches</div>
+                </div>
+              </>
+            ) : (
+              // Fallback - should not happen, but just in case
+              <div className="col-span-3 text-center">
+                <div className="text-sm text-muted/70">
+                  Loading statistics...
+                </div>
               </div>
-              <div className="text-xs sm:text-sm lg:text-base text-muted">Sports</div>
-            </div>
-            <div className="text-center">
-              <div className="text-lg sm:text-2xl lg:text-3xl font-bold text-text mb-1 sm:mb-2">
-                {matchesCount}+
-              </div>
-              <div className="text-xs sm:text-sm lg:text-base text-muted">Daily Matches</div>
-            </div>
+            )}
           </div>
         </div>
       </div>

@@ -67,6 +67,13 @@ export async function api<T = any>(
       }
     }
     
+    // Always log for statistics endpoint to debug
+    if (absoluteUrl.includes('/statistics')) {
+      console.log(`🔍 Statistics API Call: ${method} ${absoluteUrl}`);
+      console.log('Base URL:', baseUrl);
+      console.log('Original URL:', url);
+    }
+    
     // Only log in development mode
     if (import.meta.env.DEV) {
       console.group(`🌐 API Request: ${method} ${absoluteUrl}`);
