@@ -51,8 +51,11 @@ export const CountryRestrictionProvider: React.FC<CountryRestrictionProviderProp
           testCountry ? `?test_country=${testCountry}` : ''
         }`;
 
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        const response = await fetch(url);
+        const response = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
         
         if (!response.ok) {
           console.error('❌ Failed to check country restriction:', response.status);

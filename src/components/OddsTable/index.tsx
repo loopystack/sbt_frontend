@@ -189,16 +189,13 @@ export default function OddsTable({ highlightMatchId, initialSearchTerm }: OddsT
   // Odds format conversion
   const { getOddsInFormat, oddsFormat } = useOddsFormat();
   
-  // Helper function to convert and format odds
+  // Helper: show "—" for missing/invalid odds instead of fake "1.00"
   const formatOdds = (odds: string): string => {
-    if (!odds || odds.trim() === '') {
-      return odds || '';
-    }
-    
-    // Use the robust string parser with correct conversion formulas
+    const raw = odds?.trim() ?? '';
+    if (raw === '' || raw === '-' || raw.toUpperCase() === 'N/A') return '—';
     const decimalOdds = OddsConverter.stringToDecimal(odds);
-    const formatted = getOddsInFormat(decimalOdds);
-    return formatted;
+    if (Number.isNaN(decimalOdds) || decimalOdds < 1.01) return '—';
+    return getOddsInFormat(decimalOdds);
   };
   
 

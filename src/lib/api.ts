@@ -5,8 +5,11 @@
 import { reportError } from './rollbar';
 import { getBaseUrl } from '../config/api';
 
+const DEFAULT_REQUEST_TIMEOUT_MS = 15000;
+
 interface ApiRequestOptions extends RequestInit {
   headers?: Record<string, string>;
+  timeout?: number;
 }
 
 interface ApiError {
@@ -45,12 +48,16 @@ export async function api<T = any>(
     headers['Authorization'] = `Bearer ${token}`;
   }
   
-  // Prepare request options
+  const timeoutMs = options.timeout ?? DEFAULT_REQUEST_TIMEOUT_MS;
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
   const requestOptions: RequestInit = {
     ...options,
     headers,
+    signal: controller.signal,
   };
-  
+
   try {
     // Log request details
     const method = requestOptions.method || 'GET';
@@ -86,7 +93,8 @@ export async function api<T = any>(
     }
     
     const response = await fetch(absoluteUrl, requestOptions);
-    
+    clearTimeout(timeoutId);
+
     // Only log response details in development mode
     if (import.meta.env.DEV) {
       console.log('📥 Response:', {
@@ -151,6 +159,10 @@ export async function api<T = any>(
     return data;
     
   } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new ApiError(`Request timed out after ${timeoutMs}ms`, 408);
+    }
     console.error('❌ API Request failed:', {
       url: absoluteUrl,
       method: requestOptions.method || 'GET',

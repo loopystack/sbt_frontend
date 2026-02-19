@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useOddsFormat } from "../hooks/useOddsFormat";
 import { OddsConverter } from "../utils/oddsConverter";
-import { useAppDispatch } from "../store/hooks";
-import { getMatchingInfoAction } from "../store/matchinginfo/actions";
 import { MatchingInfo } from "../store/matchinginfo/types";
 import { apiMethods } from "../lib/api";
 
@@ -46,7 +44,6 @@ const useCountUp = (end: number, duration: number = 2000, delay: number = 0) => 
 export default function HeroSection() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
-  const dispatch = useAppDispatch();
   const [featuredMatches, setFeaturedMatches] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -128,128 +125,73 @@ export default function HeroSection() {
   const { count: sportsCount } = useCountUp(statistics?.sports ?? 0, 2000, 0);
   const { count: matchesCount } = useCountUp(statistics?.daily_matches ?? 0, 2000, 0);
   
-  // Fetch real upcoming matches for Featured Matches
+  // Fetch upcoming matches: try /featured first, fallback to /upcoming if it fails or is empty
   useEffect(() => {
+    const formatTimeHHMM = (t: string | null | undefined): string => {
+      if (t == null || typeof t !== "string") return "00:00";
+      const trimmed = String(t).trim();
+      if (/^\d{1,2}:\d{2}:\d{2}/.test(trimmed)) {
+        const [h, m] = trimmed.split(":");
+        return `${h ?? "0"}:${m ?? "00"}`;
+      }
+      return trimmed;
+    };
+
+    const mapResultToMatches = (odds: MatchingInfo[], formatMatchDateFn: (d: string) => string) =>
+      odds.slice(0, 9).map((match: MatchingInfo) => ({
+        id: match.id,
+        teams: `${match.home_team} vs ${match.away_team}`,
+        league: `${match.country ?? ""} ${match.league ?? ""}`.trim(),
+        time: formatTimeHHMM(match.time),
+        date: formatMatchDateFn(String(match.date)),
+        odds: {
+          home: match.odd_1 != null ? String(match.odd_1) : null,
+          away: match.odd_2 != null ? String(match.odd_2) : null,
+          draw: match.odd_X != null ? String(match.odd_X) : null,
+        },
+        status: "Upcoming",
+      }));
+
     const fetchFeaturedMatches = async () => {
       try {
         setLoading(true);
-        
-        const params = { 
-          page: 1, 
-          size: 50  // Get more matches to filter from
+        const shape = {
+          odds: [] as MatchingInfo[],
+          total: 0,
+          page: 1,
+          size: 50,
+          pages: 1,
         };
-        
-        const result = await dispatch(getMatchingInfoAction(params)).unwrap();
-
-        
+        let result: typeof shape;
+        try {
+          result = await apiMethods.get<typeof shape>("/api/odds/featured?limit=50");
+        } catch (featuredErr) {
+          console.warn("HeroSection: featured API failed, using upcoming", featuredErr);
+          result = await apiMethods.get<typeof shape>("/api/odds/upcoming?limit=50");
+        }
         if (!result.odds || result.odds.length === 0) {
-          setFeaturedMatches(getFallbackMatches());
+          setFeaturedMatches([]);
           return;
         }
-        
-        // Filter for upcoming matches and transform data
-        const now = new Date();
-
-        
-        const upcomingMatches = result.odds
-          .filter((match: MatchingInfo) => {
-            const matchDate = new Date(match.date + 'T' + match.time);
-            const isUpcoming = matchDate.getTime() >= now.getTime();
-            return isUpcoming;
-          })
-          .slice(0, 6) // Take first 6 upcoming matches
-          .map((match: MatchingInfo) => ({
-            id: match.id,
-            teams: `${match.home_team} vs ${match.away_team}`,
-            league: `${match.country} ${match.league}`,
-            time: match.time,
-            date: formatMatchDate(match.date),
-            odds: {
-              home: match.odd_1 ? match.odd_1.toString() : null,
-              away: match.odd_2 ? match.odd_2.toString() : null,
-              draw: match.odd_X ? match.odd_X.toString() : null
-            },
-            status: "Upcoming"
-          }));
-        
-        
-        if (upcomingMatches.length === 0) {
-
-          setFeaturedMatches(getFallbackMatches());
-        } else {
-          setFeaturedMatches(upcomingMatches);
-        }
+        setFeaturedMatches(mapResultToMatches(result.odds, formatMatchDate));
       } catch (error) {
         console.error("❌ HeroSection: Error fetching featured matches:", error);
-        setFeaturedMatches(getFallbackMatches());
+        setFeaturedMatches([]);
       } finally {
         setLoading(false);
       }
     };
 
     fetchFeaturedMatches();
-  }, [dispatch]);
+  }, []);
 
-  // Helper function for fallback matches
-  const getFallbackMatches = () => [
-    {
-      id: 1,
-      teams: "Manchester City vs Arsenal",
-      league: "Premier League",
-      time: "15:00",
-      date: "Today",
-      odds: {
-        home: "+180",
-        away: "-220",
-        draw: "+320"
-      },
-      status: "Upcoming"
-    },
-    {
-      id: 2,
-      teams: "Lakers vs Warriors",
-      league: "NBA",
-      time: "19:30",
-      date: "Today",
-      odds: {
-        home: "-110",
-        away: "-110",
-        overUnder: "225.5"
-      },
-      status: "Upcoming"
-    },
-    {
-      id: 3,
-      teams: "Kansas City Chiefs vs Buffalo Bills",
-      league: "NFL",
-      time: "20:00",
-      date: "Today",
-      odds: {
-        home: "+150",
-        away: "-180",
-        spread: "KC +3.5"
-      },
-      status: "Upcoming"
-    }
-  ];
-
-  // Helper function to format match date
+  // Helper function to format match date (e.g. "Feb 13")
   const formatMatchDate = (dateString: string): string => {
-    const matchDate = new Date(dateString + 'T00:00:00');
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    if (matchDate.toDateString() === today.toDateString()) {
-      return "Today";
-    } else if (matchDate.toDateString() === tomorrow.toDateString()) {
-      return "Tomorrow";
-    } else {
-      return matchDate.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric' 
-      });
-    }
+    const matchDate = new Date(dateString + "T00:00:00");
+    return matchDate.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Debug: Log when odds format changes
