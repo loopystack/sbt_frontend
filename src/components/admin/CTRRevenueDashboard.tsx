@@ -52,8 +52,9 @@ export default function CTRRevenueDashboard() {
       
       let ctrData, matchCTRData, revenueData;
       
+      const analyticsOptions = { timeout: 45000 };
       try {
-        ctrData = await apiMethods.get(`/api/analytics/ctr-metrics?days=${selectedPeriod}`);
+        ctrData = await apiMethods.get(`/api/analytics/ctr-metrics?days=${selectedPeriod}`, analyticsOptions);
       } catch (err: any) {
         console.error("❌ Failed to fetch CTR metrics:", err);
         console.error("❌ Full error:", JSON.stringify(err, null, 2));
@@ -61,7 +62,7 @@ export default function CTRRevenueDashboard() {
       }
       
       try {
-        matchCTRData = await apiMethods.get(`/api/analytics/ctr-by-matches?days=${selectedPeriod}`);
+        matchCTRData = await apiMethods.get(`/api/analytics/ctr-by-matches?days=${selectedPeriod}`, analyticsOptions);
       } catch (err: any) {
         console.error("❌ Failed to fetch match CTR:", err);
         console.error("❌ Error type:", typeof err);
@@ -72,7 +73,7 @@ export default function CTRRevenueDashboard() {
       }
       
       try {
-        revenueData = await apiMethods.get(`/api/analytics/revenue?days=${selectedPeriod}`);
+        revenueData = await apiMethods.get(`/api/analytics/revenue?days=${selectedPeriod}`, analyticsOptions);
       } catch (err: any) {
         console.error("❌ Failed to fetch revenue:", err);
         revenueData = null;

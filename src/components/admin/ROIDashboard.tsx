@@ -65,11 +65,16 @@ export default function ROIDashboard() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await apiMethods.get(`/api/analytics/roi-dashboard?days=${selectedPeriod}`);
+      const data = await apiMethods.get(`/api/analytics/roi-dashboard?days=${selectedPeriod}`, { timeout: 45000 });
       setRoiData(data);
     } catch (err: any) {
       console.error("Failed to fetch ROI data:", err);
-      const message = err?.status === 403 ? "Admin access required" : (err?.message || "Failed to load ROI data.");
+      const message =
+        err?.status === 403
+          ? "Admin access required"
+          : err?.status === 408
+            ? (err?.message || "Request timed out. Try again or choose a shorter period.")
+            : (err?.message || "Failed to load ROI data.");
       setError(message);
       setRoiData(EMPTY_ROI);
     } finally {
@@ -139,6 +144,9 @@ export default function ROIDashboard() {
           <div className={`text-3xl font-bold ${data.roi_percentage >= 0 ? "text-green-400" : "text-red-400"}`}>
             {data.roi_percentage.toFixed(1)}%
           </div>
+          {data.total_cost === 0 && data.total_revenue > 0 && (
+            <div className="text-xs text-gray-500 mt-1">Profit margin (no cost)</div>
+          )}
         </div>
       </div>
 
