@@ -1008,12 +1008,24 @@ export default function Dashboard() {
             </div>
             <h4 className="text-lg font-semibold text-text mb-2">No transactions yet</h4>
             <p className="text-muted mb-4">Add funds or place bets to see your transaction history!</p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex flex-wrap gap-3 justify-center">
               <button
                 onClick={() => navigate('/deposit')}
                 className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-400 hover:to-emerald-400 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
               >
                 Deposit Funds
+              </button>
+              <button
+                onClick={() => navigate('/withdraw')}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+              >
+                Withdraw
+              </button>
+              <button
+                onClick={() => navigate('/withdrawals')}
+                className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 border border-white/20"
+              >
+                Withdrawal History
               </button>
               <button
                 onClick={() => navigate('/')}

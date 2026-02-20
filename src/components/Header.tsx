@@ -180,6 +180,40 @@ export default function Header({ onMobileMenuToggle, onLeftSidebarToggle, onRigh
                               <p className="text-muted text-sm">Add funds to your account</p>
                             </div>
                           </button>
+                          <button
+                            onClick={() => {
+                              setShowUserDropdown(false);
+                              navigate("/withdraw");
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                          >
+                            <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center">
+                              <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                              </svg>
+                            </div>
+                            <div>
+                              <span className="text-text font-semibold text-lg">Withdraw</span>
+                              <p className="text-muted text-sm">Withdraw to your TRC20 address</p>
+                            </div>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowUserDropdown(false);
+                              navigate("/withdrawals");
+                            }}
+                            className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-[1.02]"
+                          >
+                            <div className="w-12 h-12 bg-slate-500/20 rounded-xl flex items-center justify-center">
+                              <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                              </svg>
+                            </div>
+                            <div>
+                              <span className="text-text font-semibold text-lg">Withdrawal History</span>
+                              <p className="text-muted text-sm">View and manage withdrawals</p>
+                            </div>
+                          </button>
                           
                           <button
                             onClick={() => {

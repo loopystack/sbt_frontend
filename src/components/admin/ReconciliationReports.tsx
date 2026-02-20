@@ -52,14 +52,14 @@ const ReconciliationReports: React.FC = () => {
     setLoading(true);
     setError('');
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       const params = new URLSearchParams({
-        status_filter: statusFilter || '',
-        start_date: startDate || '',
-        end_date: endDate || '',
         limit: pageSize.toString(),
         offset: ((page - 1) * pageSize).toString()
       });
+      if (statusFilter) params.set('status_filter', statusFilter);
+      if (startDate) params.set('start_date', startDate);
+      if (endDate) params.set('end_date', endDate);
 
       const response = await fetch(`${getBaseUrl()}/api/admin/system/reconciliation?${params}`, {
         headers: {
@@ -84,7 +84,7 @@ const ReconciliationReports: React.FC = () => {
 
   const runReconciliation = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       const response = await fetch(`${getBaseUrl()}/api/admin/system/reconciliation/run`, {
         method: 'POST',
         headers: {
@@ -135,7 +135,7 @@ const ReconciliationReports: React.FC = () => {
 
   const getLatestReport = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       const response = await fetch(`${getBaseUrl()}/api/admin/system/reconciliation/latest`, {
         headers: {
           'Authorization': `Bearer ${token}`

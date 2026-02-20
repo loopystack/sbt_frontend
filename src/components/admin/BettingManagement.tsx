@@ -79,7 +79,7 @@ export default function BettingManagement() {
       if (filters.status) params.append("status", filters.status);
       if (filters.search) params.append("search", filters.search);
 
-      const response = await apiMethods.get(`/api/admin/betting-records?${params}`);
+      const response = await apiMethods.get(`/api/admin/betting-records?${params}`, { timeout: 45000 });
       setBettingRecords(response);
       setAllBettingRecords(response);
     } catch (err: any) {
